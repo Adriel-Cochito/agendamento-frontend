@@ -4,11 +4,19 @@
 @tailwind utilities;
 
 @layer base {
-  * {
-    @apply border-border;
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --border: 214.3 31.8% 91.4%;
   }
+  
+  * {
+    @apply border-gray-200;
+  }
+  
   body {
-    @apply bg-background text-foreground;
+    @apply bg-white text-gray-900 antialiased;
+    font-family: 'Inter', system-ui, sans-serif;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
@@ -16,5 +24,21 @@
 @layer utilities {
   .gradient-mask {
     mask-image: linear-gradient(to bottom, transparent, black 20%, black 80%, transparent);
+  }
+  
+  /* Animações customizadas */
+  .animate-slide-in {
+    animation: slideIn 0.3s ease-out;
+  }
+  
+  @keyframes slideIn {
+    from {
+      transform: translateY(-10px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
   }
 }
