@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Calendar, Plus, Users, Clock } from 'lucide-react';
+import { Calendar, Plus, Users, Clock, Tag } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { useNavigate } from 'react-router-dom';
 
@@ -48,6 +48,19 @@ export function Home() {
           </div>
           <h3 className="font-semibold text-gray-900 mb-1">Profissionais</h3>
           <p className="text-sm text-gray-500">Gerencie sua equipe</p>
+        </motion.div>
+
+        <motion.div
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={() => navigate('/servicos')}
+          className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition-shadow"
+        >
+          <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mb-4">
+            <Tag className="w-6 h-6 text-orange-600" />
+          </div>
+          <h3 className="font-semibold text-gray-900 mb-1">Serviços</h3>
+          <p className="text-sm text-gray-500">Gerencie seus serviços</p>
         </motion.div>
 
         <motion.div

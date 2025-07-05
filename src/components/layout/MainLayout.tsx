@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Calendar, Users, LogOut, Menu, X, Home } from 'lucide-react';
+import { Calendar, Users, LogOut, Menu, X, Home, Tag } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { useAuthStore } from '@/store/authStore';
@@ -24,6 +24,7 @@ export function MainLayout({ children }: MainLayoutProps) {
   const menuItems = [
     { path: '/', label: 'Dashboard', icon: Home },
     { path: '/profissionais', label: 'Profissionais', icon: Users },
+    { path: '/servicos', label: 'Serviços', icon: Tag },
   ];
 
   const isActive = (path: string) => location.pathname === path;
@@ -78,7 +79,7 @@ export function MainLayout({ children }: MainLayoutProps) {
         </div>
       </header>
 
-      {/* Sidebar */}
+      {/* Sidebar Overlay */}
       <AnimatePresence>
         {isSidebarOpen && (
           <motion.div
@@ -91,6 +92,7 @@ export function MainLayout({ children }: MainLayoutProps) {
         )}
       </AnimatePresence>
 
+      {/* Sidebar */}
       <aside
         className={`fixed top-16 left-0 bottom-0 w-64 bg-white border-r border-gray-200 z-30 transform transition-transform lg:translate-x-0 ${
           isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
