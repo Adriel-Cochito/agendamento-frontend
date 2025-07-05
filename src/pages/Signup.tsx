@@ -17,16 +17,16 @@ export function Signup() {
           <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-primary-500 to-primary-600 rounded-2xl shadow-lg mb-4">
             <Calendar className="w-10 h-10 text-white" />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900">Crie sua conta</h1>
-          <p className="text-gray-600 mt-2">Comece a gerenciar seus agendamentos hoje</p>
+          <h1 className="text-3xl font-bold text-gray-900">Crie sua conta empresarial</h1>
+          <p className="text-gray-600 mt-2">Cadastre sua empresa e comece a gerenciar agendamentos</p>
         </motion.div>
 
         {/* Signup Card */}
         <Card className="backdrop-blur-md bg-white/90">
-          <CardHeader className="text-center">
-            <CardTitle className="text-xl">Cadastro de Profissional</CardTitle>
+          <CardHeader className="text-center pb-4">
+            <CardTitle className="text-xl">Cadastro Completo</CardTitle>
             <CardDescription>
-              Preencha os dados abaixo para criar sua conta como proprietário
+              Preencha os dados da empresa e do proprietário
             </CardDescription>
           </CardHeader>
           <CardContent>

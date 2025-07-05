@@ -28,10 +28,18 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
-    // Não redirecionar se for uma rota de criação de profissional
-    const isSignupRoute = error.config?.url?.includes('/profissionais') && error.config?.method === 'post';
+    // Lista de rotas públicas que não precisam de autenticação
+    const publicRoutes = [
+      '/auth/login',
+      '/auth/register',
+      '/empresas/com-owner'
+    ];
     
-    if (error.response?.status === 401 && !isSignupRoute) {
+    const isPublicRoute = publicRoutes.some(route => 
+      error.config?.url?.includes(route)
+    );
+    
+    if (error.response?.status === 401 && !isPublicRoute) {
       authStore.getState().logout();
       window.location.href = '/login';
     }
