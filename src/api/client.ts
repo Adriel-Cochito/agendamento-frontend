@@ -28,7 +28,10 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
-    if (error.response?.status === 401) {
+    // Não redirecionar se for uma rota de criação de profissional
+    const isSignupRoute = error.config?.url?.includes('/profissionais') && error.config?.method === 'post';
+    
+    if (error.response?.status === 401 && !isSignupRoute) {
       authStore.getState().logout();
       window.location.href = '/login';
     }

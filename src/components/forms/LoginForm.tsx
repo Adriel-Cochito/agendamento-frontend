@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -128,6 +128,26 @@ export function LoginForm() {
         >
           Entrar
         </Button>
+
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t border-gray-300" />
+          </div>
+          <div className="relative flex justify-center text-sm">
+            <span className="bg-white px-2 text-gray-500">Ou</span>
+          </div>
+        </div>
+
+        <Link to="/cadastro">
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full"
+            size="lg"
+          >
+            Criar Nova Conta
+          </Button>
+        </Link>
 
         <div className="text-center">
           <a
