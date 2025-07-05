@@ -1,18 +1,10 @@
 import { apiClient } from './client';
-import { CreateProfissionalRequest, Profissional } from '@/types/profissional';
+import { Profissional, CreateProfissionalRequest, UpdateProfissionalRequest } from '@/types/profissional';
 
 export const profissionaisApi = {
-  create: async (data: CreateProfissionalRequest): Promise<Profissional> => {
-    const response = await apiClient.post('/profissionais', data, {
-      params: { empresaId: data.empresaId }
-    });
-    return response.data;
-  },
-
-  getAll: async (empresaId: number): Promise<Profissional[]> => {
-    const response = await apiClient.get('/profissionais', {
-      params: { empresaId }
-    });
+  getAll: async (empresaId?: number): Promise<Profissional[]> => {
+    const params = empresaId ? { empresaId } : {};
+    const response = await apiClient.get('/profissionais', { params });
     return response.data;
   },
 
@@ -21,7 +13,14 @@ export const profissionaisApi = {
     return response.data;
   },
 
-  update: async (id: number, data: Partial<Profissional>): Promise<Profissional> => {
+  create: async (data: CreateProfissionalRequest): Promise<Profissional> => {
+    const response = await apiClient.post('/profissionais', data, {
+      params: { empresaId: data.empresaId }
+    });
+    return response.data;
+  },
+
+  update: async (id: number, data: UpdateProfissionalRequest): Promise<Profissional> => {
     const response = await apiClient.put(`/profissionais/${id}`, data);
     return response.data;
   },

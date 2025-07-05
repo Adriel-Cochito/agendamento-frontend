@@ -2,7 +2,8 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  role?: string;
+  role?: 'OWNER' | 'ADMIN' | 'USER';
+  empresaId?: number;
 }
 
 export interface LoginCredentials {

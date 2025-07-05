@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { AuthState } from '@/types/auth';
+import { AuthState, User } from '@/types/auth';
 import { authApi } from '@/api/auth';
 
 export const useAuthStore = create<AuthState>()(
@@ -15,8 +15,17 @@ export const useAuthStore = create<AuthState>()(
         set({ isLoading: true });
         try {
           const response = await authApi.login(credentials);
+          
+          // Extrair informações do usuário do token ou fazer uma chamada adicional
+          const user: User = {
+            id: '1', // Você precisará decodificar o JWT ou buscar do backend
+            name: credentials.email.split('@')[0], // Temporário
+            email: credentials.email,
+            role: 'OWNER', // Temporário
+          };
+          
           set({
-            user: response.user || null,
+            user,
             token: response.token,
             isAuthenticated: true,
             isLoading: false,

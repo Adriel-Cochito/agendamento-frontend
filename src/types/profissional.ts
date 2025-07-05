@@ -1,22 +1,29 @@
 export interface Profissional {
-  id?: number;
+  id: number;
   nome: string;
   email: string;
-  senha?: string;
   perfil: 'OWNER' | 'ADMIN' | 'USER';
-  googleAccessToken?: string | null;
-  googleRefreshToken?: string | null;
-  empresaId: number;
   ativo: boolean;
+  empresaId: number;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface CreateProfissionalRequest {
   nome: string;
   email: string;
   senha: string;
-  perfil: 'OWNER';
-  googleAccessToken?: null;
-  googleRefreshToken?: null;
+  perfil: 'OWNER' | 'ADMIN' | 'USER';
   empresaId: number;
   ativo: boolean;
+  googleAccessToken?: null;
+  googleRefreshToken?: null;
+}
+
+export interface UpdateProfissionalRequest {
+  nome?: string;
+  email?: string;
+  senha?: string;
+  perfil?: 'OWNER' | 'ADMIN' | 'USER';
+  ativo?: boolean;
 }

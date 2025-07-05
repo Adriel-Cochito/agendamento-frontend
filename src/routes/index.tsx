@@ -2,7 +2,9 @@ import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { Login } from '@/pages/Login';
 import { Signup } from '@/pages/Signup';
 import { Home } from '@/pages/Home';
+import { Profissionais } from '@/pages/Profissionais';
 import { ProtectedRoute } from './ProtectedRoute';
+import { MainLayout } from '@/components/layout/MainLayout';
 
 export const router = createBrowserRouter([
   {
@@ -18,10 +20,13 @@ export const router = createBrowserRouter([
     element: <ProtectedRoute />,
     children: [
       {
-        path: '/',
-        element: <Home />,
+        element: <MainLayout><Home /></MainLayout>,
+        index: true,
       },
-      // Adicione outras rotas protegidas aqui
+      {
+        path: 'profissionais',
+        element: <MainLayout><Profissionais /></MainLayout>,
+      },
     ],
   },
   {
