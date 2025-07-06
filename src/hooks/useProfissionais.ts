@@ -2,10 +2,16 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { profissionaisApi } from '@/api/profissionais';
 import { CreateProfissionalRequest, UpdateProfissionalRequest } from '@/types/profissional';
 
+import { useAuthStore } from '@/store/authStore';
+
 export function useProfissionais(empresaId?: number) {
+  const user = useAuthStore((state) => state.user);
+  const finalEmpresaId = empresaId || user?.empresaId;
+  
   return useQuery({
-    queryKey: ['profissionais', empresaId],
-    queryFn: () => profissionaisApi.getAll(empresaId),
+    queryKey: ['profissionais', finalEmpresaId],
+    queryFn: () => profissionaisApi.getAll(finalEmpresaId),
+    enabled: !!finalEmpresaId,
   });
 }
 

@@ -23,7 +23,7 @@ export const servicosApi = {
   update: async (id: number, data: UpdateServicoRequest, empresaId: number): Promise<Servico> => {
     // Remover campos undefined/null
     const cleanData = Object.fromEntries(
-      Object.entries(data).filter(([_, value]) => value !== undefined && value !== null)
+      Object.entries({ ...data, empresaId }).filter(([_, value]) => value !== undefined && value !== null)
     );
     
     const response = await apiClient.put(`/servicos/${id}`, cleanData, {

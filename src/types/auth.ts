@@ -14,7 +14,14 @@ export interface LoginCredentials {
 export interface AuthResponse {
   token: string;
   refreshToken?: string;
-  user?: User;
+  user?: {
+    id: number;
+    nome: string;
+    email: string;
+    perfil: 'OWNER' | 'ADMIN' | 'USER';
+    empresaId: number;
+  };
+  expiresIn?: number;
 }
 
 export interface AuthState {

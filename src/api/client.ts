@@ -39,27 +39,27 @@ apiClient.interceptors.response.use(
       status: error.response?.status,
       data: error.response?.data,
     });
-    
-    // Lista de rotas públicas
+
     const publicRoutes = ['/auth/login', '/auth/register', '/empresas/com-owner'];
-    const isPublicRoute = publicRoutes.some(route => 
+    const isPublicRoute = publicRoutes.some(route =>
       error.config?.url?.includes(route)
     );
-    
-    // Só redireciona para login se for 401 e não for rota pública
-    // E não for um erro de conflito (409) ou validação (400)
+
+    const status = error.response?.status;
+    const code = error.response?.data?.errors?.[0]?.code;
+
     if (
-      error.response?.status === 401 && 
+      status === 401 &&
       !isPublicRoute &&
-      error.config?.url !== '/auth/refresh'
+      error.config?.url &&
+      !error.config.url.includes('/auth/refresh')
     ) {
-      console.log('Token expirado ou inválido, redirecionando para login...');
+      console.warn('Token expirado ou inválido. Redirecionando para login...');
       authStore.getState().logout();
       window.location.href = '/login';
       return Promise.reject(error);
     }
-    
-    // Para outros erros, usar o handler
+
     return Promise.reject(error);
   }
 );

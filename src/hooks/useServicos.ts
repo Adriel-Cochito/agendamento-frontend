@@ -2,10 +2,17 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { servicosApi } from '@/api/servicos';
 import { CreateServicoRequest, UpdateServicoRequest } from '@/types/servico';
 
+import { useAuthStore } from '@/store/authStore';
+
+
 export function useServicos(empresaId?: number) {
+    const user = useAuthStore((state) => state.user);
+    const finalEmpresaId = empresaId || user?.empresaId;
+
   return useQuery({
-    queryKey: ['servicos', empresaId],
-    queryFn: () => servicosApi.getAll(empresaId),
+    queryKey: ['servicos', finalEmpresaId],
+    queryFn: () => servicosApi.getAll(finalEmpresaId),
+    enabled: !!finalEmpresaId,
   });
 }
 
@@ -40,6 +47,7 @@ export function useUpdateServico() {
     },
   });
 }
+
 
 export function useDeleteServico() {
   const queryClient = useQueryClient();

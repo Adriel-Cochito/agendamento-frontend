@@ -18,6 +18,7 @@ import { useToast } from '@/hooks/useToast';
 import { getErrorMessage } from '@/lib/error-handler';
 
 export function Profissionais() {
+
   const { addToast } = useToast();
   const user = useAuthStore((state) => state.user);
   const [search, setSearch] = useState('');
@@ -31,7 +32,7 @@ export function Profissionais() {
   );
 
   // Assumindo que o empresaId vem do usuário logado
-  const empresaId = 1; // TODO: Pegar do contexto/store
+  const empresaId = user?.empresaId || 1;
 
   const { data: profissionais, isLoading } = useProfissionais(empresaId);
   const createMutation = useCreateProfissional();

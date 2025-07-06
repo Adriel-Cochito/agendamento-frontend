@@ -1,6 +1,16 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, Search, Edit2, Trash2, DollarSign, Clock, Users, Tag } from 'lucide-react';
+import {
+  Plus,
+  Search,
+  Edit2,
+  Trash2,
+  DollarSign,
+  Clock,
+  Users,
+  Tag,
+  AlertTriangle,
+} from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
@@ -13,21 +23,53 @@ import {
   useDeleteServico,
 } from '@/hooks/useServicos';
 import { Servico } from '@/types/servico';
+import { useToast } from '@/hooks/useToast';
+import { getErrorMessage } from '@/lib/error-handler';
+import { useAuthStore } from '@/store/authStore';
 
 export function Servicos() {
+  const deleteMutation = useDeleteServico();
+
+  const { addToast } = useToast();
+  const user = useAuthStore((state) => state.user);
   const [search, setSearch] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedServico, setSelectedServico] = useState<Servico | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [servicoToDelete, setServicoToDelete] = useState<Servico | null>(null);
 
-  // Assumindo que o empresaId vem do usuário logado
-  const empresaId = 1; // TODO: Pegar do contexto/store
+  // Pegar empresaId do usuário logado
+  const empresaId = user?.empresaId || 1;
 
   const { data: servicos, isLoading } = useServicos(empresaId);
   const createMutation = useCreateServico();
   const updateMutation = useUpdateServico();
-  const deleteMutation = useDeleteServico();
+
+  const handleDeleteServico = (id: number, empresaId: number) => {
+    deleteMutation.mutate(
+      { id, empresaId },
+      {
+        onError: (error: any) => {
+          const status = error.response?.status;
+          const code = error.response?.data?.errors?.[0]?.code;
+
+          if (status === 409 && code === 'REFERENTIAL_INTEGRITY_VIOLATION') {
+            addToast(
+              'error',
+              'Não foi possível excluir',
+              'Este serviço possui agendamentos vinculados. Cancele ou conclua os agendamentos antes de excluir.'
+            );
+          } else {
+            addToast(
+              'error',
+              'Erro ao excluir serviço',
+              error.response?.data?.errors?.[0]?.message || 'Erro inesperado ao excluir.'
+            );
+          }
+        },
+      }
+    );
+  };
 
   const filteredServicos = servicos?.filter(
     (servico) =>
@@ -52,37 +94,83 @@ export function Servicos() {
 
   const confirmDelete = async () => {
     if (servicoToDelete) {
-      await deleteMutation.mutateAsync({
-        id: servicoToDelete.id,
-        empresaId,
-      });
-      setIsDeleteModalOpen(false);
-      setServicoToDelete(null);
+      try {
+        await deleteMutation.mutateAsync({
+          id: servicoToDelete.id,
+          empresaId,
+        });
+
+        addToast('success', 'Serviço excluído com sucesso');
+        setIsDeleteModalOpen(false);
+        setServicoToDelete(null);
+      } catch (error: any) {
+        console.error('Erro ao deletar serviço:', error);
+
+        // Tratar diferentes tipos de erro
+        if (error.response?.status === 409) {
+          // Erro de integridade referencial
+          const errorData = error.response.data;
+          if (errorData?.errors?.[0]?.code === 'REFERENTIAL_INTEGRITY_VIOLATION') {
+            addToast(
+              'error',
+              'Não foi possível excluir',
+              'Este serviço possui agendamentos vinculados. Cancele ou conclua os agendamentos antes de excluir o serviço.'
+            );
+          } else {
+            addToast(
+              'error',
+              'Conflito ao excluir',
+              errorData?.errors?.[0]?.message ||
+                'Este serviço não pode ser excluído devido a dependências.'
+            );
+          }
+        } else if (error.response?.status === 403) {
+          addToast(
+            'error',
+            'Sem permissão',
+            'Você não tem permissão para excluir este serviço.'
+          );
+        } else {
+          addToast('error', 'Erro ao excluir', getErrorMessage(error));
+        }
+      }
     }
   };
 
-const handleSubmit = async (formData: any) => {
-  try {
-    if (selectedServico) {
-      const updateData = {
-        ...formData,
-        empresaId, // agora vai no body
-      };
+  const handleSubmit = async (data: any) => {
+    try {
+      if (selectedServico) {
+        await updateMutation.mutateAsync({
+          id: selectedServico.id,
+          data, // envia o objeto completo, pode conter empresaId se quiser
+          empresaId, // empresaId do estado / usuário logado, não do form
+        });
 
-      await updateMutation.mutateAsync({
-        id: selectedServico.id,
-        data: updateData,
-        empresaId, // opcional agora, só se a API ainda exigir também na URL
-      });
-    } else {
-      await createMutation.mutateAsync(formData);
+        addToast('success', 'Serviço atualizado com sucesso');
+      } else {
+        await createMutation.mutateAsync(data);
+        addToast('success', 'Serviço criado com sucesso');
+      }
+      setIsModalOpen(false);
+    } catch (error: any) {
+      console.error('Erro ao salvar serviço:', error);
+
+      // Tratar erros específicos
+      if (error.response?.status === 400) {
+        const errorData = error.response.data;
+        if (errorData?.errors?.length > 0) {
+          // Mostrar todos os erros de validação
+          errorData.errors.forEach((err: any) => {
+            addToast('error', 'Erro de validação', err.message);
+          });
+        } else {
+          addToast('error', 'Erro ao salvar', getErrorMessage(error));
+        }
+      } else {
+        addToast('error', 'Erro ao salvar', getErrorMessage(error));
+      }
     }
-    setIsModalOpen(false);
-  } catch (error) {
-    console.error('Erro ao salvar serviço:', error);
-  }
-};
-
+  };
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -244,7 +332,7 @@ const handleSubmit = async (formData: any) => {
         />
       </Modal>
 
-      {/* Delete Modal */}
+      {/* Delete Modal com Aviso Melhorado */}
       <Modal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
@@ -252,16 +340,33 @@ const handleSubmit = async (formData: any) => {
         size="sm"
       >
         <div className="space-y-4">
-          <p className="text-gray-600">
-            Tem certeza que deseja excluir o serviço{' '}
-            <strong>{servicoToDelete?.titulo}</strong>?
-          </p>
-          <p className="text-sm text-red-600">
-            Esta ação não pode ser desfeita. Todos os agendamentos futuros deste serviço
-            serão afetados.
-          </p>
-          <div className="flex justify-end space-x-3">
-            <Button variant="outline" onClick={() => setIsDeleteModalOpen(false)}>
+          <div className="flex items-start space-x-3">
+            <AlertTriangle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-gray-900 font-medium">
+                Tem certeza que deseja excluir o serviço{' '}
+                <strong>{servicoToDelete?.titulo}</strong>?
+              </p>
+              <p className="text-sm text-gray-600 mt-1">
+                Esta ação não pode ser desfeita.
+              </p>
+            </div>
+          </div>
+
+          {/* Avisos adicionais */}
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+            <p className="text-sm text-amber-800">
+              <strong>Atenção:</strong> Se este serviço tiver agendamentos futuros, eles
+              precisarão ser cancelados ou remarcados.
+            </p>
+          </div>
+
+          <div className="flex justify-end space-x-3 pt-2">
+            <Button
+              variant="outline"
+              onClick={() => setIsDeleteModalOpen(false)}
+              disabled={deleteMutation.isPending}
+            >
               Cancelar
             </Button>
             <Button
@@ -269,7 +374,7 @@ const handleSubmit = async (formData: any) => {
               onClick={confirmDelete}
               loading={deleteMutation.isPending}
             >
-              Excluir
+              Excluir Serviço
             </Button>
           </div>
         </div>
