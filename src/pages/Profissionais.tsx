@@ -6,11 +6,11 @@ import { Input } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
 import { ProfissionalForm } from '@/components/forms/ProfissionalForm';
 import { Loading } from '@/components/ui/Loading';
-import { 
-  useProfissionais, 
-  useCreateProfissional, 
-  useUpdateProfissional, 
-  useDeleteProfissional 
+import {
+  useProfissionais,
+  useCreateProfissional,
+  useUpdateProfissional,
+  useDeleteProfissional,
 } from '@/hooks/useProfissionais';
 import { useAuthStore } from '@/store/authStore';
 import { Profissional } from '@/types/profissional';
@@ -19,9 +19,13 @@ export function Profissionais() {
   const user = useAuthStore((state) => state.user);
   const [search, setSearch] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedProfissional, setSelectedProfissional] = useState<Profissional | null>(null);
+  const [selectedProfissional, setSelectedProfissional] = useState<Profissional | null>(
+    null
+  );
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [profissionalToDelete, setProfissionalToDelete] = useState<Profissional | null>(null);
+  const [profissionalToDelete, setProfissionalToDelete] = useState<Profissional | null>(
+    null
+  );
 
   // Assumindo que o empresaId vem do usuário logado
   const empresaId = 1; // TODO: Pegar do contexto/store
@@ -60,15 +64,21 @@ export function Profissionais() {
     }
   };
 
-  const handleSubmit = async (data: any) => {
+  const handleSubmit = async (formData: any) => {
     if (selectedProfissional) {
+      const updateData = {
+        ...formData,
+        empresaId, // <- incluído manualmente no body
+      };
+
       await updateMutation.mutateAsync({
         id: selectedProfissional.id,
-        data,
+        data: updateData,
       });
     } else {
-      await createMutation.mutateAsync(data);
+      await createMutation.mutateAsync(formData); // já tem empresaId no create
     }
+
     setIsModalOpen(false);
   };
 
@@ -159,7 +169,9 @@ export function Profissionais() {
                           <div className="text-sm font-medium text-gray-900">
                             {profissional.nome}
                           </div>
-                          <div className="text-sm text-gray-500">{profissional.email}</div>
+                          <div className="text-sm text-gray-500">
+                            {profissional.email}
+                          </div>
                         </div>
                       </div>
                     </td>
@@ -236,14 +248,9 @@ export function Profissionais() {
             Tem certeza que deseja excluir o profissional{' '}
             <strong>{profissionalToDelete?.nome}</strong>?
           </p>
-          <p className="text-sm text-red-600">
-            Esta ação não pode ser desfeita.
-          </p>
+          <p className="text-sm text-red-600">Esta ação não pode ser desfeita.</p>
           <div className="flex justify-end space-x-3">
-            <Button
-              variant="outline"
-              onClick={() => setIsDeleteModalOpen(false)}
-            >
+            <Button variant="outline" onClick={() => setIsDeleteModalOpen(false)}>
               Cancelar
             </Button>
             <Button

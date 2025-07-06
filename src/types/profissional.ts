@@ -24,6 +24,7 @@ export interface UpdateProfissionalRequest {
   nome?: string;
   email?: string;
   senha?: string;
+  empresaId?: number;
   perfil?: 'OWNER' | 'ADMIN' | 'USER';
   ativo?: boolean;
 }
