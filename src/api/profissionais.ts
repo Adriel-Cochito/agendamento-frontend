@@ -21,7 +21,9 @@ export const profissionaisApi = {
   },
 
   update: async (id: number, data: UpdateProfissionalRequest): Promise<Profissional> => {
-    const response = await apiClient.put(`/profissionais/${id}`, data);
+    const response = await apiClient.patch(`/profissionais/${id}`, data, {
+      params: { empresaId: data.empresaId },
+    });
     return response.data;
   },
 
