@@ -52,7 +52,10 @@ export function Servicos() {
 
   const confirmDelete = async () => {
     if (servicoToDelete) {
-      await deleteMutation.mutateAsync(servicoToDelete.id);
+      await deleteMutation.mutateAsync({ 
+        id: servicoToDelete.id, 
+        empresaId 
+      });
       setIsDeleteModalOpen(false);
       setServicoToDelete(null);
     }
@@ -61,11 +64,12 @@ export function Servicos() {
   const handleSubmit = async (data: any) => {
     try {
       if (selectedServico) {
-        // Para update, remover o empresaId do payload
-        const { empresaId, ...updateData } = data;
+        // Para update, remover o empresaId do payload e passar como parâmetro separado
+        const { empresaId: _, ...updateData } = data;
         await updateMutation.mutateAsync({
           id: selectedServico.id,
           data: updateData,
+          empresaId,
         });
       } else {
         await createMutation.mutateAsync(data);

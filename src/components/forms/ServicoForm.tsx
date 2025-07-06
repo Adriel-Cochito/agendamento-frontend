@@ -59,45 +59,48 @@ export function ServicoForm({ servico, onSubmit, isLoading, empresaId }: Servico
     }
   }, [servico]);
 
-  const onFormSubmit = async (data: FormData) => {
-    setSubmitError('');
-    
-    try {
-      if (isEditing) {
-        // Para update, enviar apenas os campos que mudaram
-        const updateData: any = {
-          titulo: data.titulo,
-          descricao: data.descricao,
-          preco: Number(data.preco),
-          duracao: Number(data.duracao),
-          ativo: data.ativo,
-        };
-        
-        // Só incluir profissionais se houver mudança
-        if (selectedProfissionais.length > 0) {
-          updateData.profissionais = selectedProfissionais.map(id => ({ id }));
-        }
-        
-        await onSubmit(updateData);
-      } else {
-        // Para criação, enviar todos os campos
-        const createData = {
-          titulo: data.titulo,
-          descricao: data.descricao,
-          preco: Number(data.preco),
-          duracao: Number(data.duracao),
-          ativo: data.ativo,
-          empresaId,
-          profissionais: selectedProfissionais.map(id => ({ id })),
-        };
-        
-        await onSubmit(createData);
+const onFormSubmit = async (data: FormData) => {
+  setSubmitError('');
+  console.log('Iniciando submissão do formulário...');
+  
+  try {
+    if (isEditing) {
+      const updateData: any = {
+        titulo: data.titulo,
+        descricao: data.descricao,
+        preco: Number(data.preco),
+        duracao: Number(data.duracao),
+        ativo: data.ativo,
+      };
+      
+      if (selectedProfissionais.length > 0) {
+        updateData.profissionais = selectedProfissionais.map(id => ({ id }));
       }
-    } catch (error: any) {
-      console.error('Erro ao submeter:', error);
-      setSubmitError(error.response?.data?.message || 'Erro ao salvar serviço');
+      
+      console.log('Dados para update:', updateData);
+      console.log('ID do serviço:', servico?.id);
+      
+      await onSubmit(updateData);
+    } else {
+      const createData = {
+        titulo: data.titulo,
+        descricao: data.descricao,
+        preco: Number(data.preco),
+        duracao: Number(data.duracao),
+        ativo: data.ativo,
+        empresaId,
+        profissionais: selectedProfissionais.map(id => ({ id })),
+      };
+      
+      console.log('Dados para criação:', createData);
+      
+      await onSubmit(createData);
     }
-  };
+  } catch (error: any) {
+    console.error('Erro detalhado ao submeter:', error);
+    setSubmitError(error.response?.data?.message || error.message || 'Erro ao salvar serviço');
+  }
+};
 
   const toggleProfissional = (profissionalId: number) => {
     setSelectedProfissionais(prev =>

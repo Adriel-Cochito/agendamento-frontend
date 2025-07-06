@@ -20,17 +20,21 @@ export const servicosApi = {
     return response.data;
   },
 
-  update: async (id: number, data: UpdateServicoRequest): Promise<Servico> => {
+  update: async (id: number, data: UpdateServicoRequest, empresaId: number): Promise<Servico> => {
     // Remover campos undefined/null
     const cleanData = Object.fromEntries(
       Object.entries(data).filter(([_, value]) => value !== undefined && value !== null)
     );
     
-    const response = await apiClient.put(`/servicos/${id}`, cleanData);
+    const response = await apiClient.put(`/servicos/${id}`, cleanData, {
+      params: { empresaId }
+    });
     return response.data;
   },
 
-  delete: async (id: number): Promise<void> => {
-    await apiClient.delete(`/servicos/${id}`);
+  delete: async (id: number, empresaId: number): Promise<void> => {
+    await apiClient.delete(`/servicos/${id}`, {
+      params: { empresaId }
+    });
   },
 };

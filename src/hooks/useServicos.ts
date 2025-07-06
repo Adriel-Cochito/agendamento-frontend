@@ -32,8 +32,8 @@ export function useUpdateServico() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: UpdateServicoRequest }) =>
-      servicosApi.update(id, data),
+    mutationFn: ({ id, data, empresaId }: { id: number; data: UpdateServicoRequest; empresaId: number }) =>
+      servicosApi.update(id, data, empresaId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['servicos'] });
       queryClient.invalidateQueries({ queryKey: ['servico'] });
@@ -45,7 +45,8 @@ export function useDeleteServico() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: number) => servicosApi.delete(id),
+    mutationFn: ({ id, empresaId }: { id: number; empresaId: number }) =>
+      servicosApi.delete(id, empresaId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['servicos'] });
     },
