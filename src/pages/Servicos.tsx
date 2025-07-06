@@ -6,11 +6,11 @@ import { Input } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
 import { ServicoForm } from '@/components/forms/ServicoForm';
 import { Loading } from '@/components/ui/Loading';
-import { 
-  useServicos, 
-  useCreateServico, 
-  useUpdateServico, 
-  useDeleteServico 
+import {
+  useServicos,
+  useCreateServico,
+  useUpdateServico,
+  useDeleteServico,
 } from '@/hooks/useServicos';
 import { Servico } from '@/types/servico';
 
@@ -59,15 +59,22 @@ export function Servicos() {
   };
 
   const handleSubmit = async (data: any) => {
-    if (selectedServico) {
-      await updateMutation.mutateAsync({
-        id: selectedServico.id,
-        data,
-      });
-    } else {
-      await createMutation.mutateAsync(data);
+    try {
+      if (selectedServico) {
+        // Para update, remover o empresaId do payload
+        const { empresaId, ...updateData } = data;
+        await updateMutation.mutateAsync({
+          id: selectedServico.id,
+          data: updateData,
+        });
+      } else {
+        await createMutation.mutateAsync(data);
+      }
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error('Erro ao salvar serviço:', error);
+      // O erro será tratado no formulário
     }
-    setIsModalOpen(false);
   };
 
   const formatPrice = (price: number) => {
@@ -100,7 +107,9 @@ export function Servicos() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Serviços</h1>
-          <p className="text-gray-600 mt-1">Gerencie os serviços oferecidos pela sua empresa</p>
+          <p className="text-gray-600 mt-1">
+            Gerencie os serviços oferecidos pela sua empresa
+          </p>
         </div>
         <Button onClick={handleCreate} className="sm:w-auto">
           <Plus className="w-4 h-4 mr-2" />
@@ -195,11 +204,7 @@ export function Servicos() {
                 )}
 
                 <div className="flex justify-end space-x-2 pt-4 border-t">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleEdit(servico)}
-                  >
+                  <Button variant="ghost" size="sm" onClick={() => handleEdit(servico)}>
                     <Edit2 className="w-4 h-4" />
                   </Button>
                   <Button
@@ -245,13 +250,11 @@ export function Servicos() {
             <strong>{servicoToDelete?.titulo}</strong>?
           </p>
           <p className="text-sm text-red-600">
-            Esta ação não pode ser desfeita. Todos os agendamentos futuros deste serviço serão afetados.
+            Esta ação não pode ser desfeita. Todos os agendamentos futuros deste serviço
+            serão afetados.
           </p>
           <div className="flex justify-end space-x-3">
-            <Button
-              variant="outline"
-              onClick={() => setIsDeleteModalOpen(false)}
-            >
+            <Button variant="outline" onClick={() => setIsDeleteModalOpen(false)}>
               Cancelar
             </Button>
             <Button

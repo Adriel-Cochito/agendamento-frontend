@@ -25,7 +25,7 @@ type FormData = z.infer<typeof schema>;
 
 interface ServicoFormProps {
   servico?: Servico;
-  onSubmit: (data: any) => void;
+  onSubmit: (data: any) => Promise<void>;
   isLoading?: boolean;
   empresaId: number;
 }
@@ -33,6 +33,7 @@ interface ServicoFormProps {
 export function ServicoForm({ servico, onSubmit, isLoading, empresaId }: ServicoFormProps) {
   const isEditing = !!servico;
   const [selectedProfissionais, setSelectedProfissionais] = useState<number[]>([]);
+  const [submitError, setSubmitError] = useState('');
   
   const { data: profissionais, isLoading: isLoadingProfissionais } = useProfissionais(empresaId);
   
@@ -58,18 +59,44 @@ export function ServicoForm({ servico, onSubmit, isLoading, empresaId }: Servico
     }
   }, [servico]);
 
-  const onFormSubmit = (data: FormData) => {
-    const submitData = {
-      titulo: data.titulo,
-      descricao: data.descricao,
-      preco: Number(data.preco),
-      duracao: Number(data.duracao),
-      ativo: data.ativo,
-      empresaId,
-      profissionais: selectedProfissionais.map(id => ({ id })),
-    };
-
-    onSubmit(submitData);
+  const onFormSubmit = async (data: FormData) => {
+    setSubmitError('');
+    
+    try {
+      if (isEditing) {
+        // Para update, enviar apenas os campos que mudaram
+        const updateData: any = {
+          titulo: data.titulo,
+          descricao: data.descricao,
+          preco: Number(data.preco),
+          duracao: Number(data.duracao),
+          ativo: data.ativo,
+        };
+        
+        // Só incluir profissionais se houver mudança
+        if (selectedProfissionais.length > 0) {
+          updateData.profissionais = selectedProfissionais.map(id => ({ id }));
+        }
+        
+        await onSubmit(updateData);
+      } else {
+        // Para criação, enviar todos os campos
+        const createData = {
+          titulo: data.titulo,
+          descricao: data.descricao,
+          preco: Number(data.preco),
+          duracao: Number(data.duracao),
+          ativo: data.ativo,
+          empresaId,
+          profissionais: selectedProfissionais.map(id => ({ id })),
+        };
+        
+        await onSubmit(createData);
+      }
+    } catch (error: any) {
+      console.error('Erro ao submeter:', error);
+      setSubmitError(error.response?.data?.message || 'Erro ao salvar serviço');
+    }
   };
 
   const toggleProfissional = (profissionalId: number) => {
@@ -206,6 +233,12 @@ export function ServicoForm({ servico, onSubmit, isLoading, empresaId }: Servico
           {ativoValue ? 'O serviço está disponível para agendamento' : 'O serviço não aparecerá para os clientes'}
         </p>
       </div>
+
+      {submitError && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+          {submitError}
+        </div>
+      )}
 
       <div className="flex justify-end space-x-4 pt-4">
         <Button

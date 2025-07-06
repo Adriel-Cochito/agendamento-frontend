@@ -10,6 +10,36 @@ export const apiClient = axios.create({
   },
 });
 
+// Interceptor para lidar com erros
+apiClient.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    console.error('API Error:', {
+      url: error.config?.url,
+      method: error.config?.method,
+      status: error.response?.status,
+      data: error.response?.data
+    });
+    
+    // Lista de rotas públicas que não precisam de autenticação
+    const publicRoutes = [
+      '/auth/login',
+      '/auth/register',
+      '/empresas/com-owner'
+    ];
+    
+    const isPublicRoute = publicRoutes.some(route => 
+      error.config?.url?.includes(route)
+    );
+    
+    if (error.response?.status === 401 && !isPublicRoute) {
+      authStore.getState().logout();
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  }
+);
+
 // Interceptor para adicionar token
 apiClient.interceptors.request.use(
   (config) => {
