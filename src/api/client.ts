@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { authStore } from '@/store/authStore';
+import { handleApiError } from '@/lib/error-handler';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
@@ -25,39 +26,40 @@ apiClient.interceptors.request.use(
   }
 );
 
-// Interceptor para lidar com erros - APENAS UM!
+// Interceptor para lidar com respostas
 apiClient.interceptors.response.use(
   (response) => {
     console.log('Response:', response.status, response.config.url);
     return response;
   },
   async (error) => {
-    console.error('API Error:', {
+    console.error('API Response Error:', {
       url: error.config?.url,
       method: error.config?.method,
       status: error.response?.status,
       data: error.response?.data,
-      message: error.message
     });
     
-    // Lista de rotas públicas que não precisam de autenticação
-    const publicRoutes = [
-      '/auth/login',
-      '/auth/register',
-      '/empresas/com-owner'
-    ];
-    
+    // Lista de rotas públicas
+    const publicRoutes = ['/auth/login', '/auth/register', '/empresas/com-owner'];
     const isPublicRoute = publicRoutes.some(route => 
       error.config?.url?.includes(route)
     );
     
     // Só redireciona para login se for 401 e não for rota pública
-    if (error.response?.status === 401 && !isPublicRoute) {
+    // E não for um erro de conflito (409) ou validação (400)
+    if (
+      error.response?.status === 401 && 
+      !isPublicRoute &&
+      error.config?.url !== '/auth/refresh'
+    ) {
       console.log('Token expirado ou inválido, redirecionando para login...');
       authStore.getState().logout();
       window.location.href = '/login';
+      return Promise.reject(error);
     }
     
+    // Para outros erros, usar o handler
     return Promise.reject(error);
   }
 );

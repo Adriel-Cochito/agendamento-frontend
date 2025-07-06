@@ -14,8 +14,11 @@ import {
 } from '@/hooks/useProfissionais';
 import { useAuthStore } from '@/store/authStore';
 import { Profissional } from '@/types/profissional';
+import { useToast } from '@/hooks/useToast';
+import { getErrorMessage } from '@/lib/error-handler';
 
 export function Profissionais() {
+  const { addToast } = useToast();
   const user = useAuthStore((state) => state.user);
   const [search, setSearch] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -41,6 +44,30 @@ export function Profissionais() {
       prof.email.toLowerCase().includes(search.toLowerCase())
   );
 
+    const confirmDelete = async () => {
+    if (profissionalToDelete) {
+      try {
+        await deleteMutation.mutateAsync(profissionalToDelete.id);
+        addToast('success', 'Profissional excluído com sucesso');
+        setIsDeleteModalOpen(false);
+        setProfissionalToDelete(null);
+      } catch (error: any) {
+        console.error('Erro ao deletar:', error);
+        
+        // Tratar erro específico de integridade referencial
+        if (error.response?.data?.errors?.[0]?.code === 'REFERENTIAL_INTEGRITY_VIOLATION') {
+          addToast(
+            'error',
+            'Não foi possível excluir',
+            'Este profissional está vinculado a serviços ou agendamentos. Remova as associações antes de excluir.'
+          );
+        } else {
+          addToast('error', 'Erro ao excluir', getErrorMessage(error));
+        }
+      }
+    }
+  };
+
   const handleCreate = () => {
     setSelectedProfissional(null);
     setIsModalOpen(true);
@@ -56,30 +83,23 @@ export function Profissionais() {
     setIsDeleteModalOpen(true);
   };
 
-  const confirmDelete = async () => {
-    if (profissionalToDelete) {
-      await deleteMutation.mutateAsync(profissionalToDelete.id);
-      setIsDeleteModalOpen(false);
-      setProfissionalToDelete(null);
+
+  const handleSubmit = async (data: any) => {
+    try {
+      if (selectedProfissional) {
+        await updateMutation.mutateAsync({
+          id: selectedProfissional.id,
+          data,
+        });
+        addToast('success', 'Profissional atualizado com sucesso');
+      } else {
+        await createMutation.mutateAsync(data);
+        addToast('success', 'Profissional criado com sucesso');
+      }
+      setIsModalOpen(false);
+    } catch (error) {
+      addToast('error', 'Erro ao salvar', getErrorMessage(error));
     }
-  };
-
-  const handleSubmit = async (formData: any) => {
-    if (selectedProfissional) {
-      const updateData = {
-        ...formData,
-        empresaId, // <- incluído manualmente no body
-      };
-
-      await updateMutation.mutateAsync({
-        id: selectedProfissional.id,
-        data: updateData,
-      });
-    } else {
-      await createMutation.mutateAsync(formData); // já tem empresaId no create
-    }
-
-    setIsModalOpen(false);
   };
 
   const getPerfilBadge = (perfil: string) => {
