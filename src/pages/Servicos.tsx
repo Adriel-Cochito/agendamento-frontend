@@ -52,34 +52,37 @@ export function Servicos() {
 
   const confirmDelete = async () => {
     if (servicoToDelete) {
-      await deleteMutation.mutateAsync({ 
-        id: servicoToDelete.id, 
-        empresaId 
+      await deleteMutation.mutateAsync({
+        id: servicoToDelete.id,
+        empresaId,
       });
       setIsDeleteModalOpen(false);
       setServicoToDelete(null);
     }
   };
 
-  const handleSubmit = async (data: any) => {
-    try {
-      if (selectedServico) {
-        // Para update, remover o empresaId do payload e passar como parâmetro separado
-        const { empresaId: _, ...updateData } = data;
-        await updateMutation.mutateAsync({
-          id: selectedServico.id,
-          data: updateData,
-          empresaId,
-        });
-      } else {
-        await createMutation.mutateAsync(data);
-      }
-      setIsModalOpen(false);
-    } catch (error) {
-      console.error('Erro ao salvar serviço:', error);
-      // O erro será tratado no formulário
+const handleSubmit = async (formData: any) => {
+  try {
+    if (selectedServico) {
+      const updateData = {
+        ...formData,
+        empresaId, // agora vai no body
+      };
+
+      await updateMutation.mutateAsync({
+        id: selectedServico.id,
+        data: updateData,
+        empresaId, // opcional agora, só se a API ainda exigir também na URL
+      });
+    } else {
+      await createMutation.mutateAsync(formData);
     }
-  };
+    setIsModalOpen(false);
+  } catch (error) {
+    console.error('Erro ao salvar serviço:', error);
+  }
+};
+
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('pt-BR', {

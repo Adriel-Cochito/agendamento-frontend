@@ -28,6 +28,7 @@ export interface UpdateServicoRequest {
   descricao?: string;
   preco?: number;
   ativo?: boolean;
+  empresaId?: number;
   duracao?: number;
   profissionais?: { id: number }[];
 }
