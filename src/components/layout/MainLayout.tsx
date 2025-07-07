@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Calendar, Users, LogOut, Menu, X, Home, Tag } from 'lucide-react';
+import { Calendar, Users, LogOut, Menu, X, Home, Tag, Clock } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { useAuthStore } from '@/store/authStore';
@@ -25,6 +25,7 @@ export function MainLayout({ children }: MainLayoutProps) {
     { path: '/', label: 'Dashboard', icon: Home },
     { path: '/profissionais', label: 'Profissionais', icon: Users },
     { path: '/servicos', label: 'Serviços', icon: Tag },
+    { path: '/disponibilidades', label: 'Disponibilidades', icon: Clock },
   ];
 
   const isActive = (path: string) => location.pathname === path;

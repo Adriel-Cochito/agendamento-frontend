@@ -66,13 +66,14 @@ export function Home() {
         <motion.div
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
+          onClick={() => navigate('/disponibilidades')}
           className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition-shadow"
         >
-          <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
-            <Calendar className="w-6 h-6 text-green-600" />
+          <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
+            <Clock className="w-6 h-6 text-purple-600" />
           </div>
-          <h3 className="font-semibold text-gray-900 mb-1">Agenda do Dia</h3>
-          <p className="text-sm text-gray-500">Veja os agendamentos de hoje</p>
+          <h3 className="font-semibold text-gray-900 mb-1">Disponibilidades</h3>
+          <p className="text-sm text-gray-500">Configure horários disponíveis</p>
         </motion.div>
 
         <motion.div
@@ -80,11 +81,11 @@ export function Home() {
           whileTap={{ scale: 0.98 }}
           className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition-shadow"
         >
-          <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
-            <Clock className="w-6 h-6 text-purple-600" />
+          <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
+            <Calendar className="w-6 h-6 text-green-600" />
           </div>
-          <h3 className="font-semibold text-gray-900 mb-1">Histórico</h3>
-          <p className="text-sm text-gray-500">Consulte agendamentos anteriores</p>
+          <h3 className="font-semibold text-gray-900 mb-1">Agenda do Dia</h3>
+          <p className="text-sm text-gray-500">Veja os agendamentos de hoje</p>
         </motion.div>
       </div>
 
@@ -95,11 +96,11 @@ export function Home() {
             <Calendar className="w-12 h-12 text-gray-400" />
           </div>
           <h3 className="text-xl font-semibold text-gray-900 mb-2">
-            Área em Desenvolvimento
+            Sistema de Agendamentos
           </h3>
           <p className="text-gray-500 max-w-md mx-auto">
-            Em breve você terá acesso a todas as funcionalidades do sistema de agendamento. 
-            Estamos trabalhando para oferecer a melhor experiência possível!
+            Agora você pode gerenciar profissionais, serviços e disponibilidades. 
+            Use o menu lateral para navegar entre as seções e configurar seu sistema de agendamentos!
           </p>
         </div>
       </div>
