@@ -5,6 +5,7 @@ import { Home } from '@/pages/Home';
 import { Profissionais } from '@/pages/Profissionais';
 import { Servicos } from '@/pages/Servicos';
 import { Disponibilidades } from '@/pages/Disponibilidades';
+import { Agendamentos } from '@/pages/Agendamentos';
 import { ProtectedRoute } from './ProtectedRoute';
 import { MainLayout } from '@/components/layout/MainLayout';
 
@@ -24,6 +25,10 @@ export const router = createBrowserRouter([
       {
         element: <MainLayout><Home /></MainLayout>,
         index: true,
+      },
+      {
+        path: 'agendamentos',
+        element: <MainLayout><Agendamentos /></MainLayout>,
       },
       {
         path: 'profissionais',

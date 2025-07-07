@@ -32,9 +32,9 @@ export const disponibilidadesApi = {
     return response.data;
   },
 
-  getByProfissional: async (empresaId: number, profissionalId: number): Promise<Disponibilidade[]> => {
+  getByProfissional: async (empresaId: number, profissionalId: number, data: string): Promise<Disponibilidade[]> => {
     const response = await apiClient.get('/disponibilidades/profissional/data', {
-      params: { empresaId, profissionalId }
+      params: { empresaId, profissionalId, data }
     });
     return response.data;
   },

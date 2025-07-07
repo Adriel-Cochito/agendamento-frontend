@@ -28,6 +28,7 @@ export function Home() {
         <motion.div
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
+          onClick={() => navigate('/agendamentos')}
           className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition-shadow"
         >
           <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center mb-4">

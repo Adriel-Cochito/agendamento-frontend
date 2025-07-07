@@ -23,6 +23,7 @@ export function MainLayout({ children }: MainLayoutProps) {
 
   const menuItems = [
     { path: '/', label: 'Dashboard', icon: Home },
+    { path: '/agendamentos', label: 'Agendamentos', icon: Calendar },
     { path: '/profissionais', label: 'Profissionais', icon: Users },
     { path: '/servicos', label: 'Serviços', icon: Tag },
     { path: '/disponibilidades', label: 'Disponibilidades', icon: Clock },

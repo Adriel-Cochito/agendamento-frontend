@@ -29,14 +29,14 @@ export function useDisponibilidade(id: number) {
   });
 }
 
-export function useDisponibilidadesByProfissional(profissionalId?: number) {
+export function useDisponibilidadesByProfissional(profissionalId?: number, data?: string) {
   const user = useAuthStore((state) => state.user);
   const empresaId = user?.empresaId;
 
   return useQuery({
-    queryKey: ['disponibilidades', 'profissional', empresaId, profissionalId],
-    queryFn: () => disponibilidadesApi.getByProfissional(empresaId!, profissionalId!),
-    enabled: !!empresaId && !!profissionalId,
+    queryKey: ['disponibilidades', 'profissional', empresaId, profissionalId, data],
+    queryFn: () => disponibilidadesApi.getByProfissional(empresaId!, profissionalId!, data!),
+    enabled: !!empresaId && !!profissionalId && !!data,
   });
 }
 
