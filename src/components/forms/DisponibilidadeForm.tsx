@@ -90,8 +90,8 @@ export function DisponibilidadeForm({
       profissionalId: disponibilidade?.profissional?.id || 0,
       observacao: disponibilidade?.observacao || '',
       diasSemana: disponibilidade?.diasSemana || [],
-      horaInicio: disponibilidade?.horaInicio || '',
-      horaFim: disponibilidade?.horaFim || '',
+      horaInicio: disponibilidade?.horaInicio ? disponibilidade.horaInicio.slice(0, 5) : '',
+      horaFim: disponibilidade?.horaFim ? disponibilidade.horaFim.slice(0, 5) : '',
     },
   });
 
@@ -114,7 +114,16 @@ export function DisponibilidadeForm({
 
   const formatDateTimeLocal = (dateString: string | null) => {
     if (!dateString) return '';
-    return new Date(dateString).toISOString().slice(0, 16);
+    // Remove os segundos se existirem e retorna no formato datetime-local
+    return dateString.slice(0, 16);
+  };
+
+  const formatDateTimeForAPI = (dateTimeLocal: string) => {
+    // Se não tem segundos, adiciona
+    if (dateTimeLocal && !dateTimeLocal.includes(':00', dateTimeLocal.length - 3)) {
+      return dateTimeLocal + ':00';
+    }
+    return dateTimeLocal;
   };
 
   const onFormSubmit = async (data: FormData) => {
@@ -123,20 +132,22 @@ export function DisponibilidadeForm({
     try {
       const submitData: any = {
         tipo: data.tipo,
-        profissionalId: data.profissionalId,
+        profissional: { id: data.profissionalId },
+        empresa: { id: empresaId },
         observacao: data.observacao,
-        empresaId,
       };
 
       if (data.tipo === 'GRADE') {
         submitData.diasSemana = data.diasSemana;
-        submitData.horaInicio = data.horaInicio;
-        submitData.horaFim = data.horaFim;
+        submitData.horaInicio = data.horaInicio.includes(':') ? data.horaInicio + ':00' : data.horaInicio;
+        submitData.horaFim = data.horaFim.includes(':') ? data.horaFim + ':00' : data.horaFim;
       } else {
-        submitData.dataHoraInicio = (data as any).dataHoraInicio;
-        submitData.dataHoraFim = (data as any).dataHoraFim;
+        // Para LIBERADO e BLOQUEIO
+        submitData.dataHoraInicio = formatDateTimeForAPI((data as any).dataHoraInicio);
+        submitData.dataHoraFim = formatDateTimeForAPI((data as any).dataHoraFim);
       }
 
+      console.log('Enviando dados:', submitData);
       await onSubmit(submitData);
     } catch (error: any) {
       console.error('Erro ao submeter:', error);

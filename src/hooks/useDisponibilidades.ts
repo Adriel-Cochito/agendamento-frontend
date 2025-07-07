@@ -57,13 +57,11 @@ export function useUpdateDisponibilidade() {
   return useMutation({
     mutationFn: ({ 
       id, 
-      data, 
-      empresaId 
+      data 
     }: { 
       id: number; 
       data: UpdateDisponibilidadeRequest; 
-      empresaId: number 
-    }) => disponibilidadesApi.update(id, data, empresaId),
+    }) => disponibilidadesApi.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['disponibilidades'] });
       queryClient.invalidateQueries({ queryKey: ['disponibilidade'] });
@@ -75,8 +73,7 @@ export function useDeleteDisponibilidade() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, empresaId }: { id: number; empresaId: number }) =>
-      disponibilidadesApi.delete(id, empresaId),
+    mutationFn: (id: number) => disponibilidadesApi.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['disponibilidades'] });
     },

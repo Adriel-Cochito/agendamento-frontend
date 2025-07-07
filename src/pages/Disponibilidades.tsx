@@ -79,10 +79,7 @@ export function Disponibilidades() {
   const confirmDelete = async () => {
     if (disponibilidadeToDelete) {
       try {
-        await deleteMutation.mutateAsync({
-          id: disponibilidadeToDelete.id,
-          empresaId,
-        });
+        await deleteMutation.mutateAsync(disponibilidadeToDelete.id);
         addToast('success', 'Disponibilidade excluída com sucesso');
         setIsDeleteModalOpen(false);
         setDisponibilidadeToDelete(null);
@@ -96,10 +93,18 @@ export function Disponibilidades() {
   const handleSubmit = async (data: any) => {
     try {
       if (selectedDisponibilidade) {
+        // Para edição, preservar a estrutura original mas ajustar se necessário
+        const updateData = { ...data };
+        if (updateData.profissional && typeof updateData.profissional === 'object') {
+          // Já está no formato correto
+        } else if (data.profissionalId) {
+          updateData.profissional = { id: data.profissionalId };
+          delete updateData.profissionalId;
+        }
+        
         await updateMutation.mutateAsync({
           id: selectedDisponibilidade.id,
-          data,
-          empresaId,
+          data: updateData,
         });
         addToast('success', 'Disponibilidade atualizada com sucesso');
       } else {

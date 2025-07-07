@@ -40,26 +40,20 @@ export const disponibilidadesApi = {
   },
 
   create: async (data: CreateDisponibilidadeRequest): Promise<Disponibilidade> => {
-    const response = await apiClient.post('/disponibilidades', data, {
-      params: { empresaId: data.empresaId }
-    });
+    const response = await apiClient.post('/disponibilidades', data);
     return response.data;
   },
 
-  update: async (id: number, data: UpdateDisponibilidadeRequest, empresaId: number): Promise<Disponibilidade> => {
+  update: async (id: number, data: UpdateDisponibilidadeRequest): Promise<Disponibilidade> => {
     const cleanData = Object.fromEntries(
       Object.entries(data).filter(([_, value]) => value !== undefined && value !== null)
     );
     
-    const response = await apiClient.put(`/disponibilidades/${id}`, cleanData, {
-      params: { empresaId }
-    });
+    const response = await apiClient.put(`/disponibilidades/${id}`, cleanData);
     return response.data;
   },
 
-  delete: async (id: number, empresaId: number): Promise<void> => {
-    await apiClient.delete(`/disponibilidades/${id}`, {
-      params: { empresaId }
-    });
+  delete: async (id: number): Promise<void> => {
+    await apiClient.delete(`/disponibilidades/${id}`);
   },
 };

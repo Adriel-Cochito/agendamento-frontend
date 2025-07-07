@@ -27,8 +27,8 @@ export interface CreateDisponibilidadeRequest {
   diasSemana?: number[];
   horaInicio?: string;
   horaFim?: string;
-  profissionalId: number;
-  empresaId: number;
+  profissional: { id: number };
+  empresa: { id: number };
   observacao: string;
 }
 
@@ -39,7 +39,7 @@ export interface UpdateDisponibilidadeRequest {
   diasSemana?: number[];
   horaInicio?: string | null;
   horaFim?: string | null;
-  profissionalId?: number;
+  profissional?: { id: number };
   observacao?: string;
 }
 
