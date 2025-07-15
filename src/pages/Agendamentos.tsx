@@ -11,12 +11,15 @@ import {
   Trash2,
   ChevronRight,
   AlertTriangle,
+  List,
+  CalendarDays,
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
 import { AgendamentoForm } from '@/components/forms/AgendamentoForm';
 import { HorarioSelector } from '@/components/agendamento/HorarioSelector';
+import { CalendarioView } from '@/components/calendario/CalendarioView';
 import { Loading } from '@/components/ui/Loading';
 import {
   useAgendamentos,
@@ -34,12 +37,14 @@ import { getErrorMessage } from '@/lib/error-handler';
 import { useAuthStore } from '@/store/authStore';
 
 type EtapaAgendamento = 'servico' | 'data' | 'profissional' | 'horario' | 'formulario';
+type TipoVisualizacao = 'lista' | 'calendario';
 
 export function Agendamentos() {
   const { addToast } = useToast();
   const user = useAuthStore((state) => state.user);
   
   // Estados principais
+  const [tipoVisualizacao, setTipoVisualizacao] = useState<TipoVisualizacao>('lista');
   const [search, setSearch] = useState('');
   const [selectedStatus, setSelectedStatus] = useState<StatusAgendamento | 'ALL'>('ALL');
   const [selectedDate, setSelectedDate] = useState('');
@@ -262,165 +267,205 @@ export function Agendamentos() {
             Gerencie os agendamentos da sua empresa
           </p>
         </div>
-        <Button onClick={handleNovoAgendamento} className="sm:w-auto">
-          <Plus className="w-4 h-4 mr-2" />
-          Novo Agendamento
-        </Button>
-      </div>
-
-      {/* Filtros */}
-      <div className="bg-white rounded-lg border border-gray-200 p-4">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {/* Busca */}
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <Input
-              type="text"
-              placeholder="Buscar por cliente, serviço ou profissional..."
-              className="pl-10"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
-
-          {/* Filtro por Status */}
-          <div className="relative">
-            <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <select
-              className="flex h-11 w-full rounded-lg border border-gray-300 bg-white pl-10 pr-3 py-2 text-sm transition-all hover:border-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
-              value={selectedStatus}
-              onChange={(e) => setSelectedStatus(e.target.value as StatusAgendamento | 'ALL')}
+        
+        <div className="flex items-center space-x-2">
+          {/* Seletor de Visualização */}
+          <div className="flex items-center space-x-1 bg-gray-100 rounded-lg p-1">
+            <Button
+              variant={tipoVisualizacao === 'lista' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => setTipoVisualizacao('lista')}
+              className={`${tipoVisualizacao === 'lista' ? 'bg-white shadow-sm' : 'hover:bg-gray-200'}`}
             >
-              <option value="ALL">Todos os status</option>
-              <option value="AGENDADO">Agendado</option>
-              <option value="CONFIRMADO">Confirmado</option>
-              <option value="EM_ANDAMENTO">Em Andamento</option>
-              <option value="CONCLUIDO">Concluído</option>
-              <option value="CANCELADO">Cancelado</option>
-            </select>
+              <List className="w-4 h-4 mr-2" />
+              Lista
+            </Button>
+            <Button
+              variant={tipoVisualizacao === 'calendario' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => setTipoVisualizacao('calendario')}
+              className={`${tipoVisualizacao === 'calendario' ? 'bg-white shadow-sm' : 'hover:bg-gray-200'}`}
+            >
+              <CalendarDays className="w-4 h-4 mr-2" />
+              Calendário
+            </Button>
           </div>
-
-          {/* Filtro por Data */}
-          <div className="relative">
-            <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <Input
-              type="date"
-              className="pl-10"
-              value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
-            />
-          </div>
-
-          {/* Limpar Filtros */}
-          <Button
-            variant="outline"
-            onClick={() => {
-              setSearch('');
-              setSelectedStatus('ALL');
-              setSelectedDate('');
-            }}
-          >
-            Limpar Filtros
+          
+          <Button onClick={handleNovoAgendamento} className="sm:w-auto">
+            <Plus className="w-4 h-4 mr-2" />
+            Novo Agendamento
           </Button>
         </div>
       </div>
 
-      {/* Lista de Agendamentos */}
-      <div className="space-y-4">
-        {filteredAgendamentos?.length === 0 ? (
-          <div className="bg-white rounded-lg shadow p-12 text-center">
-            <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-500 mb-4">
-              {search || selectedStatus !== 'ALL' || selectedDate
-                ? 'Nenhum agendamento encontrado com os filtros aplicados'
-                : 'Nenhum agendamento cadastrado'
-              }
-            </p>
-            <Button onClick={handleNovoAgendamento} variant="outline">
-              <Plus className="w-4 h-4 mr-2" />
-              Criar primeiro agendamento
-            </Button>
-          </div>
-        ) : (
-          filteredAgendamentos?.map((agendamento) => {
-            const statusBadge = getStatusBadge(agendamento.status);
+      {/* Renderizar visualização selecionada */}
+      {tipoVisualizacao === 'calendario' ? (
+        <CalendarioView
+          agendamentos={agendamentos || []}
+          onNovoAgendamento={handleNovoAgendamento}
+          onAgendamentoClick={handleEdit}
+          onDayClick={(data) => {
+            // Opcional: fazer algo quando clicar em um dia
+            console.log('Dia clicado:', data);
+          }}
+        />
+      ) : (
+        <>
+          {/* Filtros - apenas na visualização de lista */}
+          <div className="bg-white rounded-lg border border-gray-200 p-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              {/* Busca */}
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <Input
+                  type="text"
+                  placeholder="Buscar por cliente, serviço ou profissional..."
+                  className="pl-10"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+              </div>
 
-            return (
-              <motion.div
-                key={agendamento.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow"
+              {/* Filtro por Status */}
+              <div className="relative">
+                <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <select
+                  className="flex h-11 w-full rounded-lg border border-gray-300 bg-white pl-10 pr-3 py-2 text-sm transition-all hover:border-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
+                  value={selectedStatus}
+                  onChange={(e) => setSelectedStatus(e.target.value as StatusAgendamento | 'ALL')}
+                >
+                  <option value="ALL">Todos os status</option>
+                  <option value="AGENDADO">Agendado</option>
+                  <option value="CONFIRMADO">Confirmado</option>
+                  <option value="EM_ANDAMENTO">Em Andamento</option>
+                  <option value="CONCLUIDO">Concluído</option>
+                  <option value="CANCELADO">Cancelado</option>
+                </select>
+              </div>
+
+              {/* Filtro por Data */}
+              <div className="relative">
+                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <Input
+                  type="date"
+                  className="pl-10"
+                  value={selectedDate}
+                  onChange={(e) => setSelectedDate(e.target.value)}
+                />
+              </div>
+
+              {/* Limpar Filtros */}
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setSearch('');
+                  setSelectedStatus('ALL');
+                  setSelectedDate('');
+                }}
               >
-                <div className="flex items-start justify-between">
-                  <div className="flex-1 grid grid-cols-1 md:grid-cols-4 gap-4">
-                    {/* Cliente */}
-                    <div>
-                      <div className="flex items-center space-x-2 mb-1">
-                        <User className="w-4 h-4 text-gray-400" />
-                        <span className="font-medium text-gray-900">
-                          {agendamento.nomeCliente}
-                        </span>
-                      </div>
-                      <p className="text-sm text-gray-500">
-                        {agendamento.telefoneCliente}
-                      </p>
-                    </div>
+                Limpar Filtros
+              </Button>
+            </div>
+          </div>
 
-                    {/* Serviço */}
-                    <div>
-                      <p className="font-medium text-gray-900 mb-1">
-                        {agendamento.servicoTitulo}
-                      </p>
-                      <p className="text-sm text-gray-500">
-                        {agendamento.profissionalNome}
-                      </p>
-                    </div>
+          {/* Lista de Agendamentos */}
+          <div className="space-y-4">
+            {filteredAgendamentos?.length === 0 ? (
+              <div className="bg-white rounded-lg shadow p-12 text-center">
+                <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-500 mb-4">
+                  {search || selectedStatus !== 'ALL' || selectedDate
+                    ? 'Nenhum agendamento encontrado com os filtros aplicados'
+                    : 'Nenhum agendamento cadastrado'
+                  }
+                </p>
+                <Button onClick={handleNovoAgendamento} variant="outline">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Criar primeiro agendamento
+                </Button>
+              </div>
+            ) : (
+              filteredAgendamentos?.map((agendamento) => {
+                const statusBadge = getStatusBadge(agendamento.status);
 
-                    {/* Data e Hora */}
-                    <div>
-                      <div className="flex items-center space-x-2 mb-1">
-                        <Clock className="w-4 h-4 text-gray-400" />
-                        <span className="font-medium text-gray-900">
-                          {formatDateTime(agendamento.dataHora)}
-                        </span>
+                return (
+                  <motion.div
+                    key={agendamento.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow"
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1 grid grid-cols-1 md:grid-cols-4 gap-4">
+                        {/* Cliente */}
+                        <div>
+                          <div className="flex items-center space-x-2 mb-1">
+                            <User className="w-4 h-4 text-gray-400" />
+                            <span className="font-medium text-gray-900">
+                              {agendamento.nomeCliente}
+                            </span>
+                          </div>
+                          <p className="text-sm text-gray-500">
+                            {agendamento.telefoneCliente}
+                          </p>
+                        </div>
+
+                        {/* Serviço */}
+                        <div>
+                          <p className="font-medium text-gray-900 mb-1">
+                            {agendamento.servicoTitulo}
+                          </p>
+                          <p className="text-sm text-gray-500">
+                            {agendamento.profissionalNome}
+                          </p>
+                        </div>
+
+                        {/* Data e Hora */}
+                        <div>
+                          <div className="flex items-center space-x-2 mb-1">
+                            <Clock className="w-4 h-4 text-gray-400" />
+                            <span className="font-medium text-gray-900">
+                              {formatDateTime(agendamento.dataHora)}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Status */}
+                        <div className="flex items-center justify-between">
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusBadge.color}`}>
+                            {statusBadge.label}
+                          </span>
+                          
+                          <div className="flex space-x-1">
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              onClick={() => {
+                                console.log('🖱️ Botão edit clicado para agendamento:', agendamento.id);
+                                handleEdit(agendamento);
+                              }}
+                            >
+                              <Edit2 className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDelete(agendamento)}
+                              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </div>
                       </div>
                     </div>
-
-                    {/* Status */}
-                    <div className="flex items-center justify-between">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusBadge.color}`}>
-                        {statusBadge.label}
-                      </span>
-                      
-                      <div className="flex space-x-1">
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          onClick={() => {
-                            console.log('🖱️ Botão edit clicado para agendamento:', agendamento.id);
-                            handleEdit(agendamento);
-                          }}
-                        >
-                          <Edit2 className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDelete(agendamento)}
-                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            );
-          })
-        )}
-      </div>
+                  </motion.div>
+                );
+              })
+            )}
+          </div>
+        </>
+      )}
 
       {/* Modal de Criação - Multi-etapas */}
       <Modal
