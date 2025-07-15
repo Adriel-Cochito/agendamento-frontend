@@ -62,8 +62,16 @@ export function Agendamentos() {
 
   // Queries
   const { data: agendamentos, isLoading } = useAgendamentos({ empresaId });
-  const { data: servicos } = useServicos(empresaId);
-  const { data: profissionais } = useProfissionais(empresaId);
+  const { data: servicos, isLoading: isLoadingServicos } = useServicos(empresaId);
+  const { data: profissionais, isLoading: isLoadingProfissionais } = useProfissionais(empresaId);
+  
+  console.log('📊 Estados das queries:', {
+    agendamentos: agendamentos?.length || 0,
+    servicos: servicos?.length || 0,
+    profissionais: profissionais?.length || 0,
+    isLoadingServicos,
+    isLoadingProfissionais
+  });
   
   // Mutations
   const createMutation = useCreateAgendamento();
@@ -132,16 +140,49 @@ export function Agendamentos() {
   };
 
   const handleEdit = (agendamento: Agendamento) => {
+    console.log('🔍 handleEdit chamado com agendamento:', agendamento);
+    console.log('🔍 Estrutura completa do agendamento:', JSON.stringify(agendamento, null, 2));
+    
+    // Verificar diferentes possíveis estruturas da API
+    let servicoId = agendamento.servicoId;
+    let profissionalId = agendamento.profissionalId;
+    
+    // Se não encontrar diretamente, tentar outras estruturas possíveis
+    if (!servicoId && (agendamento as any).servico?.id) {
+      servicoId = (agendamento as any).servico.id;
+      console.log('🔍 ServiceId encontrado em servico.id:', servicoId);
+    }
+    
+    if (!profissionalId && (agendamento as any).profissional?.id) {
+      profissionalId = (agendamento as any).profissional.id;
+      console.log('🔍 ProfissionalId encontrado em profissional.id:', profissionalId);
+    }
+    
+    console.log('🔍 IDs finais - servicoId:', servicoId, 'profissionalId:', profissionalId);
+    
     // Buscar dados completos do serviço e profissional
-    const servico = servicos?.find(s => s.id === agendamento.servicoId);
-    const profissional = profissionais?.find(p => p.id === agendamento.profissionalId);
+    const servico = servicos?.find(s => s.id === servicoId);
+    const profissional = profissionais?.find(p => p.id === profissionalId);
+    
+    console.log('🔍 Serviços disponíveis:', servicos);
+    console.log('🔍 Profissionais disponíveis:', profissionais);
+    console.log('🔍 Serviço encontrado:', servico);
+    console.log('🔍 Profissional encontrado:', profissional);
     
     if (servico && profissional) {
+      console.log('✅ Dados encontrados, abrindo modal de edição');
       setSelectedAgendamento(agendamento);
       setSelectedServico(servico);
       setSelectedProfissional(profissional);
       setSelectedDataHora(agendamento.dataHora);
       setIsEditModalOpen(true);
+    } else {
+      console.error('❌ Não foi possível encontrar serviço ou profissional');
+      console.error('❌ Serviço missing:', !servico);
+      console.error('❌ Profissional missing:', !profissional);
+      
+      // Fallback: mostrar toast com erro
+      addToast('error', 'Erro ao editar', 'Não foi possível carregar os dados do agendamento');
     }
   };
 
@@ -354,7 +395,10 @@ export function Agendamentos() {
                         <Button 
                           variant="ghost" 
                           size="sm" 
-                          onClick={() => handleEdit(agendamento)}
+                          onClick={() => {
+                            console.log('🖱️ Botão edit clicado para agendamento:', agendamento.id);
+                            handleEdit(agendamento);
+                          }}
                         >
                           <Edit2 className="w-4 h-4" />
                         </Button>
