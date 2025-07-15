@@ -80,10 +80,12 @@ export function Agendamentos() {
 
   // Filtros
   const filteredAgendamentos = agendamentos?.filter((agend) => {
+    const searchLower = search.toLowerCase();
+    
     const matchesSearch = 
-      agend.nomeCliente.toLowerCase().includes(search.toLowerCase()) ||
-      agend.servicoTitulo.toLowerCase().includes(search.toLowerCase()) ||
-      agend.profissionalNome.toLowerCase().includes(search.toLowerCase());
+      (agend.nomeCliente?.toLowerCase()?.includes(searchLower) || false) ||
+      (agend.servicoTitulo?.toLowerCase()?.includes(searchLower) || false) ||
+      (agend.profissionalNome?.toLowerCase()?.includes(searchLower) || false);
     
     const matchesStatus = selectedStatus === 'ALL' || agend.status === selectedStatus;
     

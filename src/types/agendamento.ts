@@ -10,10 +10,14 @@ export interface Agendamento {
   telefoneCliente: string;
   dataHora: string;
   status: StatusAgendamento;
-  profissionalId: number;
+  profissionalId?: number; // Opcional pois pode vir como objeto
   profissionalNome: string;
-  servicoId: number;
+  servicoId?: number; // Opcional pois pode vir como objeto
   servicoTitulo: string;
+  // Campos que podem vir da API
+  profissional?: { id: number; nome: string };
+  servico?: { id: number; titulo: string };
+  empresa?: { id: number; nome: string };
 }
 
 export interface CreateAgendamentoRequest {
