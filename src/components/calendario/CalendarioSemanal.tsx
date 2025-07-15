@@ -17,15 +17,18 @@ interface CalendarioSemanalProps {
   onDayClick: (data: Date) => void;
   onNovoAgendamento: (data?: Date) => void;
   onAgendamentoClick: (agendamento: Agendamento) => void;
+  dataAtual: Date; // NOVA PROP
+  onDataAtualChange: (data: Date) => void; // NOVA PROP
 }
 
 export function CalendarioSemanal({
   agendamentos,
   onDayClick,
   onNovoAgendamento,
-  onAgendamentoClick
+  onAgendamentoClick,
+  dataAtual,
+  onDataAtualChange
 }: CalendarioSemanalProps) {
-  const [dataAtual, setDataAtual] = useState(new Date());
   const [diasSemana, setDiasSemana] = useState<CalendarioData[]>([]);
 
   useEffect(() => {
@@ -44,16 +47,14 @@ export function CalendarioSemanal({
   }, [dataAtual, agendamentos]);
 
   const navegarSemana = (direcao: 'anterior' | 'proximo') => {
-    setDataAtual(prev => {
-      const nova = new Date(prev);
-      const dias = direcao === 'anterior' ? -7 : 7;
-      nova.setDate(nova.getDate() + dias);
-      return nova;
-    });
+    const nova = new Date(dataAtual);
+    const dias = direcao === 'anterior' ? -7 : 7;
+    nova.setDate(nova.getDate() + dias);
+    onDataAtualChange(nova);
   };
 
   const irParaHoje = () => {
-    setDataAtual(new Date());
+    onDataAtualChange(new Date());
   };
 
   const formatarPeriodoSemana = () => {

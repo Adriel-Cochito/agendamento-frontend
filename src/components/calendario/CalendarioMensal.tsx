@@ -16,6 +16,8 @@ interface CalendarioMensalProps {
   onDayClick: (data: Date) => void;
   onNovoAgendamento: (data?: Date) => void;
   onAgendamentoClick: (agendamento: Agendamento) => void;
+  dataAtual: Date; // NOVA PROP
+  onDataAtualChange: (data: Date) => void; // NOVA PROP
 }
 
 const diasSemana = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
@@ -24,9 +26,10 @@ export function CalendarioMensal({
   agendamentos,
   onDayClick,
   onNovoAgendamento,
-  onAgendamentoClick
+  onAgendamentoClick,
+  dataAtual,
+  onDataAtualChange
 }: CalendarioMensalProps) {
-  const [dataAtual, setDataAtual] = useState(new Date());
   const [diasCalendario, setDiasCalendario] = useState<CalendarioData[]>([]);
 
   useEffect(() => {
@@ -47,19 +50,17 @@ export function CalendarioMensal({
   }, [dataAtual, agendamentos]);
 
   const navegarMes = (direcao: 'anterior' | 'proximo') => {
-    setDataAtual(prev => {
-      const nova = new Date(prev);
-      if (direcao === 'anterior') {
-        nova.setMonth(nova.getMonth() - 1);
-      } else {
-        nova.setMonth(nova.getMonth() + 1);
-      }
-      return nova;
-    });
+    const nova = new Date(dataAtual);
+    if (direcao === 'anterior') {
+      nova.setMonth(nova.getMonth() - 1);
+    } else {
+      nova.setMonth(nova.getMonth() + 1);
+    }
+    onDataAtualChange(nova);
   };
 
   const irParaHoje = () => {
-    setDataAtual(new Date());
+    onDataAtualChange(new Date());
   };
 
   return (

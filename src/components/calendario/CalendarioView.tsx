@@ -21,12 +21,14 @@ export function CalendarioView({
   onDayClick
 }: CalendarioViewProps) {
   const [tipoVisualizacao, setTipoVisualizacao] = useState<TipoVisualizacao>('mensal');
+  const [dataAtual, setDataAtual] = useState(new Date());
 
   const handleDayClick = (data: Date) => {
-    // Se clicar em um dia na visualização mensal ou semanal, mudar para visualização diária
-    if (tipoVisualizacao !== 'diaria') {
-      setTipoVisualizacao('diaria');
-    }
+    // Atualizar a data atual para a data clicada
+    setDataAtual(data);
+    // Mudar para visualização diária
+    setTipoVisualizacao('diaria');
+    // Chamar callback opcional
     onDayClick?.(data);
   };
 
@@ -68,9 +70,10 @@ export function CalendarioView({
                 size="sm"
                 onClick={() => setTipoVisualizacao(tipo)}
                 className={`
+                  transition-all duration-200
                   ${tipoVisualizacao === tipo 
-                    ? 'bg-white shadow-sm' 
-                    : 'hover:bg-gray-200'
+                    ? 'bg-primary-600 text-white shadow-md hover:bg-primary-700' 
+                    : 'text-gray-600 hover:bg-gray-200 hover:text-gray-700'
                   }
                 `}
               >
@@ -94,6 +97,8 @@ export function CalendarioView({
           onDayClick={handleDayClick}
           onNovoAgendamento={onNovoAgendamento}
           onAgendamentoClick={onAgendamentoClick}
+          dataAtual={dataAtual}
+          onDataAtualChange={setDataAtual}
         />
       )}
 
@@ -103,6 +108,8 @@ export function CalendarioView({
           onDayClick={handleDayClick}
           onNovoAgendamento={onNovoAgendamento}
           onAgendamentoClick={onAgendamentoClick}
+          dataAtual={dataAtual}
+          onDataAtualChange={setDataAtual}
         />
       )}
 
@@ -111,6 +118,8 @@ export function CalendarioView({
           agendamentos={agendamentos}
           onNovoAgendamento={onNovoAgendamento}
           onAgendamentoClick={onAgendamentoClick}
+          dataAtual={dataAtual}
+          onDataAtualChange={setDataAtual}
         />
       )}
     </div>

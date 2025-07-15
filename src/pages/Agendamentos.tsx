@@ -101,8 +101,24 @@ export function Agendamentos() {
   });
 
   // Handlers do fluxo de criação
-  const handleNovoAgendamento = () => {
+  const handleNovoAgendamento = (dataInicial?: Date) => {
     resetEtapas();
+    
+    // Se uma data foi passada, já preenche e pula para a seleção de serviço
+    if (dataInicial) {
+      const dataFormatada = dataInicial.toISOString().split('T')[0];
+      setSelectedDataAgendamento(dataFormatada);
+      
+      // Se também tem horário específico, extrair
+      const horaFormatada = dataInicial.toTimeString().slice(0, 5);
+      if (horaFormatada !== '00:00') {
+        setSelectedDataHora(dataInicial.toISOString());
+        setEtapaAtual('servico'); // Ir direto para serviço
+      } else {
+        setEtapaAtual('servico'); // Começar com serviço
+      }
+    }
+    
     setIsModalOpen(true);
   };
 
@@ -116,7 +132,15 @@ export function Agendamentos() {
 
   const handleServicoSelect = (servico: Servico) => {
     setSelectedServico(servico);
-    setEtapaAtual('data');
+    
+    // Se já tem data e hora preenchidas, pular para profissional
+    if (selectedDataAgendamento && selectedDataHora) {
+      setEtapaAtual('profissional');
+    } else if (selectedDataAgendamento) {
+      setEtapaAtual('profissional');
+    } else {
+      setEtapaAtual('data');
+    }
   };
 
   const handleDataSelect = (data: string) => {
@@ -126,7 +150,13 @@ export function Agendamentos() {
 
   const handleProfissionalSelect = (profissional: Profissional) => {
     setSelectedProfissional(profissional);
-    setEtapaAtual('horario');
+    
+    // Se já tem horário definido, pular para formulário
+    if (selectedDataHora) {
+      setEtapaAtual('formulario');
+    } else {
+      setEtapaAtual('horario');
+    }
   };
 
   const handleHorarioSelect = (dataHora: string) => {
@@ -275,7 +305,7 @@ export function Agendamentos() {
               variant={tipoVisualizacao === 'lista' ? 'default' : 'ghost'}
               size="sm"
               onClick={() => setTipoVisualizacao('lista')}
-              className={`${tipoVisualizacao === 'lista' ? 'bg-white shadow-sm' : 'hover:bg-gray-200'}`}
+              className={`transition-all duration-200 ${tipoVisualizacao === 'lista' ? 'bg-primary-600 text-white shadow-md hover:bg-primary-700' : 'text-gray-600 hover:bg-gray-200 hover:text-gray-700'}`}
             >
               <List className="w-4 h-4 mr-2" />
               Lista
@@ -284,14 +314,14 @@ export function Agendamentos() {
               variant={tipoVisualizacao === 'calendario' ? 'default' : 'ghost'}
               size="sm"
               onClick={() => setTipoVisualizacao('calendario')}
-              className={`${tipoVisualizacao === 'calendario' ? 'bg-white shadow-sm' : 'hover:bg-gray-200'}`}
+              className={`transition-all duration-200 ${tipoVisualizacao === 'calendario' ? 'bg-primary-600 text-white shadow-md hover:bg-primary-700' : 'text-gray-600 hover:bg-gray-200 hover:text-gray-700'}`}
             >
               <CalendarDays className="w-4 h-4 mr-2" />
               Calendário
             </Button>
           </div>
           
-          <Button onClick={handleNovoAgendamento} className="sm:w-auto">
+          <Button onClick={() => handleNovoAgendamento()} className="sm:w-auto">
             <Plus className="w-4 h-4 mr-2" />
             Novo Agendamento
           </Button>
@@ -305,7 +335,6 @@ export function Agendamentos() {
           onNovoAgendamento={handleNovoAgendamento}
           onAgendamentoClick={handleEdit}
           onDayClick={(data) => {
-            // Opcional: fazer algo quando clicar em um dia
             console.log('Dia clicado:', data);
           }}
         />
@@ -379,7 +408,7 @@ export function Agendamentos() {
                     : 'Nenhum agendamento cadastrado'
                   }
                 </p>
-                <Button onClick={handleNovoAgendamento} variant="outline">
+                <Button onClick={() => handleNovoAgendamento()} variant="outline">
                   <Plus className="w-4 h-4 mr-2" />
                   Criar primeiro agendamento
                 </Button>
@@ -561,7 +590,7 @@ export function Agendamentos() {
               <div>
                 <h3 className="text-lg font-medium">Escolha o Profissional</h3>
                 <p className="text-sm text-gray-500">
-                  {selectedServico.titulo} - {new Intl.DateTimeFormat('pt-BR').format(new Date(selectedDataAgendamento))}
+                  {selectedServico.titulo} - {selectedDataAgendamento && new Intl.DateTimeFormat('pt-BR').format(new Date(selectedDataAgendamento))}
                 </p>
               </div>
               <div className="space-y-2">
@@ -578,7 +607,7 @@ export function Agendamentos() {
               </div>
               <Button
                 variant="outline"
-                onClick={() => setEtapaAtual('data')}
+                onClick={() => selectedDataAgendamento ? setEtapaAtual('servico') : setEtapaAtual('data')}
               >
                 Voltar
               </Button>
@@ -616,7 +645,7 @@ export function Agendamentos() {
               />
               <Button
                 variant="outline"
-                onClick={() => setEtapaAtual('horario')}
+                onClick={() => selectedDataHora ? setEtapaAtual('profissional') : setEtapaAtual('horario')}
                 disabled={createMutation.isPending}
               >
                 Voltar

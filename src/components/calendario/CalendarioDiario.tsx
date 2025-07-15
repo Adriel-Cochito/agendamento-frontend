@@ -8,14 +8,17 @@ interface CalendarioDiarioProps {
   agendamentos: Agendamento[];
   onNovoAgendamento: (data?: Date) => void;
   onAgendamentoClick: (agendamento: Agendamento) => void;
+  dataAtual: Date; // NOVA PROP
+  onDataAtualChange: (data: Date) => void; // NOVA PROP
 }
 
 export function CalendarioDiario({
   agendamentos,
   onNovoAgendamento,
-  onAgendamentoClick
+  onAgendamentoClick,
+  dataAtual,
+  onDataAtualChange
 }: CalendarioDiarioProps) {
-  const [dataAtual, setDataAtual] = useState(new Date());
   const [agendamentosDoDia, setAgendamentosDoDia] = useState<Agendamento[]>([]);
 
   useEffect(() => {
@@ -38,16 +41,14 @@ export function CalendarioDiario({
   }, [dataAtual, agendamentos]);
 
   const navegarDia = (direcao: 'anterior' | 'proximo') => {
-    setDataAtual(prev => {
-      const nova = new Date(prev);
-      const dias = direcao === 'anterior' ? -1 : 1;
-      nova.setDate(nova.getDate() + dias);
-      return nova;
-    });
+    const nova = new Date(dataAtual);
+    const dias = direcao === 'anterior' ? -1 : 1;
+    nova.setDate(nova.getDate() + dias);
+    onDataAtualChange(nova);
   };
 
   const irParaHoje = () => {
-    setDataAtual(new Date());
+    onDataAtualChange(new Date());
   };
 
   const formatarDataCompleta = () => {
@@ -72,6 +73,13 @@ export function CalendarioDiario({
       const horaAgendamento = new Date(agendamento.dataHora).toTimeString().slice(0, 5);
       return horaAgendamento === horario;
     });
+  };
+
+  const criarDataHorario = (horario: string): Date => {
+    const [hora, minuto] = horario.split(':').map(Number);
+    const data = new Date(dataAtual);
+    data.setHours(hora, minuto, 0, 0);
+    return data;
   };
 
   const getStatusLabel = (status: string) => {
@@ -177,7 +185,7 @@ export function CalendarioDiario({
                   {agendamentosNoHorario.length === 0 ? (
                     <div 
                       className="h-8 flex items-center text-gray-400 text-sm cursor-pointer hover:bg-gray-50 rounded px-2 transition-colors"
-                      onClick={() => onNovoAgendamento(new Date(`${dataAtual.toISOString().split('T')[0]}T${horario}:00`))}
+                      onClick={() => onNovoAgendamento(criarDataHorario(horario))}
                     >
                       Horário livre - Clique para agendar
                     </div>
@@ -243,6 +251,16 @@ export function CalendarioDiario({
                           </div>
                         </div>
                       ))}
+                      
+                      {/* Botão para adicionar mais agendamentos no mesmo horário */}
+                      <div 
+                        className="border-2 border-dashed border-gray-300 rounded-lg p-2 text-center cursor-pointer hover:border-primary-300 hover:bg-primary-50 transition-colors"
+                        onClick={() => onNovoAgendamento(criarDataHorario(horario))}
+                      >
+                        <span className="text-sm text-gray-500 hover:text-primary-600">
+                          + Adicionar outro agendamento
+                        </span>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -256,7 +274,7 @@ export function CalendarioDiario({
           <div className="p-8 text-center text-gray-500">
             <Clock className="w-12 h-12 mx-auto mb-4 text-gray-300" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">
-              Nenhum agendamento para hoje
+              Nenhum agendamento para este dia
             </h3>
             <p className="text-gray-500 mb-4">
               Que tal aproveitar para organizar a agenda ou criar novos agendamentos?
