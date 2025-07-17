@@ -76,9 +76,11 @@ export function CalendarioDiario({
   };
 
   const criarDataHorario = (horario: string): Date => {
+    console.log("horario: ", horario);
     const [hora, minuto] = horario.split(':').map(Number);
     const data = new Date(dataAtual);
     data.setHours(hora, minuto, 0, 0);
+    console.log("data: ", data);
     return data;
   };
 

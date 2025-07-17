@@ -103,6 +103,8 @@ export function Agendamentos() {
   // Handlers do fluxo de criação
   const handleNovoAgendamento = (dataInicial?: Date) => {
     resetEtapas();
+    console.log("handleNovoAgendamento...")
+    console.log("dataInicial: ", dataInicial)
     
     // Se uma data foi passada, já preenche e pula para a seleção de serviço
     if (dataInicial) {
@@ -111,8 +113,11 @@ export function Agendamentos() {
       
       // Se também tem horário específico, extrair
       const horaFormatada = dataInicial.toTimeString().slice(0, 5);
+      console.log("horaFormatada: ", horaFormatada)
       if (horaFormatada !== '00:00') {
         setSelectedDataHora(dataInicial.toISOString());
+        console.log("toISOString: ", dataInicial.toISOString())
+        
         setEtapaAtual('servico'); // Ir direto para serviço
       } else {
         setEtapaAtual('servico'); // Começar com serviço
