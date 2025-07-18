@@ -1,37 +1,73 @@
 export const dateUtils = {
-  // Converte data local para UTC (para envio ao backend)
-  toUTC: (date: Date): string => {
-    return date.toISOString();
-  },
-  
-  // Converte string UTC para data local (para exibição)
-  fromUTC: (utcString: string): Date => {
-    return new Date(utcString);
-  },
-  
-  // Formata data para exibição local
-  formatLocal: (utcString: string): string => {
-    const date = new Date(utcString);
-    return date.toLocaleString('pt-BR', {
-      timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+  // Para backend WITHOUT TIME ZONE - apenas formata strings
+  formatLocal: (isoString: string): string => {
+    // Remove Z e timezone info se existir
+    const cleanString = isoString.replace(/[Z]|[+-]\d{2}:\d{2}$/g, '');
+    const [datePart, timePart = '00:00:00'] = cleanString.split('T');
+    const [year, month, day] = datePart.split('-');
+    const [hours, minutes] = timePart.split(':');
+    
+    return `${day}/${month}/${year} ${hours}:${minutes}`;
   },
   
   // Formata apenas a hora
-  formatTimeLocal: (utcString: string): string => {
-    const date = new Date(utcString);
-    return date.toLocaleTimeString('pt-BR', {
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+  formatTimeLocal: (isoString: string): string => {
+    const cleanString = isoString.replace(/[Z]|[+-]\d{2}:\d{2}$/g, '');
+    const [, timePart = '00:00:00'] = cleanString.split('T');
+    const [hours, minutes] = timePart.split(':');
+    
+    return `${hours}:${minutes}`;
   },
   
-  // Criar data a partir de horário string
+  // Cria string no formato que o backend espera (YYYY-MM-DDTHH:mm:ssZ)
+  toISOString: (date: Date): string => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+    
+    return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}Z`;
+  },
+  
+  // Converte string do backend para Date local
+  fromISOString: (isoString: string): Date => {
+    const cleanString = isoString.replace(/[Z]|[+-]\d{2}:\d{2}$/g, '');
+    const [datePart, timePart = '00:00:00'] = cleanString.split('T');
+    const [year, month, day] = datePart.split('-').map(Number);
+    const [hours, minutes, seconds] = timePart.split(':').map(Number);
+    
+    return new Date(year, month - 1, day, hours, minutes, seconds || 0);
+  },
+  
+  // Para input datetime-local
+  toDateTimeLocal: (isoString: string): string => {
+    const cleanString = isoString.replace(/[Z]|[+-]\d{2}:\d{2}$/g, '');
+    return cleanString.slice(0, 16); // YYYY-MM-DDTHH:mm
+  },
+  
+  // De input datetime-local para o formato do backend
+  fromDateTimeLocal: (dateTimeLocal: string): string => {
+    const withSeconds = dateTimeLocal.includes(':') ? dateTimeLocal + ':00' : dateTimeLocal;
+    return withSeconds + 'Z';
+  },
+  
+  // Para comparações de data (YYYY-MM-DD)
+  toDateString: (date: Date): string => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    
+    return `${year}-${month}-${day}`;
+  },
+  
+  // Extrai só a data de uma string ISO
+  extractDateString: (isoString: string): string => {
+    return isoString.split('T')[0];
+  },
+  
+  // Criar data a partir de data base e horário string
   createFromTimeString: (dateBase: Date, timeString: string): Date => {
     const [hour, minute] = timeString.split(':').map(Number);
     const newDate = new Date(dateBase);

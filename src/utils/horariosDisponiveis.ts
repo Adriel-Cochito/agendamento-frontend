@@ -3,7 +3,6 @@ import { Agendamento } from '@/types/agendamento';
 import { HorarioDisponivel } from '@/types/agendamento';
 import { dateUtils } from './dateUtils';
 
-
 export function calcularHorariosDisponiveis(
   disponibilidades: Disponibilidade[],
   agendamentos: Agendamento[],
@@ -11,7 +10,7 @@ export function calcularHorariosDisponiveis(
   duracaoServico: number // em minutos
 ): HorarioDisponivel[] {
   const horarios: HorarioDisponivel[] = [];
-  const data = new Date(dataConsulta);
+  const data = new Date(dataConsulta + 'T00:00:00'); // Força data local sem timezone
   const diaSemana = data.getDay();
 
   // Primeiro, coletamos todos os períodos disponíveis
@@ -27,21 +26,21 @@ export function calcularHorariosDisponiveis(
         periodosDisponiveis.push({ inicio, fim });
       }
     } else if (disp.tipo === 'LIBERADO' && disp.dataHoraInicio && disp.dataHoraFim) {
-      const inicioDisp = new Date(disp.dataHoraInicio);
-      const fimDisp = new Date(disp.dataHoraFim);
-      const dataConsultaDate = new Date(dataConsulta);
+      const inicioDisp = dateUtils.fromISOString(disp.dataHoraInicio);
+      const fimDisp = dateUtils.fromISOString(disp.dataHoraFim);
+      const dataConsultaDate = new Date(dataConsulta + 'T00:00:00');
       
       // Verifica se é no mesmo dia
-      if (inicioDisp.toDateString() === dataConsultaDate.toDateString()) {
+      if (dateUtils.toDateString(inicioDisp) === dateUtils.toDateString(dataConsultaDate)) {
         periodosDisponiveis.push({ inicio: inicioDisp, fim: fimDisp });
       }
     } else if (disp.tipo === 'BLOQUEIO' && disp.dataHoraInicio && disp.dataHoraFim) {
-      const inicioDisp = new Date(disp.dataHoraInicio);
-      const fimDisp = new Date(disp.dataHoraFim);
-      const dataConsultaDate = new Date(dataConsulta);
+      const inicioDisp = dateUtils.fromISOString(disp.dataHoraInicio);
+      const fimDisp = dateUtils.fromISOString(disp.dataHoraFim);
+      const dataConsultaDate = new Date(dataConsulta + 'T00:00:00');
       
       // Verifica se é no mesmo dia
-      if (inicioDisp.toDateString() === dataConsultaDate.toDateString()) {
+      if (dateUtils.toDateString(inicioDisp) === dateUtils.toDateString(dataConsultaDate)) {
         periodosBloqueados.push({ inicio: inicioDisp, fim: fimDisp });
       }
     }
@@ -49,7 +48,7 @@ export function calcularHorariosDisponiveis(
 
   // Adiciona agendamentos existentes como períodos bloqueados
   agendamentos.forEach(agendamento => {
-    const inicioAgendamento = new Date(agendamento.dataHora);
+    const inicioAgendamento = dateUtils.fromISOString(agendamento.dataHora);
     // Assumindo que cada agendamento tem duração do serviço
     const fimAgendamento = new Date(inicioAgendamento.getTime() + duracaoServico * 60000);
     periodosBloqueados.push({ inicio: inicioAgendamento, fim: fimAgendamento });
@@ -133,6 +132,6 @@ export function formatarHorario(horario: string): string {
 }
 
 export function criarDataHora(data: string, horario: string): string {
-  const dataLocal = dateUtils.createFromTimeString(new Date(data), horario);
-  return dateUtils.toUTC(dataLocal);
+  const dataLocal = dateUtils.createFromTimeString(new Date(data + 'T00:00:00'), horario);
+  return dateUtils.toISOString(dataLocal); // Agora inclui o Z
 }

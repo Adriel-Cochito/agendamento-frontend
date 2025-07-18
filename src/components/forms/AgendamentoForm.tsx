@@ -18,9 +18,8 @@ const schema = z.object({
     .regex(/^\+55\s\d{2}\s\d{5}-\d{4}$/, 'Telefone inválido. Formato: +55 31 99999-8888'),
   status: z.enum([
     'AGENDADO',
-    'CONFIRMADO',
-    'EM_ANDAMENTO',
-    'CONCLUIDO',
+    'CONFIRMADO', 
+    'REALIZADO',
     'CANCELADO',
   ] as const),
 });
@@ -64,13 +63,11 @@ export function AgendamentoForm({
   });
 
   const onFormSubmit = async (data: FormData) => {
-    // Garantir que dataHora seja enviado em UTC
-    const dataHoraUTC = dateUtils.toUTC(new Date(dataHora));
-
+    // Usar dataHora diretamente sem conversão de timezone
     const submitData = {
       nomeCliente: data.nomeCliente,
       telefoneCliente: data.telefoneCliente,
-      dataHora: dataHoraUTC,
+      dataHora: dataHora, // Sem conversão - valor "ingênuo"
       status: data.status,
       empresa: { id: empresaId },
       servico: { id: servico.id },
@@ -88,8 +85,7 @@ export function AgendamentoForm({
     const badges = {
       AGENDADO: { color: 'bg-blue-100 text-blue-800', label: 'Agendado' },
       CONFIRMADO: { color: 'bg-green-100 text-green-800', label: 'Confirmado' },
-      EM_ANDAMENTO: { color: 'bg-yellow-100 text-yellow-800', label: 'Em Andamento' },
-      CONCLUIDO: { color: 'bg-gray-100 text-gray-800', label: 'Concluído' },
+      REALIZADO: { color: 'bg-gray-100 text-gray-800', label: 'Realizado' },
       CANCELADO: { color: 'bg-red-100 text-red-800', label: 'Cancelado' },
     };
     return badges[status] || badges.AGENDADO;
@@ -194,8 +190,7 @@ export function AgendamentoForm({
           >
             <option value="AGENDADO">Agendado</option>
             <option value="CONFIRMADO">Confirmado</option>
-            <option value="EM_ANDAMENTO">Em Andamento</option>
-            <option value="CONCLUIDO">Concluído</option>
+            <option value="REALIZADO">Realizado</option>
             <option value="CANCELADO">Cancelado</option>
           </select>
         </div>

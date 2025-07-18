@@ -5,7 +5,6 @@ import { Agendamento } from '@/types/agendamento';
 import { dateUtils } from '../../utils/dateUtils';
 import {
   gerarDiasDoMes,
-  agruparAgendamentosPorData,
   formatarDataParaChave,
   formatarMesAno,
   obterCorPorStatus,
@@ -17,8 +16,8 @@ interface CalendarioMensalProps {
   onDayClick: (data: Date) => void;
   onNovoAgendamento: (data?: Date) => void;
   onAgendamentoClick: (agendamento: Agendamento) => void;
-  dataAtual: Date; // NOVA PROP
-  onDataAtualChange: (data: Date) => void; // NOVA PROP
+  dataAtual: Date;
+  onDataAtualChange: (data: Date) => void;
 }
 
 const diasSemana = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
@@ -38,8 +37,8 @@ export function CalendarioMensal({
     const mes = dataAtual.getMonth();
     const dias = gerarDiasDoMes(ano, mes);
     
-    // Agrupar agendamentos por data
-    const agendamentosPorData = agruparAgendamentosPorData(agendamentos);
+    // Agrupar agendamentos por data (sem conversão de timezone)
+    const agendamentosPorData = agruparAgendamentosPorDataNaive(agendamentos);
     
     // Associar agendamentos aos dias
     const diasComAgendamentos = dias.map(dia => ({
@@ -49,6 +48,22 @@ export function CalendarioMensal({
     
     setDiasCalendario(diasComAgendamentos);
   }, [dataAtual, agendamentos]);
+
+  // Função simplificada para agrupar por data usando strings
+  const agruparAgendamentosPorDataNaive = (agendamentos: Agendamento[]): Map<string, Agendamento[]> => {
+    const grupos = new Map<string, Agendamento[]>();
+    
+    agendamentos.forEach(agendamento => {
+      const chaveData = dateUtils.extractDateString(agendamento.dataHora);
+      
+      if (!grupos.has(chaveData)) {
+        grupos.set(chaveData, []);
+      }
+      grupos.get(chaveData)!.push(agendamento);
+    });
+    
+    return grupos;
+  };
 
   const navegarMes = (direcao: 'anterior' | 'proximo') => {
     const nova = new Date(dataAtual);
@@ -164,7 +179,6 @@ export function CalendarioMensal({
                   >
                     <div className="truncate">
                       {dateUtils.formatTimeLocal(agendamento.dataHora)} {agendamento.nomeCliente}
-
                     </div>
                   </div>
                 ))}

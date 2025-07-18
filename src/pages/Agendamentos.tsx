@@ -91,23 +91,19 @@ export function Agendamentos() {
   const updateMutation = useUpdateAgendamento();
   const deleteMutation = useDeleteAgendamento();
 
-  // Filtros
+  // Filtros simplificados - comparação direta de strings
   const filteredAgendamentos = agendamentos?.filter((agend) => {
     const searchLower = search.toLowerCase();
 
     const matchesSearch =
       agend.nomeCliente?.toLowerCase()?.includes(searchLower) ||
-      false ||
       agend.servicoTitulo?.toLowerCase()?.includes(searchLower) ||
-      false ||
-      agend.profissionalNome?.toLowerCase()?.includes(searchLower) ||
-      false;
+      agend.profissionalNome?.toLowerCase()?.includes(searchLower);
 
     const matchesStatus = selectedStatus === 'ALL' || agend.status === selectedStatus;
 
-    const matchesDate =
-      !selectedDate ||
-      new Date(agend.dataHora).toISOString().split('T')[0] === selectedDate;
+    // Comparação simples: extrai YYYY-MM-DD da string ISO e compara
+    const matchesDate = !selectedDate || dateUtils.extractDateString(agend.dataHora) === selectedDate;
 
     return matchesSearch && matchesStatus && matchesDate;
   });
@@ -120,15 +116,15 @@ export function Agendamentos() {
 
     // Se uma data foi passada, já preenche e pula para a seleção de serviço
     if (dataInicial) {
-      const dataFormatada = dataInicial.toISOString().split('T')[0];
+      const dataFormatada = dateUtils.toDateString(dataInicial);
       setSelectedDataAgendamento(dataFormatada);
 
       // Se também tem horário específico, extrair
       const horaFormatada = dataInicial.toTimeString().slice(0, 5);
       console.log('horaFormatada: ', horaFormatada);
       if (horaFormatada !== '00:00') {
-        setSelectedDataHora(dateUtils.toUTC(dataInicial));
-        console.log('toUTC: ', dateUtils.toUTC(dataInicial));
+        setSelectedDataHora(dateUtils.toISOString(dataInicial));
+        console.log('toISOString: ', dateUtils.toISOString(dataInicial));
 
         setEtapaAtual('servico'); // Ir direto para serviço
       } else {
@@ -291,8 +287,7 @@ export function Agendamentos() {
     const badges = {
       AGENDADO: { color: 'bg-blue-100 text-blue-800', label: 'Agendado' },
       CONFIRMADO: { color: 'bg-green-100 text-green-800', label: 'Confirmado' },
-      EM_ANDAMENTO: { color: 'bg-yellow-100 text-yellow-800', label: 'Em Andamento' },
-      CONCLUIDO: { color: 'bg-gray-100 text-gray-800', label: 'Concluído' },
+      REALIZADO: { color: 'bg-gray-100 text-gray-800', label: 'Realizado' },
       CANCELADO: { color: 'bg-red-100 text-red-800', label: 'Cancelado' },
     };
     return badges[status] || badges.AGENDADO;
@@ -389,8 +384,7 @@ export function Agendamentos() {
                   <option value="ALL">Todos os status</option>
                   <option value="AGENDADO">Agendado</option>
                   <option value="CONFIRMADO">Confirmado</option>
-                  <option value="EM_ANDAMENTO">Em Andamento</option>
-                  <option value="CONCLUIDO">Concluído</option>
+                  <option value="REALIZADO">Realizado</option>
                   <option value="CANCELADO">Cancelado</option>
                 </select>
               </div>
@@ -714,29 +708,6 @@ export function Agendamentos() {
             </div>
           )}
         </div>
-      </Modal>
-
-      {/* Modal de Edição */}
-      <Modal
-        isOpen={isEditModalOpen}
-        onClose={() => {
-          setIsEditModalOpen(false);
-          setSelectedAgendamento(null);
-        }}
-        title="Editar Agendamento"
-        size="lg"
-      >
-        {selectedAgendamento && selectedServico && selectedProfissional && (
-          <AgendamentoForm
-            agendamento={selectedAgendamento}
-            servico={selectedServico}
-            profissional={selectedProfissional}
-            dataHora={selectedDataHora}
-            onSubmit={handleEditSubmit}
-            isLoading={updateMutation.isPending}
-            empresaId={empresaId}
-          />
-        )}
       </Modal>
 
       {/* Modal de Exclusão */}

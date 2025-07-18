@@ -2,7 +2,8 @@ import { Servico } from './servico';
 import { Profissional } from './profissional';
 import { Empresa } from './empresa';
 
-export type StatusAgendamento = 'AGENDADO' | 'CONFIRMADO' | 'EM_ANDAMENTO' | 'CONCLUIDO' | 'CANCELADO';
+// Status corrigidos para coincidir com o backend
+export type StatusAgendamento = 'AGENDADO' | 'CONFIRMADO' | 'REALIZADO' | 'CANCELADO';
 
 export interface Agendamento {
   id: number;

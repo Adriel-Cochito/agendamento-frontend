@@ -9,8 +9,8 @@ interface CalendarioDiarioProps {
   agendamentos: Agendamento[];
   onNovoAgendamento: (data?: Date) => void;
   onAgendamentoClick: (agendamento: Agendamento) => void;
-  dataAtual: Date; // NOVA PROP
-  onDataAtualChange: (data: Date) => void; // NOVA PROP
+  dataAtual: Date;
+  onDataAtualChange: (data: Date) => void;
 }
 
 export function CalendarioDiario({
@@ -23,20 +23,16 @@ export function CalendarioDiario({
   const [agendamentosDoDia, setAgendamentosDoDia] = useState<Agendamento[]>([]);
 
   useEffect(() => {
-    // Filtrar agendamentos do dia atual
+    // Filtrar agendamentos do dia atual (comparação simples de strings)
+    const dataAtualString = dateUtils.toDateString(dataAtual);
+    
     const agendamentosFiltrados = agendamentos.filter((agendamento) => {
-      const dataAgendamento = new Date(agendamento.dataHora);
-      return (
-        dataAgendamento.getFullYear() === dataAtual.getFullYear() &&
-        dataAgendamento.getMonth() === dataAtual.getMonth() &&
-        dataAgendamento.getDate() === dataAtual.getDate()
-      );
+      const dataAgendamentoString = dateUtils.extractDateString(agendamento.dataHora);
+      return dataAgendamentoString === dataAtualString;
     });
 
-    // Ordenar por horário
-    agendamentosFiltrados.sort(
-      (a, b) => new Date(a.dataHora).getTime() - new Date(b.dataHora).getTime()
-    );
+    // Ordenar por horário (comparação de strings ISO)
+    agendamentosFiltrados.sort((a, b) => a.dataHora.localeCompare(b.dataHora));
 
     setAgendamentosDoDia(agendamentosFiltrados);
   }, [dataAtual, agendamentos]);
@@ -73,15 +69,13 @@ export function CalendarioDiario({
 
   const obterAgendamentosNoHorario = (horario: string) => {
     return agendamentosDoDia.filter((agendamento) => {
-      const horaAgendamento = new Date(agendamento.dataHora).toTimeString().slice(0, 5);
+      const horaAgendamento = dateUtils.formatTimeLocal(agendamento.dataHora);
       return horaAgendamento === horario;
     });
   };
 
   const criarDataHorario = (horario: string): Date => {
-    console.log('horario: ', horario);
     const dataLocal = dateUtils.createFromTimeString(dataAtual, horario);
-    console.log('data: ', dataLocal);
     return dataLocal;
   };
 
@@ -89,8 +83,7 @@ export function CalendarioDiario({
     const labels = {
       AGENDADO: 'Agendado',
       CONFIRMADO: 'Confirmado',
-      EM_ANDAMENTO: 'Em Andamento',
-      CONCLUIDO: 'Concluído',
+      REALIZADO: 'Realizado',
       CANCELADO: 'Cancelado',
     };
     return labels[status as keyof typeof labels] || status;
@@ -141,16 +134,16 @@ export function CalendarioDiario({
             <div className="text-sm text-gray-500">Confirmados</div>
           </div>
           <div className="text-center">
-            <div className="text-2xl font-bold text-yellow-600">
+            <div className="text-2xl font-bold text-blue-600">
               {agendamentosDoDia.filter((a) => a.status === 'AGENDADO').length}
             </div>
             <div className="text-sm text-gray-500">Agendados</div>
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-gray-600">
-              {agendamentosDoDia.filter((a) => a.status === 'CONCLUIDO').length}
+              {agendamentosDoDia.filter((a) => a.status === 'REALIZADO').length}
             </div>
-            <div className="text-sm text-gray-500">Concluídos</div>
+            <div className="text-sm text-gray-500">Realizados</div>
           </div>
         </div>
       </div>
@@ -219,8 +212,7 @@ export function CalendarioDiario({
                                   inline-flex items-center px-2 py-1 rounded-full text-xs font-medium
                                   ${agendamento.status === 'AGENDADO' ? 'bg-blue-100 text-blue-800' : ''}
                                   ${agendamento.status === 'CONFIRMADO' ? 'bg-green-100 text-green-800' : ''}
-                                  ${agendamento.status === 'EM_ANDAMENTO' ? 'bg-yellow-100 text-yellow-800' : ''}
-                                  ${agendamento.status === 'CONCLUIDO' ? 'bg-gray-100 text-gray-800' : ''}
+                                  ${agendamento.status === 'REALIZADO' ? 'bg-gray-100 text-gray-800' : ''}
                                   ${agendamento.status === 'CANCELADO' ? 'bg-red-100 text-red-800' : ''}
                                 `}
                                 >
