@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Agendamento } from '@/types/agendamento';
+import { dateUtils } from '@/utils/dateUtils';
 import {
   gerarDiasDaSemana,
   agruparAgendamentosPorData,
@@ -83,7 +84,7 @@ export function CalendarioSemanal({
 
   const obterAgendamentosNoHorario = (dia: CalendarioData, horario: string) => {
     return dia.agendamentos.filter(agendamento => {
-      const horaAgendamento = new Date(agendamento.dataHora).toTimeString().slice(0, 5);
+      const horaAgendamento = dateUtils.formatTimeLocal(agendamento.dataHora);
       return horaAgendamento === horario;
     });
   };

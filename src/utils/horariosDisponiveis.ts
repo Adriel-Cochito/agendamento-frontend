@@ -1,6 +1,8 @@
 import { Disponibilidade } from '@/types/disponibilidade';
 import { Agendamento } from '@/types/agendamento';
 import { HorarioDisponivel } from '@/types/agendamento';
+import { dateUtils } from './dateUtils';
+
 
 export function calcularHorariosDisponiveis(
   disponibilidades: Disponibilidade[],
@@ -131,5 +133,6 @@ export function formatarHorario(horario: string): string {
 }
 
 export function criarDataHora(data: string, horario: string): string {
-  return `${data}T${horario}:00`;
+  const dataLocal = dateUtils.createFromTimeString(new Date(data), horario);
+  return dateUtils.toUTC(dataLocal);
 }

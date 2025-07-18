@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Agendamento } from '@/types/agendamento';
+import { dateUtils } from '../../utils/dateUtils';
 import {
   gerarDiasDoMes,
   agruparAgendamentosPorData,
@@ -162,10 +163,8 @@ export function CalendarioMensal({
                     title={`${agendamento.nomeCliente} - ${agendamento.servicoTitulo}`}
                   >
                     <div className="truncate">
-                      {new Date(agendamento.dataHora).toLocaleTimeString('pt-BR', {
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })} {agendamento.nomeCliente}
+                      {dateUtils.formatTimeLocal(agendamento.dataHora)} {agendamento.nomeCliente}
+
                     </div>
                   </div>
                 ))}

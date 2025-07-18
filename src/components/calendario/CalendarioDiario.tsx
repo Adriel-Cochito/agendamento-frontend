@@ -3,6 +3,7 @@ import { ChevronLeft, ChevronRight, Plus, Clock, User, Tag } from 'lucide-react'
 import { Button } from '@/components/ui/Button';
 import { Agendamento } from '@/types/agendamento';
 import { obterCorPorStatus } from '@/utils/calendario';
+import { dateUtils } from '../../utils/dateUtils';
 
 interface CalendarioDiarioProps {
   agendamentos: Agendamento[];
@@ -17,13 +18,13 @@ export function CalendarioDiario({
   onNovoAgendamento,
   onAgendamentoClick,
   dataAtual,
-  onDataAtualChange
+  onDataAtualChange,
 }: CalendarioDiarioProps) {
   const [agendamentosDoDia, setAgendamentosDoDia] = useState<Agendamento[]>([]);
 
   useEffect(() => {
     // Filtrar agendamentos do dia atual
-    const agendamentosFiltrados = agendamentos.filter(agendamento => {
+    const agendamentosFiltrados = agendamentos.filter((agendamento) => {
       const dataAgendamento = new Date(agendamento.dataHora);
       return (
         dataAgendamento.getFullYear() === dataAtual.getFullYear() &&
@@ -31,12 +32,12 @@ export function CalendarioDiario({
         dataAgendamento.getDate() === dataAtual.getDate()
       );
     });
-    
+
     // Ordenar por horário
-    agendamentosFiltrados.sort((a, b) => 
-      new Date(a.dataHora).getTime() - new Date(b.dataHora).getTime()
+    agendamentosFiltrados.sort(
+      (a, b) => new Date(a.dataHora).getTime() - new Date(b.dataHora).getTime()
     );
-    
+
     setAgendamentosDoDia(agendamentosFiltrados);
   }, [dataAtual, agendamentos]);
 
@@ -56,7 +57,7 @@ export function CalendarioDiario({
       weekday: 'long',
       day: '2-digit',
       month: 'long',
-      year: 'numeric'
+      year: 'numeric',
     }).format(dataAtual);
   };
 
@@ -64,33 +65,33 @@ export function CalendarioDiario({
   const horarios = [];
   for (let hora = 6; hora <= 22; hora++) {
     for (let minuto = 0; minuto < 60; minuto += 30) {
-      horarios.push(`${hora.toString().padStart(2, '0')}:${minuto.toString().padStart(2, '0')}`);
+      horarios.push(
+        `${hora.toString().padStart(2, '0')}:${minuto.toString().padStart(2, '0')}`
+      );
     }
   }
 
   const obterAgendamentosNoHorario = (horario: string) => {
-    return agendamentosDoDia.filter(agendamento => {
+    return agendamentosDoDia.filter((agendamento) => {
       const horaAgendamento = new Date(agendamento.dataHora).toTimeString().slice(0, 5);
       return horaAgendamento === horario;
     });
   };
 
   const criarDataHorario = (horario: string): Date => {
-    console.log("horario: ", horario);
-    const [hora, minuto] = horario.split(':').map(Number);
-    const data = new Date(dataAtual);
-    data.setHours(hora, minuto, 0, 0);
-    console.log("data: ", data);
-    return data;
+    console.log('horario: ', horario);
+    const dataLocal = dateUtils.createFromTimeString(dataAtual, horario);
+    console.log('data: ', dataLocal);
+    return dataLocal;
   };
 
   const getStatusLabel = (status: string) => {
     const labels = {
-      'AGENDADO': 'Agendado',
-      'CONFIRMADO': 'Confirmado',
-      'EM_ANDAMENTO': 'Em Andamento',
-      'CONCLUIDO': 'Concluído',
-      'CANCELADO': 'Cancelado',
+      AGENDADO: 'Agendado',
+      CONFIRMADO: 'Confirmado',
+      EM_ANDAMENTO: 'Em Andamento',
+      CONCLUIDO: 'Concluído',
+      CANCELADO: 'Cancelado',
     };
     return labels[status as keyof typeof labels] || status;
   };
@@ -105,23 +106,15 @@ export function CalendarioDiario({
               {formatarDataCompleta()}
             </h2>
             <div className="flex items-center space-x-1">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navegarDia('anterior')}
-              >
+              <Button variant="ghost" size="sm" onClick={() => navegarDia('anterior')}>
                 <ChevronLeft className="w-4 h-4" />
               </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navegarDia('proximo')}
-              >
+              <Button variant="ghost" size="sm" onClick={() => navegarDia('proximo')}>
                 <ChevronRight className="w-4 h-4" />
               </Button>
             </div>
           </div>
-          
+
           <div className="flex items-center space-x-2">
             <Button variant="outline" onClick={irParaHoje}>
               Hoje
@@ -143,19 +136,19 @@ export function CalendarioDiario({
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-green-600">
-              {agendamentosDoDia.filter(a => a.status === 'CONFIRMADO').length}
+              {agendamentosDoDia.filter((a) => a.status === 'CONFIRMADO').length}
             </div>
             <div className="text-sm text-gray-500">Confirmados</div>
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-yellow-600">
-              {agendamentosDoDia.filter(a => a.status === 'AGENDADO').length}
+              {agendamentosDoDia.filter((a) => a.status === 'AGENDADO').length}
             </div>
             <div className="text-sm text-gray-500">Agendados</div>
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-gray-600">
-              {agendamentosDoDia.filter(a => a.status === 'CONCLUIDO').length}
+              {agendamentosDoDia.filter((a) => a.status === 'CONCLUIDO').length}
             </div>
             <div className="text-sm text-gray-500">Concluídos</div>
           </div>
@@ -169,7 +162,7 @@ export function CalendarioDiario({
         </div>
 
         <div className="divide-y divide-gray-100 max-h-[600px] overflow-y-auto">
-          {horarios.map(horario => {
+          {horarios.map((horario) => {
             const agendamentosNoHorario = obterAgendamentosNoHorario(horario);
             const temAgendamentos = agendamentosNoHorario.length > 0;
 
@@ -177,7 +170,9 @@ export function CalendarioDiario({
               <div key={horario} className="flex">
                 {/* Coluna do horário */}
                 <div className="w-20 flex-shrink-0 p-4 text-center border-r border-gray-100">
-                  <div className={`text-sm font-medium ${temAgendamentos ? 'text-primary-600' : 'text-gray-400'}`}>
+                  <div
+                    className={`text-sm font-medium ${temAgendamentos ? 'text-primary-600' : 'text-gray-400'}`}
+                  >
                     {horario}
                   </div>
                 </div>
@@ -185,7 +180,7 @@ export function CalendarioDiario({
                 {/* Conteúdo do horário */}
                 <div className="flex-1 p-4">
                   {agendamentosNoHorario.length === 0 ? (
-                    <div 
+                    <div
                       className="h-8 flex items-center text-gray-400 text-sm cursor-pointer hover:bg-gray-50 rounded px-2 transition-colors"
                       onClick={() => onNovoAgendamento(criarDataHorario(horario))}
                     >
@@ -193,15 +188,22 @@ export function CalendarioDiario({
                     </div>
                   ) : (
                     <div className="space-y-2">
-                      {agendamentosNoHorario.map(agendamento => (
+                      {agendamentosNoHorario.map((agendamento) => (
                         <div
                           key={agendamento.id}
                           className="bg-gray-50 rounded-lg p-4 border-l-4 cursor-pointer hover:bg-gray-100 transition-colors"
-                          style={{ 
-                            borderLeftColor: obterCorPorStatus(agendamento.status).includes('blue') ? '#3b82f6' :
-                                            obterCorPorStatus(agendamento.status).includes('green') ? '#10b981' :
-                                            obterCorPorStatus(agendamento.status).includes('yellow') ? '#f59e0b' :
-                                            obterCorPorStatus(agendamento.status).includes('red') ? '#ef4444' : '#6b7280'
+                          style={{
+                            borderLeftColor: obterCorPorStatus(
+                              agendamento.status
+                            ).includes('blue')
+                              ? '#3b82f6'
+                              : obterCorPorStatus(agendamento.status).includes('green')
+                                ? '#10b981'
+                                : obterCorPorStatus(agendamento.status).includes('yellow')
+                                  ? '#f59e0b'
+                                  : obterCorPorStatus(agendamento.status).includes('red')
+                                    ? '#ef4444'
+                                    : '#6b7280',
                           }}
                           onClick={() => onAgendamentoClick(agendamento)}
                         >
@@ -212,14 +214,16 @@ export function CalendarioDiario({
                                 <span className="font-semibold text-gray-900">
                                   {agendamento.nomeCliente}
                                 </span>
-                                <span className={`
+                                <span
+                                  className={`
                                   inline-flex items-center px-2 py-1 rounded-full text-xs font-medium
                                   ${agendamento.status === 'AGENDADO' ? 'bg-blue-100 text-blue-800' : ''}
                                   ${agendamento.status === 'CONFIRMADO' ? 'bg-green-100 text-green-800' : ''}
                                   ${agendamento.status === 'EM_ANDAMENTO' ? 'bg-yellow-100 text-yellow-800' : ''}
                                   ${agendamento.status === 'CONCLUIDO' ? 'bg-gray-100 text-gray-800' : ''}
                                   ${agendamento.status === 'CANCELADO' ? 'bg-red-100 text-red-800' : ''}
-                                `}>
+                                `}
+                                >
                                   {getStatusLabel(agendamento.status)}
                                 </span>
                               </div>
@@ -236,10 +240,7 @@ export function CalendarioDiario({
                                 <div className="flex items-center space-x-1">
                                   <Clock className="w-3 h-3" />
                                   <span>
-                                    {new Date(agendamento.dataHora).toLocaleTimeString('pt-BR', {
-                                      hour: '2-digit',
-                                      minute: '2-digit'
-                                    })}
+                                    {dateUtils.formatTimeLocal(agendamento.dataHora)}
                                   </span>
                                 </div>
                               </div>
@@ -253,9 +254,9 @@ export function CalendarioDiario({
                           </div>
                         </div>
                       ))}
-                      
+
                       {/* Botão para adicionar mais agendamentos no mesmo horário */}
-                      <div 
+                      <div
                         className="border-2 border-dashed border-gray-300 rounded-lg p-2 text-center cursor-pointer hover:border-primary-300 hover:bg-primary-50 transition-colors"
                         onClick={() => onNovoAgendamento(criarDataHorario(horario))}
                       >

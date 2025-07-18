@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/Input';
 import { Agendamento, StatusAgendamento } from '@/types/agendamento';
 import { Servico } from '@/types/servico';
 import { Profissional } from '@/types/profissional';
+import { dateUtils } from '../../utils/dateUtils';
 
 const schema = z.object({
   nomeCliente: z.string().min(3, 'Nome deve ter no mínimo 3 caracteres'),
@@ -63,10 +64,13 @@ export function AgendamentoForm({
   });
 
   const onFormSubmit = async (data: FormData) => {
+    // Garantir que dataHora seja enviado em UTC
+    const dataHoraUTC = dateUtils.toUTC(new Date(dataHora));
+
     const submitData = {
       nomeCliente: data.nomeCliente,
       telefoneCliente: data.telefoneCliente,
-      dataHora,
+      dataHora: dataHoraUTC,
       status: data.status,
       empresa: { id: empresaId },
       servico: { id: servico.id },
@@ -77,13 +81,7 @@ export function AgendamentoForm({
   };
 
   const formatDateTime = (dateTime: string) => {
-    return new Intl.DateTimeFormat('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    }).format(new Date(dateTime));
+    return dateUtils.formatLocal(dateTime);
   };
 
   const getStatusBadge = (status: StatusAgendamento) => {
