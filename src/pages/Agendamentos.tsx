@@ -19,6 +19,7 @@ import { Input } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
 import { AgendamentoForm } from '@/components/forms/AgendamentoForm';
 import { HorarioSelector } from '@/components/agendamento/HorarioSelector';
+import { ProfissionalSelector } from '@/components/agendamento/ProfissionalSelector';
 import { CalendarioView } from '@/components/calendario/CalendarioView';
 import { Loading } from '@/components/ui/Loading';
 import {
@@ -37,7 +38,7 @@ import { getErrorMessage } from '@/lib/error-handler';
 import { useAuthStore } from '@/store/authStore';
 import { dateUtils } from '../utils/dateUtils';
 
-type EtapaAgendamento = 'servico' | 'data' | 'profissional' | 'horario' | 'formulario';
+type EtapaAgendamento = 'servico' | 'profissionais' | 'data' | 'horario' | 'formulario';
 type TipoVisualizacao = 'lista' | 'calendario';
 
 export function Agendamentos() {
@@ -55,54 +56,36 @@ export function Agendamentos() {
   const [etapaAtual, setEtapaAtual] = useState<EtapaAgendamento>('servico');
   const [selectedServico, setSelectedServico] = useState<Servico | null>(null);
   const [selectedDataAgendamento, setSelectedDataAgendamento] = useState('');
-  const [selectedProfissional, setSelectedProfissional] = useState<Profissional | null>(
-    null
-  );
+  const [selectedProfissionais, setSelectedProfissionais] = useState<Profissional[]>([]);
   const [selectedDataHora, setSelectedDataHora] = useState('');
 
   // Estados de edição/exclusão
-  const [selectedAgendamento, setSelectedAgendamento] = useState<Agendamento | null>(
-    null
-  );
+  const [selectedAgendamento, setSelectedAgendamento] = useState<Agendamento | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [agendamentoToDelete, setAgendamentoToDelete] = useState<Agendamento | null>(
-    null
-  );
+  const [agendamentoToDelete, setAgendamentoToDelete] = useState<Agendamento | null>(null);
 
   const empresaId = user?.empresaId || 1;
 
   // Queries
   const { data: agendamentos, isLoading } = useAgendamentos({ empresaId });
   const { data: servicos, isLoading: isLoadingServicos } = useServicos(empresaId);
-  const { data: profissionais, isLoading: isLoadingProfissionais } =
-    useProfissionais(empresaId);
-
-  console.log('📊 Estados das queries:', {
-    agendamentos: agendamentos?.length || 0,
-    servicos: servicos?.length || 0,
-    profissionais: profissionais?.length || 0,
-    isLoadingServicos,
-    isLoadingProfissionais,
-  });
+  const { data: profissionais, isLoading: isLoadingProfissionais } = useProfissionais(empresaId);
 
   // Mutations
   const createMutation = useCreateAgendamento();
   const updateMutation = useUpdateAgendamento();
   const deleteMutation = useDeleteAgendamento();
 
-  // Filtros simplificados - comparação direta de strings
+  // Filtros
   const filteredAgendamentos = agendamentos?.filter((agend) => {
     const searchLower = search.toLowerCase();
-
     const matchesSearch =
       agend.nomeCliente?.toLowerCase()?.includes(searchLower) ||
       agend.servicoTitulo?.toLowerCase()?.includes(searchLower) ||
       agend.profissionalNome?.toLowerCase()?.includes(searchLower);
 
     const matchesStatus = selectedStatus === 'ALL' || agend.status === selectedStatus;
-
-    // Comparação simples: extrai YYYY-MM-DD da string ISO e compara
     const matchesDate = !selectedDate || dateUtils.extractDateString(agend.dataHora) === selectedDate;
 
     return matchesSearch && matchesStatus && matchesDate;
@@ -111,24 +94,18 @@ export function Agendamentos() {
   // Handlers do fluxo de criação
   const handleNovoAgendamento = (dataInicial?: Date) => {
     resetEtapas();
-    console.log('handleNovoAgendamento...');
-    console.log('dataInicial: ', dataInicial);
-
-    // Se uma data foi passada, já preenche e pula para a seleção de serviço
+    
     if (dataInicial) {
       const dataFormatada = dateUtils.toDateString(dataInicial);
       setSelectedDataAgendamento(dataFormatada);
 
-      // Se também tem horário específico, extrair
+      // Verificar se tem horário específico
       const horaFormatada = dataInicial.toTimeString().slice(0, 5);
-      console.log('horaFormatada: ', horaFormatada);
       if (horaFormatada !== '00:00') {
         setSelectedDataHora(dateUtils.toISOString(dataInicial));
-        console.log('toISOString: ', dateUtils.toISOString(dataInicial));
-
-        setEtapaAtual('servico'); // Ir direto para serviço
+        setEtapaAtual('servico');
       } else {
-        setEtapaAtual('servico'); // Começar com serviço
+        setEtapaAtual('servico');
       }
     }
 
@@ -138,19 +115,23 @@ export function Agendamentos() {
   const resetEtapas = () => {
     setEtapaAtual('servico');
     setSelectedServico(null);
+    setSelectedProfissionais([]);
     setSelectedDataAgendamento('');
-    setSelectedProfissional(null);
     setSelectedDataHora('');
   };
 
   const handleServicoSelect = (servico: Servico) => {
     setSelectedServico(servico);
+    setEtapaAtual('profissionais');
+  };
 
-    // Se já tem data e hora preenchidas, pular para profissional
+  const handleProfissionaisSelect = (profissionais: Profissional[]) => {
+    setSelectedProfissionais(profissionais);
+    
     if (selectedDataAgendamento && selectedDataHora) {
-      setEtapaAtual('profissional');
+      setEtapaAtual('formulario');
     } else if (selectedDataAgendamento) {
-      setEtapaAtual('profissional');
+      setEtapaAtual('horario');
     } else {
       setEtapaAtual('data');
     }
@@ -158,22 +139,19 @@ export function Agendamentos() {
 
   const handleDataSelect = (data: string) => {
     setSelectedDataAgendamento(data);
-    setEtapaAtual('profissional');
+    setEtapaAtual('horario');
   };
 
-  const handleProfissionalSelect = (profissional: Profissional) => {
-    setSelectedProfissional(profissional);
-
-    // Se já tem horário definido, pular para formulário
-    if (selectedDataHora) {
-      setEtapaAtual('formulario');
-    } else {
-      setEtapaAtual('horario');
-    }
-  };
-
-  const handleHorarioSelect = (dataHora: string) => {
+  const handleHorarioSelect = (dataHora: string, profissionalId: number) => {
     setSelectedDataHora(dataHora);
+    
+    // Encontrar o profissional selecionado na lista
+    const profissional = selectedProfissionais.find(p => p.id === profissionalId);
+    if (profissional) {
+      // Manter apenas o profissional selecionado para o agendamento final
+      setSelectedProfissionais([profissional]);
+    }
+    
     setEtapaAtual('formulario');
   };
 
@@ -190,61 +168,27 @@ export function Agendamentos() {
   };
 
   const handleEdit = (agendamento: Agendamento) => {
-    console.log('🔍 handleEdit chamado com agendamento:', agendamento);
-    console.log(
-      '🔍 Estrutura completa do agendamento:',
-      JSON.stringify(agendamento, null, 2)
-    );
-
-    // Verificar diferentes possíveis estruturas da API
     let servicoId = agendamento.servicoId;
     let profissionalId = agendamento.profissionalId;
 
-    // Se não encontrar diretamente, tentar outras estruturas possíveis
     if (!servicoId && (agendamento as any).servico?.id) {
       servicoId = (agendamento as any).servico.id;
-      console.log('🔍 ServiceId encontrado em servico.id:', servicoId);
     }
-
     if (!profissionalId && (agendamento as any).profissional?.id) {
       profissionalId = (agendamento as any).profissional.id;
-      console.log('🔍 ProfissionalId encontrado em profissional.id:', profissionalId);
     }
 
-    console.log(
-      '🔍 IDs finais - servicoId:',
-      servicoId,
-      'profissionalId:',
-      profissionalId
-    );
-
-    // Buscar dados completos do serviço e profissional
     const servico = servicos?.find((s) => s.id === servicoId);
     const profissional = profissionais?.find((p) => p.id === profissionalId);
 
-    console.log('🔍 Serviços disponíveis:', servicos);
-    console.log('🔍 Profissionais disponíveis:', profissionais);
-    console.log('🔍 Serviço encontrado:', servico);
-    console.log('🔍 Profissional encontrado:', profissional);
-
     if (servico && profissional) {
-      console.log('✅ Dados encontrados, abrindo modal de edição');
       setSelectedAgendamento(agendamento);
       setSelectedServico(servico);
-      setSelectedProfissional(profissional);
+      setSelectedProfissionais([profissional]);
       setSelectedDataHora(agendamento.dataHora);
       setIsEditModalOpen(true);
     } else {
-      console.error('❌ Não foi possível encontrar serviço ou profissional');
-      console.error('❌ Serviço missing:', !servico);
-      console.error('❌ Profissional missing:', !profissional);
-
-      // Fallback: mostrar toast com erro
-      addToast(
-        'error',
-        'Erro ao editar',
-        'Não foi possível carregar os dados do agendamento'
-      );
+      addToast('error', 'Erro ao editar', 'Não foi possível carregar os dados do agendamento');
     }
   };
 
@@ -321,7 +265,11 @@ export function Agendamentos() {
               variant={tipoVisualizacao === 'lista' ? 'default' : 'ghost'}
               size="sm"
               onClick={() => setTipoVisualizacao('lista')}
-              className={`transition-all duration-200 ${tipoVisualizacao === 'lista' ? 'bg-primary-600 text-white shadow-md hover:bg-primary-700' : 'text-gray-600 hover:bg-gray-200 hover:text-gray-700'}`}
+              className={`transition-all duration-200 ${
+                tipoVisualizacao === 'lista'
+                  ? 'bg-primary-600 text-white shadow-md hover:bg-primary-700'
+                  : 'text-gray-600 hover:bg-gray-200 hover:text-gray-700'
+              }`}
             >
               <List className="w-4 h-4 mr-2" />
               Lista
@@ -330,7 +278,11 @@ export function Agendamentos() {
               variant={tipoVisualizacao === 'calendario' ? 'default' : 'ghost'}
               size="sm"
               onClick={() => setTipoVisualizacao('calendario')}
-              className={`transition-all duration-200 ${tipoVisualizacao === 'calendario' ? 'bg-primary-600 text-white shadow-md hover:bg-primary-700' : 'text-gray-600 hover:bg-gray-200 hover:text-gray-700'}`}
+              className={`transition-all duration-200 ${
+                tipoVisualizacao === 'calendario'
+                  ? 'bg-primary-600 text-white shadow-md hover:bg-primary-700'
+                  : 'text-gray-600 hover:bg-gray-200 hover:text-gray-700'
+              }`}
             >
               <CalendarDays className="w-4 h-4 mr-2" />
               Calendário
@@ -487,13 +439,7 @@ export function Agendamentos() {
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => {
-                                console.log(
-                                  '🖱️ Botão edit clicado para agendamento:',
-                                  agendamento.id
-                                );
-                                handleEdit(agendamento);
-                              }}
+                              onClick={() => handleEdit(agendamento)}
                             >
                               <Edit2 className="w-4 h-4" />
                             </Button>
@@ -531,49 +477,31 @@ export function Agendamentos() {
           {/* Breadcrumb */}
           <div className="flex items-center space-x-2 text-sm">
             <span
-              className={
-                etapaAtual === 'servico'
-                  ? 'text-primary-600 font-medium'
-                  : 'text-gray-500'
-              }
+              className={etapaAtual === 'servico' ? 'text-primary-600 font-medium' : 'text-gray-500'}
             >
               1. Serviço
             </span>
             <ChevronRight className="w-4 h-4 text-gray-400" />
             <span
-              className={
-                etapaAtual === 'data' ? 'text-primary-600 font-medium' : 'text-gray-500'
-              }
+              className={etapaAtual === 'profissionais' ? 'text-primary-600 font-medium' : 'text-gray-500'}
             >
-              2. Data
+              2. Profissionais
             </span>
             <ChevronRight className="w-4 h-4 text-gray-400" />
             <span
-              className={
-                etapaAtual === 'profissional'
-                  ? 'text-primary-600 font-medium'
-                  : 'text-gray-500'
-              }
+              className={etapaAtual === 'data' ? 'text-primary-600 font-medium' : 'text-gray-500'}
             >
-              3. Profissional
+              3. Data
             </span>
             <ChevronRight className="w-4 h-4 text-gray-400" />
             <span
-              className={
-                etapaAtual === 'horario'
-                  ? 'text-primary-600 font-medium'
-                  : 'text-gray-500'
-              }
+              className={etapaAtual === 'horario' ? 'text-primary-600 font-medium' : 'text-gray-500'}
             >
               4. Horário
             </span>
             <ChevronRight className="w-4 h-4 text-gray-400" />
             <span
-              className={
-                etapaAtual === 'formulario'
-                  ? 'text-primary-600 font-medium'
-                  : 'text-gray-500'
-              }
+              className={etapaAtual === 'formulario' ? 'text-primary-600 font-medium' : 'text-gray-500'}
             >
               5. Dados
             </span>
@@ -607,13 +535,28 @@ export function Agendamentos() {
             </div>
           )}
 
-          {/* Etapa 2: Seleção de Data */}
-          {etapaAtual === 'data' && selectedServico && (
+          {/* Etapa 2: Seleção de Profissionais */}
+          {etapaAtual === 'profissionais' && selectedServico && (
+            <div className="space-y-4">
+              <ProfissionalSelector
+                servico={selectedServico}
+                onProfissionaisSelect={handleProfissionaisSelect}
+                selectedProfissionais={selectedProfissionais}
+                singleSelect={false}
+              />
+              <Button variant="outline" onClick={() => setEtapaAtual('servico')}>
+                Voltar
+              </Button>
+            </div>
+          )}
+
+          {/* Etapa 3: Seleção de Data */}
+          {etapaAtual === 'data' && selectedServico && selectedProfissionais.length > 0 && (
             <div className="space-y-4">
               <div>
                 <h3 className="text-lg font-medium">Escolha a Data</h3>
                 <p className="text-sm text-gray-500">
-                  Serviço selecionado: {selectedServico.titulo}
+                  Serviço: {selectedServico.titulo} • {selectedProfissionais.length} profissional(is) selecionado(s)
                 </p>
               </div>
               <div>
@@ -624,71 +567,36 @@ export function Agendamentos() {
                   min={new Date().toISOString().split('T')[0]}
                 />
               </div>
-              <Button variant="outline" onClick={() => setEtapaAtual('servico')}>
-                Voltar
-              </Button>
-            </div>
-          )}
-
-          {/* Etapa 3: Seleção de Profissional */}
-          {etapaAtual === 'profissional' && selectedServico && (
-            <div className="space-y-4">
-              <div>
-                <h3 className="text-lg font-medium">Escolha o Profissional</h3>
-                <p className="text-sm text-gray-500">
-                  {selectedServico.titulo} -{' '}
-                  {selectedDataAgendamento &&
-                    new Intl.DateTimeFormat('pt-BR').format(
-                      new Date(selectedDataAgendamento)
-                    )}
-                </p>
-              </div>
-              <div className="space-y-2">
-                {selectedServico.profissionais?.map((profissional) => (
-                  <button
-                    key={profissional.id}
-                    onClick={() => handleProfissionalSelect(profissional)}
-                    className="w-full text-left p-3 border border-gray-200 rounded-lg hover:border-primary-300 hover:bg-primary-50 transition-colors"
-                  >
-                    <div className="font-medium text-gray-900">{profissional.nome}</div>
-                    <div className="text-sm text-gray-500">{profissional.email}</div>
-                  </button>
-                ))}
-              </div>
-              <Button
-                variant="outline"
-                onClick={() =>
-                  selectedDataAgendamento
-                    ? setEtapaAtual('servico')
-                    : setEtapaAtual('data')
-                }
-              >
+              <Button variant="outline" onClick={() => setEtapaAtual('profissionais')}>
                 Voltar
               </Button>
             </div>
           )}
 
           {/* Etapa 4: Seleção de Horário */}
-          {etapaAtual === 'horario' && selectedServico && selectedProfissional && (
+          {etapaAtual === 'horario' && selectedServico && selectedProfissionais.length > 0 && selectedDataAgendamento && (
             <div className="space-y-4">
               <HorarioSelector
                 servico={selectedServico}
-                profissional={selectedProfissional}
+                profissionais={selectedProfissionais}
                 data={selectedDataAgendamento}
                 onHorarioSelect={handleHorarioSelect}
               />
-              <Button variant="outline" onClick={() => setEtapaAtual('profissional')}>
+              <Button
+                variant="outline"
+                onClick={() => setEtapaAtual('data')}
+              >
                 Voltar
               </Button>
             </div>
           )}
 
           {/* Etapa 5: Formulário */}
-          {etapaAtual === 'formulario' && selectedServico && selectedProfissional && (
+          {etapaAtual === 'formulario' && selectedServico && selectedProfissionais.length > 0 && (
             <div className="space-y-4">
               <AgendamentoForm
                 servico={selectedServico}
-                profissional={selectedProfissional}
+                profissional={selectedProfissionais[0]} // Usar o primeiro (e único após seleção de horário)
                 dataHora={selectedDataHora}
                 onSubmit={handleCreateSubmit}
                 isLoading={createMutation.isPending}
@@ -696,11 +604,7 @@ export function Agendamentos() {
               />
               <Button
                 variant="outline"
-                onClick={() =>
-                  selectedDataHora
-                    ? setEtapaAtual('profissional')
-                    : setEtapaAtual('horario')
-                }
+                onClick={() => setEtapaAtual('horario')}
                 disabled={createMutation.isPending}
               >
                 Voltar
@@ -708,6 +612,26 @@ export function Agendamentos() {
             </div>
           )}
         </div>
+      </Modal>
+
+      {/* Modal de Edição */}
+      <Modal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        title="Editar Agendamento"
+        size="lg"
+      >
+        {selectedAgendamento && selectedServico && selectedProfissionais.length > 0 && (
+          <AgendamentoForm
+            agendamento={selectedAgendamento}
+            servico={selectedServico}
+            profissional={selectedProfissionais[0]}
+            dataHora={selectedDataHora}
+            onSubmit={handleEditSubmit}
+            isLoading={updateMutation.isPending}
+            empresaId={empresaId}
+          />
+        )}
       </Modal>
 
       {/* Modal de Exclusão */}

@@ -29,6 +29,7 @@ export function useAgendamento(id: number) {
   });
 }
 
+// Nova função para buscar agendamentos por data específica
 export function useAgendamentosByData(filters: {
   servicoId?: number;
   profissionalId?: number;

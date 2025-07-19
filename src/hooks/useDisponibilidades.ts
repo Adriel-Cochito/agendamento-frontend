@@ -29,6 +29,7 @@ export function useDisponibilidade(id: number) {
   });
 }
 
+// Nova função para buscar disponibilidades de um profissional específico numa data
 export function useDisponibilidadesByProfissional(profissionalId?: number, data?: string) {
   const user = useAuthStore((state) => state.user);
   const empresaId = user?.empresaId;
