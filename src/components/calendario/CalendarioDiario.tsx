@@ -164,6 +164,104 @@ export function CalendarioDiario({
     return dataLocal;
   };
 
+  const criarDataHorarioComValidacao = (horario: string): Date => {
+    const dataLocal = dateUtils.createFromTimeString(dataAtual, horario);
+    
+    // Validar quais profissionais estão disponíveis neste horário específico
+    const profissionaisDisponiveisNoHorario = validarProfissionaisDisponiveis(horario);
+    
+    console.log(`🕐 Horário ${horario} selecionado:`, {
+      totalProfissionais: profissionais?.length || 0,
+      profissionaisDisponiveis: profissionaisDisponiveisNoHorario.length,
+      profissionaisNomes: profissionaisDisponiveisNoHorario.map(p => p.nome)
+    });
+    
+    // Armazenar os profissionais disponíveis no horário para usar no modal
+    (dataLocal as any).profissionaisDisponiveis = profissionaisDisponiveisNoHorario;
+    
+    return dataLocal;
+  };
+
+  const validarProfissionaisDisponiveis = (horarioSelecionado: string): any[] => {
+    if (!disponibilidades || !profissionais) return [];
+
+    const dataString = dateUtils.toDateString(dataAtual);
+    const diaSemana = dataAtual.getDay();
+    const [hora, minuto] = horarioSelecionado.split(':').map(Number);
+    const horarioEmMinutos = hora * 60 + minuto;
+
+    console.log(`🔍 Validando profissionais para horário ${horarioSelecionado} (${horarioEmMinutos} min)`);
+
+    const profissionaisValidos = profissionais.filter(prof => {
+      // Filtrar por profissional se necessário
+      if (profissionalFiltro !== 'TODOS' && prof.id !== profissionalFiltro) {
+        return false;
+      }
+
+      const disponibilidadesDoProfissional = disponibilidades.filter(d => d.profissional.id === prof.id);
+      
+      console.log(`👤 Verificando ${prof.nome}:`, disponibilidadesDoProfissional.length, 'disponibilidades');
+
+      // Verificar se o profissional tem disponibilidade neste horário
+      const temDisponibilidade = disponibilidadesDoProfissional.some(disp => {
+        if (disp.tipo === 'GRADE' && disp.diasSemana.includes(diaSemana)) {
+          if (disp.horaInicio && disp.horaFim) {
+            const [inicioHora, inicioMin] = disp.horaInicio.split(':').map(Number);
+            const [fimHora, fimMin] = disp.horaFim.split(':').map(Number);
+            const inicioEmMinutos = inicioHora * 60 + inicioMin;
+            const fimEmMinutos = fimHora * 60 + fimMin;
+            
+            const disponivel = horarioEmMinutos >= inicioEmMinutos && horarioEmMinutos < fimEmMinutos;
+            
+            console.log(`  📅 GRADE ${prof.nome}: ${disp.horaInicio}-${disp.horaFim} = ${disponivel ? '✅' : '❌'}`);
+            
+            return disponivel;
+          }
+        } else if (disp.tipo === 'LIBERADO' && disp.dataHoraInicio && disp.dataHoraFim) {
+          if (dateUtils.extractDateString(disp.dataHoraInicio) === dataString) {
+            const inicio = dateUtils.fromISOString(disp.dataHoraInicio);
+            const fim = dateUtils.fromISOString(disp.dataHoraFim);
+            const horarioCompleto = new Date(`${dataString}T${horarioSelecionado}:00`);
+            
+            const disponivel = horarioCompleto >= inicio && horarioCompleto < fim;
+            
+            console.log(`  🔓 LIBERADO ${prof.nome}: ${inicio.toTimeString().slice(0,5)}-${fim.toTimeString().slice(0,5)} = ${disponivel ? '✅' : '❌'}`);
+            
+            return disponivel;
+          }
+        }
+        return false;
+      });
+
+      // Verificar se NÃO há bloqueio neste horário
+      const temBloqueio = disponibilidadesDoProfissional.some(disp => {
+        if (disp.tipo === 'BLOQUEIO' && disp.dataHoraInicio && disp.dataHoraFim) {
+          if (dateUtils.extractDateString(disp.dataHoraInicio) === dataString) {
+            const inicio = dateUtils.fromISOString(disp.dataHoraInicio);
+            const fim = dateUtils.fromISOString(disp.dataHoraFim);
+            const horarioCompleto = new Date(`${dataString}T${horarioSelecionado}:00`);
+            
+            const bloqueado = horarioCompleto >= inicio && horarioCompleto < fim;
+            
+            if (bloqueado) {
+              console.log(`  🚫 BLOQUEIO ${prof.nome}: ${inicio.toTimeString().slice(0,5)}-${fim.toTimeString().slice(0,5)} = BLOQUEADO`);
+            }
+            
+            return bloqueado;
+          }
+        }
+        return false;
+      });
+
+      const finalDisponivel = temDisponibilidade && !temBloqueio;
+      console.log(`  ✨ ${prof.nome} final: ${finalDisponivel ? 'DISPONÍVEL' : 'INDISPONÍVEL'}`);
+      
+      return finalDisponivel;
+    });
+
+    return profissionaisValidos;
+  };
+
   const getStatusLabel = (status: string) => {
     const labels = {
       AGENDADO: 'Agendado',
@@ -272,7 +370,7 @@ export function CalendarioDiario({
                   {agendamentosNoHorario.length === 0 ? (
                     <div
                       className="h-8 flex items-center text-gray-400 text-sm cursor-pointer hover:bg-gray-50 rounded px-2 transition-colors"
-                      onClick={() => onNovoAgendamento(criarDataHorario(horario))}
+                      onClick={() => onNovoAgendamento(criarDataHorarioComValidacao(horario))}
                     >
                       Horário livre - Clique para agendar
                     </div>
@@ -347,7 +445,7 @@ export function CalendarioDiario({
                       {/* Botão para adicionar mais agendamentos no mesmo horário */}
                       <div
                         className="border-2 border-dashed border-gray-300 rounded-lg p-2 text-center cursor-pointer hover:border-primary-300 hover:bg-primary-50 transition-colors"
-                        onClick={() => onNovoAgendamento(criarDataHorario(horario))}
+                        onClick={() => onNovoAgendamento(criarDataHorarioComValidacao(horario))}
                       >
                         <span className="text-sm text-gray-500 hover:text-primary-600">
                           + Adicionar outro agendamento
@@ -371,7 +469,7 @@ export function CalendarioDiario({
             <p className="text-gray-500 mb-4">
               Que tal aproveitar para organizar a agenda ou criar novos agendamentos?
             </p>
-            <Button onClick={() => onNovoAgendamento(dataAtual)}>
+            <Button onClick={() => onNovoAgendamento(criarDataHorarioComValidacao('09:00'))}>
               <Plus className="w-4 h-4 mr-2" />
               Criar Agendamento
             </Button>

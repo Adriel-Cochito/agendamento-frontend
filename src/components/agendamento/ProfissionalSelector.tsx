@@ -10,19 +10,29 @@ interface ProfissionalSelectorProps {
   onProfissionaisSelect: (profissionais: Profissional[]) => void;
   selectedProfissionais?: Profissional[];
   singleSelect?: boolean;
+  profissionaisDisponiveis?: Profissional[]; // Novos: profissionais pré-filtrados
 }
 
 export function ProfissionalSelector({
   servico,
   onProfissionaisSelect,
   selectedProfissionais = [],
-  singleSelect = false
+  singleSelect = false,
+  profissionaisDisponiveis
 }: ProfissionalSelectorProps) {
   const [selectedIds, setSelectedIds] = useState<number[]>(
     selectedProfissionais.map(p => p.id)
   );
 
-  const profissionaisDisponiveis = servico.profissionais || [];
+  // Usar profissionais pré-filtrados se fornecidos, senão usar os do serviço
+  const profissionaisParaEscolha = profissionaisDisponiveis || servico.profissionais || [];
+
+  console.log('🎯 ProfissionalSelector:', {
+    servicoProfissionais: servico.profissionais?.length || 0,
+    profissionaisDisponiveis: profissionaisDisponiveis?.length || 0,
+    profissionaisParaEscolha: profissionaisParaEscolha.length,
+    nomes: profissionaisParaEscolha.map(p => p.nome)
+  });
 
   const handleProfissionalToggle = (profissional: Profissional) => {
     let newSelectedIds: number[];
@@ -42,7 +52,7 @@ export function ProfissionalSelector({
     setSelectedIds(newSelectedIds);
     
     // Buscar os objetos completos dos profissionais selecionados
-    const profissionaisSelecionados = profissionaisDisponiveis.filter(p => 
+    const profissionaisSelecionados = profissionaisParaEscolha.filter(p => 
       newSelectedIds.includes(p.id)
     );
     
@@ -50,9 +60,9 @@ export function ProfissionalSelector({
   };
 
   const handleSelectAll = () => {
-    const allIds = profissionaisDisponiveis.map(p => p.id);
+    const allIds = profissionaisParaEscolha.map(p => p.id);
     setSelectedIds(allIds);
-    onProfissionaisSelect(profissionaisDisponiveis);
+    onProfissionaisSelect(profissionaisParaEscolha);
   };
 
   const handleClearAll = () => {
@@ -60,7 +70,7 @@ export function ProfissionalSelector({
     onProfissionaisSelect([]);
   };
 
-  if (profissionaisDisponiveis.length === 0) {
+  if (profissionaisParaEscolha.length === 0) {
     return (
       <div className="text-center py-8">
         <AlertCircle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
@@ -68,7 +78,10 @@ export function ProfissionalSelector({
           Nenhum profissional disponível
         </h3>
         <p className="text-gray-500">
-          Este serviço não possui profissionais cadastrados que possam executá-lo.
+          {profissionaisDisponiveis 
+            ? 'Nenhum profissional está disponível neste horário específico.'
+            : 'Este serviço não possui profissionais cadastrados que possam executá-lo.'
+          }
         </p>
       </div>
     );
@@ -85,13 +98,13 @@ export function ProfissionalSelector({
           </h3>
         </div>
         
-        {!singleSelect && profissionaisDisponiveis.length > 1 && (
+        {!singleSelect && profissionaisParaEscolha.length > 1 && (
           <div className="flex space-x-2">
             <Button
               variant="outline"
               size="sm"
               onClick={handleSelectAll}
-              disabled={selectedIds.length === profissionaisDisponiveis.length}
+              disabled={selectedIds.length === profissionaisParaEscolha.length}
             >
               Todos
             </Button>
@@ -113,13 +126,13 @@ export function ProfissionalSelector({
           <strong>Serviço:</strong> {servico.titulo}
         </p>
         <p className="text-sm text-gray-500">
-          {profissionaisDisponiveis.length} profissional(is) pode(m) executar este serviço
+          {profissionaisParaEscolha.length} profissional(is) {profissionaisDisponiveis ? 'disponível(is) neste horário' : 'pode(m) executar este serviço'}
         </p>
       </div>
 
       {/* Lista de profissionais */}
       <div className="grid grid-cols-1 gap-3">
-        {profissionaisDisponiveis.map((profissional) => {
+        {profissionaisParaEscolha.map((profissional) => {
           const isSelected = selectedIds.includes(profissional.id);
           
           return (
@@ -172,7 +185,7 @@ export function ProfissionalSelector({
         <div className="bg-primary-50 border border-primary-200 rounded-lg p-3">
           <p className="text-sm text-primary-800">
             {singleSelect 
-              ? `Profissional selecionado: ${profissionaisDisponiveis.find(p => p.id === selectedIds[0])?.nome}`
+              ? `Profissional selecionado: ${profissionaisParaEscolha.find(p => p.id === selectedIds[0])?.nome}`
               : `${selectedIds.length} profissional(is) selecionado(s)`
             }
           </p>
