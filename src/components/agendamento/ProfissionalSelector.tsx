@@ -78,10 +78,8 @@ export function ProfissionalSelector({
           Nenhum profissional disponível
         </h3>
         <p className="text-gray-500">
-          {profissionaisDisponiveis 
-            ? 'Nenhum profissional está disponível neste horário específico.'
-            : 'Este serviço não possui profissionais cadastrados que possam executá-lo.'
-          }
+          Este serviço não possui profissionais cadastrados que possam executá-lo.
+          Configure os profissionais para este serviço primeiro.
         </p>
       </div>
     );
@@ -126,7 +124,10 @@ export function ProfissionalSelector({
           <strong>Serviço:</strong> {servico.titulo}
         </p>
         <p className="text-sm text-gray-500">
-          {profissionaisParaEscolha.length} profissional(is) {profissionaisDisponiveis ? 'disponível(is) neste horário' : 'pode(m) executar este serviço'}
+          {profissionaisDisponiveis 
+            ? `${profissionaisParaEscolha.length} profissional(is) disponível(is) no horário selecionado`
+            : `${profissionaisParaEscolha.length} profissional(is) pode(m) executar este serviço`
+          }
         </p>
       </div>
 

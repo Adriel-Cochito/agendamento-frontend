@@ -59,9 +59,9 @@ export function AgendamentosModals({
                   </p>
                   <p className="text-sm text-primary-600">
                     {dateUtils.formatLocal(modalStates.selectedDataHora)}
-                    {modalStates.selectedProfissionais.length > 0 && (
+                    {modalStates.profissionaisDisponiveisParaFiltro && modalStates.profissionaisDisponiveisParaFiltro.length > 0 && (
                       <span className="ml-2">
-                        • {modalStates.selectedProfissionais.length} profissional(is) disponível(is)
+                        • {modalStates.profissionaisDisponiveisParaFiltro.length} profissional(is) disponível(is) neste horário
                       </span>
                     )}
                   </p>
@@ -119,7 +119,7 @@ export function AgendamentosModals({
                 onProfissionaisSelect={handleProfissionaisSelect}
                 selectedProfissionais={modalStates.selectedProfissionais}
                 singleSelect={false}
-                profissionaisDisponiveis={modalStates.selectedProfissionais.length > 0 ? modalStates.selectedProfissionais : undefined}
+                profissionaisDisponiveis={modalStates.profissionaisDisponiveisParaFiltro}
               />
               <Button variant="outline" onClick={() => setModalStates((prev: any) => ({ ...prev, etapaAtual: 'servico' }))}>
                 Voltar

@@ -164,24 +164,6 @@ export function CalendarioDiario({
     return dataLocal;
   };
 
-  const criarDataHorarioComValidacao = (horario: string): Date => {
-    const dataLocal = dateUtils.createFromTimeString(dataAtual, horario);
-    
-    // Validar quais profissionais estão disponíveis neste horário específico
-    const profissionaisDisponiveisNoHorario = validarProfissionaisDisponiveis(horario);
-    
-    console.log(`🕐 Horário ${horario} selecionado:`, {
-      totalProfissionais: profissionais?.length || 0,
-      profissionaisDisponiveis: profissionaisDisponiveisNoHorario.length,
-      profissionaisNomes: profissionaisDisponiveisNoHorario.map(p => p.nome)
-    });
-    
-    // Armazenar os profissionais disponíveis no horário para usar no modal
-    (dataLocal as any).profissionaisDisponiveis = profissionaisDisponiveisNoHorario;
-    
-    return dataLocal;
-  };
-
   const validarProfissionaisDisponiveis = (horarioSelecionado: string): any[] => {
     if (!disponibilidades || !profissionais) return [];
 
@@ -260,6 +242,25 @@ export function CalendarioDiario({
     });
 
     return profissionaisValidos;
+  };
+
+  const criarDataHorarioComFiltro = (horario: string): Date => {
+    const dataLocal = dateUtils.createFromTimeString(dataAtual, horario);
+    
+    // Validar quais profissionais estão disponíveis neste horário específico
+    const profissionaisDisponiveisNoHorario = validarProfissionaisDisponiveis(horario);
+    
+    console.log(`🕐 Horário ${horario} selecionado:`, {
+      totalProfissionais: profissionais?.length || 0,
+      profissionaisDisponiveis: profissionaisDisponiveisNoHorario.length,
+      profissionaisNomes: profissionaisDisponiveisNoHorario.map(p => p.nome)
+    });
+    
+    // Armazenar os profissionais disponíveis no horário para filtrar no modal
+    // MAS SEM PRÉ-SELECIONÁ-LOS
+    (dataLocal as any).profissionaisDisponiveisParaFiltro = profissionaisDisponiveisNoHorario;
+    
+    return dataLocal;
   };
 
   const getStatusLabel = (status: string) => {
@@ -370,7 +371,7 @@ export function CalendarioDiario({
                   {agendamentosNoHorario.length === 0 ? (
                     <div
                       className="h-8 flex items-center text-gray-400 text-sm cursor-pointer hover:bg-gray-50 rounded px-2 transition-colors"
-                      onClick={() => onNovoAgendamento(criarDataHorarioComValidacao(horario))}
+                      onClick={() => onNovoAgendamento(criarDataHorarioComFiltro(horario))}
                     >
                       Horário livre - Clique para agendar
                     </div>
@@ -445,10 +446,10 @@ export function CalendarioDiario({
                       {/* Botão para adicionar mais agendamentos no mesmo horário */}
                       <div
                         className="border-2 border-dashed border-gray-300 rounded-lg p-2 text-center cursor-pointer hover:border-primary-300 hover:bg-primary-50 transition-colors"
-                        onClick={() => onNovoAgendamento(criarDataHorarioComValidacao(horario))}
+                        onClick={() => onNovoAgendamento(criarDataHorarioComFiltro(horario))}
                       >
                         <span className="text-sm text-gray-500 hover:text-primary-600">
-                          + Adicionar outro agendamento
+                          + Adicionar outro agendamento neste horário
                         </span>
                       </div>
                     </div>
@@ -469,7 +470,7 @@ export function CalendarioDiario({
             <p className="text-gray-500 mb-4">
               Que tal aproveitar para organizar a agenda ou criar novos agendamentos?
             </p>
-            <Button onClick={() => onNovoAgendamento(criarDataHorarioComValidacao('09:00'))}>
+            <Button onClick={() => onNovoAgendamento(criarDataHorarioComFiltro('09:00'))}>
               <Plus className="w-4 h-4 mr-2" />
               Criar Agendamento
             </Button>

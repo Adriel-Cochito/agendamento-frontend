@@ -24,6 +24,7 @@ export interface AgendamentosModalStates {
   selectedProfissionais: Profissional[];
   selectedDataAgendamento: string;
   selectedDataHora: string;
+  profissionaisDisponiveisParaFiltro?: Profissional[]; // Novo: filtro de profissionais
   
   // Modal de edição
   isEditModalOpen: boolean;
@@ -58,6 +59,7 @@ export function useAgendamentosLogic(empresaId: number) {
     selectedProfissionais: [],
     selectedDataAgendamento: '',
     selectedDataHora: '',
+    profissionaisDisponiveisParaFiltro: undefined,
     isEditModalOpen: false,
     selectedAgendamento: null,
     isDeleteModalOpen: false,
@@ -106,15 +108,16 @@ export function useAgendamentosLogic(empresaId: number) {
       if (horaFormatada !== '00:00') {
         const dataHora = dateUtils.toISOString(dataInicial);
         
-        // Verificar se há profissionais pré-validados para este horário
-        const profissionaisValidados = (dataInicial as any).profissionaisDisponiveis;
-        if (profissionaisValidados && profissionaisValidados.length > 0) {
-          console.log('✅ Profissionais pré-validados encontrados:', profissionaisValidados.map((p: any) => p.nome));
+        // Verificar se há profissionais filtrados para este horário (sem pré-selecionar)
+        const profissionaisFiltrados = (dataInicial as any).profissionaisDisponiveisParaFiltro;
+        if (profissionaisFiltrados && profissionaisFiltrados.length > 0) {
+          console.log('✅ Profissionais filtrados encontrados:', profissionaisFiltrados.map((p: any) => p.nome));
+          console.log('🔍 Estes profissionais serão usados para FILTRAR (não pré-selecionar)');
           
           setModalStates(prev => ({
             ...prev,
             selectedDataHora: dataHora,
-            selectedProfissionais: profissionaisValidados,
+            profissionaisDisponiveisParaFiltro: profissionaisFiltrados,
             etapaAtual: 'servico'
           }));
         } else {
@@ -183,6 +186,7 @@ export function useAgendamentosLogic(empresaId: number) {
       selectedProfissionais: [],
       selectedDataAgendamento: '',
       selectedDataHora: '',
+      profissionaisDisponiveisParaFiltro: undefined,
     }));
   };
 
