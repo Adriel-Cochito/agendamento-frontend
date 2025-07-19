@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Plus, Clock, User, Tag } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, Clock, User, Tag, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Agendamento } from '@/types/agendamento';
 import { obterCorPorStatus } from '@/utils/calendario';
@@ -28,6 +28,7 @@ export function CalendarioDiario({
 }: CalendarioDiarioProps) {
   const [agendamentosDoDia, setAgendamentosDoDia] = useState<Agendamento[]>([]);
   const [horariosDisponiveis, setHorariosDisponiveis] = useState<string[]>([]);
+  const [diaTemProfissionaisDisponiveis, setDiaTemProfissionaisDisponiveis] = useState<boolean>(true);
 
   const user = useAuthStore((state) => state.user);
   const empresaId = user?.empresaId || 1;
@@ -36,7 +37,58 @@ export function CalendarioDiario({
   const { data: disponibilidades } = useDisponibilidades({ empresaId });
   const { data: profissionais } = useProfissionais(empresaId);
 
+  const verificarSeDiaTemProfissionaisComGrade = (data: Date): boolean => {
+    if (!disponibilidades || !profissionais) return false;
+
+    const diaSemana = data.getDay();
+    
+    console.log('🗓️ Verificando se o dia da semana', diaSemana, 'tem profissionais com grade');
+
+    // Filtrar profissionais se necessário
+    let profissionaisFiltrados = profissionais;
+    if (profissionalFiltro !== 'TODOS') {
+      profissionaisFiltrados = profissionais.filter(p => p.id === profissionalFiltro);
+    }
+
+    const temProfissionaisComGrade = profissionaisFiltrados.some(prof => {
+      const disponibilidadesDoProfissional = disponibilidades.filter(d => 
+        d.profissional.id === prof.id && d.tipo === 'GRADE'
+      );
+      
+      const temGradeParaEsteDia = disponibilidadesDoProfissional.some(disp => {
+        // Verificar se a grade é válida e tem dias da semana configurados
+        if (disp.gradeValida && disp.diasSemana && disp.diasSemana.length > 0) {
+          const incluiEsteDia = disp.diasSemana.includes(diaSemana);
+          console.log(`👤 ${prof.nome} - Grade ID ${disp.id}:`, {
+            diasSemana: disp.diasSemana,
+            diaBuscado: diaSemana,
+            incluiEsteDia,
+            gradeValida: disp.gradeValida
+          });
+          return incluiEsteDia;
+        }
+        return false;
+      });
+
+      if (temGradeParaEsteDia) {
+        console.log(`✅ ${prof.nome} está disponível no dia da semana ${diaSemana}`);
+      } else {
+        console.log(`❌ ${prof.nome} NÃO está disponível no dia da semana ${diaSemana}`);
+      }
+
+      return temGradeParaEsteDia;
+    });
+
+    console.log(`📊 Dia da semana ${diaSemana}: ${temProfissionaisComGrade ? 'TEM' : 'NÃO TEM'} profissionais com grade`);
+    
+    return temProfissionaisComGrade;
+  };
+
   useEffect(() => {
+    // Verificar se o dia atual tem profissionais com grade
+    const temProfissionais = verificarSeDiaTemProfissionaisComGrade(dataAtual);
+    setDiaTemProfissionaisDisponiveis(temProfissionais);
+
     // Filtrar agendamentos do dia atual
     const dataAtualString = dateUtils.toDateString(dataAtual);
     
@@ -49,16 +101,23 @@ export function CalendarioDiario({
     agendamentosFiltrados.sort((a, b) => a.dataHora.localeCompare(b.dataHora));
 
     setAgendamentosDoDia(agendamentosFiltrados);
-  }, [dataAtual, agendamentos]);
+  }, [dataAtual, agendamentos, disponibilidades, profissionais, profissionalFiltro]);
 
   useEffect(() => {
     if (!disponibilidades || !profissionais) return;
+
+    // Se o dia não tem profissionais com grade, não calcular horários
+    if (!diaTemProfissionaisDisponiveis) {
+      setHorariosDisponiveis([]);
+      return;
+    }
 
     console.log('📊 CalendarioDiario: Recalculando horários', {
       data: dateUtils.toDateString(dataAtual),
       profissionalFiltro,
       totalProfissionais: profissionais.length,
-      totalDisponibilidades: disponibilidades.length
+      totalDisponibilidades: disponibilidades.length,
+      diaTemProfissionais: diaTemProfissionaisDisponiveis
     });
 
     // Filtrar profissionais se necessário
@@ -93,7 +152,7 @@ export function CalendarioDiario({
       // Fallback para horários padrão se não houver disponibilidades
       setHorariosDisponiveis(gerarHorariosPadrao());
     }
-  }, [dataAtual, disponibilidades, profissionais, profissionalFiltro]);
+  }, [dataAtual, disponibilidades, profissionais, profissionalFiltro, diaTemProfissionaisDisponiveis]);
 
   const gerarHorariosDinamicos = (horaInicio: string, horaFim: string): string[] => {
     const horarios: string[] = [];
@@ -186,7 +245,7 @@ export function CalendarioDiario({
 
       // Verificar se o profissional tem disponibilidade neste horário
       const temDisponibilidade = disponibilidadesDoProfissional.some(disp => {
-        if (disp.tipo === 'GRADE' && disp.diasSemana.includes(diaSemana)) {
+        if (disp.tipo === 'GRADE' && disp.gradeValida && disp.diasSemana && disp.diasSemana.includes(diaSemana)) {
           if (disp.horaInicio && disp.horaFim) {
             const [inicioHora, inicioMin] = disp.horaInicio.split(':').map(Number);
             const [fimHora, fimMin] = disp.horaFim.split(':').map(Number);
@@ -296,10 +355,12 @@ export function CalendarioDiario({
             <Button variant="outline" onClick={irParaHoje}>
               Hoje
             </Button>
-            <Button onClick={() => onNovoAgendamento(dataAtual)}>
-              <Plus className="w-4 h-4 mr-2" />
-              Novo Agendamento
-            </Button>
+            {diaTemProfissionaisDisponiveis && (
+              <Button onClick={() => onNovoAgendamento(dataAtual)}>
+                <Plus className="w-4 h-4 mr-2" />
+                Novo Agendamento
+              </Button>
+            )}
           </div>
         </div>
 
@@ -332,20 +393,60 @@ export function CalendarioDiario({
         </div>
 
         {/* Info sobre horários */}
-        {horariosDisponiveis.length > 0 && (
+        {diaTemProfissionaisDisponiveis ? (
+          horariosDisponiveis.length > 0 && (
+            <div className="mt-4 pt-4 border-t">
+              <p className="text-sm text-gray-600">
+                Horários baseados nas disponibilidades dos profissionais: 
+                <span className="font-medium ml-1">
+                  {horariosDisponiveis[0]} às {horariosDisponiveis[horariosDisponiveis.length - 1]}
+                </span>
+              </p>
+            </div>
+          )
+        ) : (
           <div className="mt-4 pt-4 border-t">
-            <p className="text-sm text-gray-600">
-              Horários baseados nas disponibilidades dos profissionais: 
-              <span className="font-medium ml-1">
-                {horariosDisponiveis[0]} às {horariosDisponiveis[horariosDisponiveis.length - 1]}
-              </span>
-            </p>
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+              <p className="text-sm text-amber-800">
+                ⚠️ <strong>Dia sem atendimento:</strong> Nenhum profissional possui grade configurada para este dia da semana.
+              </p>
+            </div>
           </div>
         )}
       </div>
 
       {/* Timeline dos agendamentos */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+      {!diaTemProfissionaisDisponiveis ? (
+        // Mensagem quando não há profissionais com grade para este dia da semana
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+          <div className="p-8 text-center text-gray-500">
+            <Calendar className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+            <h3 className="text-xl font-medium text-gray-900 mb-2">
+              Dia sem atendimento
+            </h3>
+            <p className="text-gray-600 mb-4">
+              Nenhum profissional possui grade de horários configurada para este dia da semana.
+            </p>
+            <div className="space-y-2 text-sm text-gray-500">
+              <p>💡 Para habilitar agendamentos neste dia:</p>
+              <p>1. Acesse a seção "Disponibilidades"</p>
+              <p>2. Configure uma grade horária incluindo este dia da semana</p>
+              <p>3. Ou configure um horário liberado específico para esta data</p>
+            </div>
+            <div className="mt-6 flex justify-center space-x-2">
+              <Button variant="outline" onClick={() => navegarDia('anterior')}>
+                <ChevronLeft className="w-4 h-4 mr-2" />
+                Dia Anterior
+              </Button>
+              <Button variant="outline" onClick={() => navegarDia('proximo')}>
+                Dia Seguinte
+                <ChevronRight className="w-4 h-4 ml-2" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
         <div className="p-4 border-b">
           <h3 className="text-lg font-semibold text-gray-900">Agenda do Dia</h3>
         </div>
@@ -460,8 +561,8 @@ export function CalendarioDiario({
           })}
         </div>
 
-        {/* Rodapé com resumo */}
-        {agendamentosDoDia.length === 0 && (
+        {/* Rodapé com resumo - apenas quando há profissionais disponíveis */}
+        {agendamentosDoDia.length === 0 && diaTemProfissionaisDisponiveis && (
           <div className="p-8 text-center text-gray-500">
             <Clock className="w-12 h-12 mx-auto mb-4 text-gray-300" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">
@@ -477,6 +578,7 @@ export function CalendarioDiario({
           </div>
         )}
       </div>
+      )}
     </div>
   );
 }
