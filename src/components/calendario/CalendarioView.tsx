@@ -195,6 +195,7 @@ export function CalendarioView({
           onAgendamentoClick={onAgendamentoClick}
           dataAtual={dataAtual}
           onDataAtualChange={setDataAtual}
+          profissionalFiltro={profissionalFiltro}
         />
       )}
     </div>

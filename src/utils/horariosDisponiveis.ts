@@ -103,34 +103,73 @@ export function calcularRangeHorarioGeral(
   let horaMinima: Date | null = null;
   let horaMaxima: Date | null = null;
 
-  todosProfissionais.forEach(({ disponibilidades }) => {
+  console.log('🔍 Calculando range de horários para:', { data, diaSemana, profissionais: todosProfissionais.length });
+
+  todosProfissionais.forEach(({ profissional, disponibilidades }) => {
+    console.log(`👤 Analisando profissional: ${profissional.nome} (${disponibilidades.length} disponibilidades)`);
+    
     disponibilidades.forEach(disp => {
+      console.log(`📅 Disponibilidade ${disp.tipo}:`, {
+        tipo: disp.tipo,
+        diasSemana: disp.diasSemana,
+        horaInicio: disp.horaInicio,
+        horaFim: disp.horaFim,
+        dataHoraInicio: disp.dataHoraInicio,
+        dataHoraFim: disp.dataHoraFim
+      });
+
       if (disp.tipo === 'GRADE' && disp.diasSemana.includes(diaSemana)) {
         if (disp.horaInicio && disp.horaFim) {
           const inicio = new Date(`${data}T${disp.horaInicio}`);
           const fim = new Date(`${data}T${disp.horaFim}`);
           
-          if (!horaMinima || inicio < horaMinima) horaMinima = inicio;
-          if (!horaMaxima || fim > horaMaxima) horaMaxima = fim;
+          console.log(`✅ GRADE válida para ${profissional.nome}: ${disp.horaInicio} - ${disp.horaFim}`);
+          
+          if (!horaMinima || inicio < horaMinima) {
+            horaMinima = inicio;
+            console.log(`🔽 Nova hora mínima: ${inicio.toTimeString().slice(0, 5)} (${profissional.nome})`);
+          }
+          if (!horaMaxima || fim > horaMaxima) {
+            horaMaxima = fim;
+            console.log(`🔼 Nova hora máxima: ${fim.toTimeString().slice(0, 5)} (${profissional.nome})`);
+          }
         }
       } else if (disp.tipo === 'LIBERADO' && disp.dataHoraInicio && disp.dataHoraFim) {
         if (dateUtils.extractDateString(disp.dataHoraInicio) === data) {
           const inicio = dateUtils.fromISOString(disp.dataHoraInicio);
           const fim = dateUtils.fromISOString(disp.dataHoraFim);
           
-          if (!horaMinima || inicio < horaMinima) horaMinima = inicio;
-          if (!horaMaxima || fim > horaMaxima) horaMaxima = fim;
+          console.log(`✅ LIBERADO válido para ${profissional.nome}: ${inicio.toTimeString().slice(0, 5)} - ${fim.toTimeString().slice(0, 5)}`);
+          
+          if (!horaMinima || inicio < horaMinima) {
+            horaMinima = inicio;
+            console.log(`🔽 Nova hora mínima (LIBERADO): ${inicio.toTimeString().slice(0, 5)} (${profissional.nome})`);
+          }
+          if (!horaMaxima || fim > horaMaxima) {
+            horaMaxima = fim;
+            console.log(`🔼 Nova hora máxima (LIBERADO): ${fim.toTimeString().slice(0, 5)} (${profissional.nome})`);
+          }
         }
       }
     });
   });
 
-  if (!horaMinima || !horaMaxima) return null;
+  if (!horaMinima || !horaMaxima) {
+    console.log('⚠️ Nenhuma disponibilidade encontrada, usando horário padrão');
+    // Fallback: se não houver disponibilidades, retorna horário comercial padrão
+    return {
+      horaMinima: '09:00',
+      horaMaxima: '18:00'
+    };
+  }
 
-  return {
+  const resultado = {
     horaMinima: horaMinima.toTimeString().slice(0, 5),
     horaMaxima: horaMaxima.toTimeString().slice(0, 5)
   };
+
+  console.log('✨ Range final calculado:', resultado);
+  return resultado;
 }
 
 function unificarPeriodos(periodos: Array<{ inicio: Date; fim: Date; tipo: string }>): Array<{ inicio: Date; fim: Date }> {

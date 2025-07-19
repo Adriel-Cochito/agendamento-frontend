@@ -4,6 +4,10 @@ import { Button } from '@/components/ui/Button';
 import { Agendamento } from '@/types/agendamento';
 import { obterCorPorStatus } from '@/utils/calendario';
 import { dateUtils } from '../../utils/dateUtils';
+import { useDisponibilidades } from '@/hooks/useDisponibilidades';
+import { useProfissionais } from '@/hooks/useProfissionais';
+import { useAuthStore } from '@/store/authStore';
+import { calcularRangeHorarioGeral } from '@/utils/horariosDisponiveis';
 
 interface CalendarioDiarioProps {
   agendamentos: Agendamento[];
@@ -11,6 +15,7 @@ interface CalendarioDiarioProps {
   onAgendamentoClick: (agendamento: Agendamento) => void;
   dataAtual: Date;
   onDataAtualChange: (data: Date) => void;
+  profissionalFiltro?: number | 'TODOS';
 }
 
 export function CalendarioDiario({
@@ -19,11 +24,20 @@ export function CalendarioDiario({
   onAgendamentoClick,
   dataAtual,
   onDataAtualChange,
+  profissionalFiltro = 'TODOS',
 }: CalendarioDiarioProps) {
   const [agendamentosDoDia, setAgendamentosDoDia] = useState<Agendamento[]>([]);
+  const [horariosDisponiveis, setHorariosDisponiveis] = useState<string[]>([]);
+
+  const user = useAuthStore((state) => state.user);
+  const empresaId = user?.empresaId || 1;
+
+  // Buscar disponibilidades e profissionais
+  const { data: disponibilidades } = useDisponibilidades({ empresaId });
+  const { data: profissionais } = useProfissionais(empresaId);
 
   useEffect(() => {
-    // Filtrar agendamentos do dia atual (comparação simples de strings)
+    // Filtrar agendamentos do dia atual
     const dataAtualString = dateUtils.toDateString(dataAtual);
     
     const agendamentosFiltrados = agendamentos.filter((agendamento) => {
@@ -31,11 +45,92 @@ export function CalendarioDiario({
       return dataAgendamentoString === dataAtualString;
     });
 
-    // Ordenar por horário (comparação de strings ISO)
+    // Ordenar por horário
     agendamentosFiltrados.sort((a, b) => a.dataHora.localeCompare(b.dataHora));
 
     setAgendamentosDoDia(agendamentosFiltrados);
   }, [dataAtual, agendamentos]);
+
+  useEffect(() => {
+    if (!disponibilidades || !profissionais) return;
+
+    console.log('📊 CalendarioDiario: Recalculando horários', {
+      data: dateUtils.toDateString(dataAtual),
+      profissionalFiltro,
+      totalProfissionais: profissionais.length,
+      totalDisponibilidades: disponibilidades.length
+    });
+
+    // Filtrar profissionais se necessário
+    let profissionaisFiltrados = profissionais;
+    if (profissionalFiltro !== 'TODOS') {
+      profissionaisFiltrados = profissionais.filter(p => p.id === profissionalFiltro);
+      console.log(`🔍 Filtrado para profissional ${profissionalFiltro}:`, profissionaisFiltrados.map(p => p.nome));
+    } else {
+      console.log('👥 Usando TODOS os profissionais:', profissionais.map(p => p.nome));
+    }
+
+    // Calcular range de horários baseado nas disponibilidades
+    const dataString = dateUtils.toDateString(dataAtual);
+    const todosProfissionaisComDisp = profissionaisFiltrados.map(prof => {
+      const disponibilidadesDoProfissional = disponibilidades.filter(d => d.profissional.id === prof.id);
+      console.log(`👤 ${prof.nome}: ${disponibilidadesDoProfissional.length} disponibilidades`);
+      return {
+        profissional: prof,
+        disponibilidades: disponibilidadesDoProfissional
+      };
+    });
+
+    const rangeHorarios = calcularRangeHorarioGeral(todosProfissionaisComDisp, dataString);
+
+    if (rangeHorarios) {
+      console.log('✅ Range calculado:', rangeHorarios);
+      // Gerar horários baseados no range das disponibilidades
+      const horarios = gerarHorariosDinamicos(rangeHorarios.horaMinima, rangeHorarios.horaMaxima);
+      setHorariosDisponiveis(horarios);
+    } else {
+      console.log('⚠️ Nenhum range encontrado, usando horários padrão');
+      // Fallback para horários padrão se não houver disponibilidades
+      setHorariosDisponiveis(gerarHorariosPadrao());
+    }
+  }, [dataAtual, disponibilidades, profissionais, profissionalFiltro]);
+
+  const gerarHorariosDinamicos = (horaInicio: string, horaFim: string): string[] => {
+    const horarios: string[] = [];
+    
+    // Parse das horas de início e fim
+    const [inicioHora, inicioMin] = horaInicio.split(':').map(Number);
+    const [fimHora, fimMin] = horaFim.split(':').map(Number);
+    
+    // Converter para minutos
+    const inicioMinutos = inicioHora * 60 + inicioMin;
+    const fimMinutos = fimHora * 60 + fimMin;
+    
+    // Gerar horários de 30 em 30 minutos
+    for (let minutos = inicioMinutos; minutos <= fimMinutos; minutos += 30) {
+      const hora = Math.floor(minutos / 60);
+      const min = minutos % 60;
+      const horarioStr = `${hora.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')}`;
+      horarios.push(horarioStr);
+    }
+    
+    return horarios;
+  };
+
+  const gerarHorariosPadrao = (): string[] => {
+    const horarios: string[] = [];
+    
+    // Horários padrão (9h às 18h) caso não haja disponibilidades
+    for (let hora = 9; hora <= 18; hora++) {
+      for (let minuto = 0; minuto < 60; minuto += 30) {
+        horarios.push(
+          `${hora.toString().padStart(2, '0')}:${minuto.toString().padStart(2, '0')}`
+        );
+      }
+    }
+    
+    return horarios;
+  };
 
   const navegarDia = (direcao: 'anterior' | 'proximo') => {
     const nova = new Date(dataAtual);
@@ -56,16 +151,6 @@ export function CalendarioDiario({
       year: 'numeric',
     }).format(dataAtual);
   };
-
-  // Gerar horários do dia (6h às 22h, intervalos de 30min)
-  const horarios = [];
-  for (let hora = 6; hora <= 22; hora++) {
-    for (let minuto = 0; minuto < 60; minuto += 30) {
-      horarios.push(
-        `${hora.toString().padStart(2, '0')}:${minuto.toString().padStart(2, '0')}`
-      );
-    }
-  }
 
   const obterAgendamentosNoHorario = (horario: string) => {
     return agendamentosDoDia.filter((agendamento) => {
@@ -146,6 +231,18 @@ export function CalendarioDiario({
             <div className="text-sm text-gray-500">Realizados</div>
           </div>
         </div>
+
+        {/* Info sobre horários */}
+        {horariosDisponiveis.length > 0 && (
+          <div className="mt-4 pt-4 border-t">
+            <p className="text-sm text-gray-600">
+              Horários baseados nas disponibilidades dos profissionais: 
+              <span className="font-medium ml-1">
+                {horariosDisponiveis[0]} às {horariosDisponiveis[horariosDisponiveis.length - 1]}
+              </span>
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Timeline dos agendamentos */}
@@ -155,7 +252,7 @@ export function CalendarioDiario({
         </div>
 
         <div className="divide-y divide-gray-100 max-h-[600px] overflow-y-auto">
-          {horarios.map((horario) => {
+          {horariosDisponiveis.map((horario) => {
             const agendamentosNoHorario = obterAgendamentosNoHorario(horario);
             const temAgendamentos = agendamentosNoHorario.length > 0;
 
