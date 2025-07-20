@@ -1,4 +1,4 @@
-// src/hooks/useAgendamentoPublicoLogic.ts
+// src/hooks/useAgendamentoPublico.ts - Atualizado com suporte a parâmetros da URL
 import { useState, useCallback, useEffect } from 'react';
 import { agendamentosPublicosApi, ServicoPublico, AgendaPublica, EmpresaPublica } from '@/api/agendamentosPublicos';
 import { useToast } from '@/hooks/useToast';
@@ -19,6 +19,11 @@ interface EstadoAgendamento {
   };
 }
 
+interface EmpresaInfoUrl {
+  nomeFromUrl: string | null;
+  telefoneFromUrl: string | null;
+}
+
 interface UseAgendamentoPublicoLogicResult {
   // Estados
   loading: boolean;
@@ -28,6 +33,9 @@ interface UseAgendamentoPublicoLogicResult {
   servicos: ServicoPublico[];
   horariosDisponiveis: AgendaPublica[];
   modalStates: EstadoAgendamento;
+  
+  // Informações da URL
+  empresaFromUrl: EmpresaInfoUrl;
   
   // Ações de navegação
   handleServicoSelect: (servico: Servico) => void;
@@ -49,7 +57,10 @@ interface UseAgendamentoPublicoLogicResult {
   carregarHorariosDisponiveis: () => Promise<void>;
 }
 
-export function useAgendamentoPublicoLogic(empresaId: number): UseAgendamentoPublicoLogicResult {
+export function useAgendamentoPublicoLogic(
+  empresaId: number,
+  empresaInfoUrl?: EmpresaInfoUrl
+): UseAgendamentoPublicoLogicResult {
   const { addToast } = useToast();
 
   // Estados principais
@@ -73,21 +84,52 @@ export function useAgendamentoPublicoLogic(empresaId: number): UseAgendamentoPub
     },
   });
 
+  // Informações da empresa vindas da URL
+  const empresaFromUrl: EmpresaInfoUrl = empresaInfoUrl || {
+    nomeFromUrl: null,
+    telefoneFromUrl: null
+  };
+
   // Carregar dados da empresa
   const carregarEmpresa = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
+      
+      console.log('🔄 Carregando empresa via API para ID:', empresaId);
       const empresaData = await agendamentosPublicosApi.getEmpresa(empresaId);
+      console.log('✅ Dados da empresa carregados:', empresaData);
+      
       setEmpresa(empresaData);
+      
+      // Log para comparar dados da API vs URL
+      if (empresaFromUrl.nomeFromUrl || empresaFromUrl.telefoneFromUrl) {
+        console.log('📊 Comparação API vs URL:', {
+          api: {
+            nome: empresaData.nome,
+            telefone: empresaData.telefone
+          },
+          url: {
+            nome: empresaFromUrl.nomeFromUrl,
+            telefone: empresaFromUrl.telefoneFromUrl
+          }
+        });
+      }
+      
     } catch (error: any) {
       const errorMessage = 'Erro ao carregar dados da empresa.';
       setError(errorMessage);
-      console.error('Erro ao carregar empresa:', error);
+      console.error('❌ Erro ao carregar empresa:', error);
+      
+      // Se há informações da URL, pelo menos temos um fallback
+      if (empresaFromUrl.nomeFromUrl) {
+        console.log('💡 Usando dados da URL como fallback');
+        addToast('info', 'Aviso', 'Usando informações do link. Alguns dados podem estar desatualizados.');
+      }
     } finally {
       setLoading(false);
     }
-  }, [empresaId]);
+  }, [empresaId, empresaFromUrl, addToast]);
 
   // Carregar serviços
   const carregarServicos = useCallback(async () => {
@@ -96,10 +138,11 @@ export function useAgendamentoPublicoLogic(empresaId: number): UseAgendamentoPub
       setError(null);
       const servicosData = await agendamentosPublicosApi.getServicos(empresaId);
       setServicos(servicosData.filter(s => s.ativo));
+      console.log('✅ Serviços carregados:', servicosData.length);
     } catch (error: any) {
       const errorMessage = 'Erro ao carregar serviços. Tente recarregar a página.';
       setError(errorMessage);
-      console.error('Erro ao carregar serviços:', error);
+      console.error('❌ Erro ao carregar serviços:', error);
     } finally {
       setLoading(false);
     }
@@ -125,10 +168,11 @@ export function useAgendamentoPublicoLogic(empresaId: number): UseAgendamentoPub
       );
       
       setHorariosDisponiveis(horarios);
+      console.log('✅ Horários carregados:', horarios.length);
     } catch (error: any) {
       const errorMessage = 'Erro ao carregar horários disponíveis.';
       setError(errorMessage);
-      console.error('Erro ao carregar horários:', error);
+      console.error('❌ Erro ao carregar horários:', error);
     } finally {
       setLoading(false);
     }
@@ -137,6 +181,7 @@ export function useAgendamentoPublicoLogic(empresaId: number): UseAgendamentoPub
   // Carregar dados iniciais automaticamente ao montar
   useEffect(() => {
     const carregarDadosIniciais = async () => {
+      console.log('🚀 Iniciando carregamento de dados iniciais');
       await Promise.all([
         carregarEmpresa(),
         carregarServicos()
@@ -155,6 +200,7 @@ export function useAgendamentoPublicoLogic(empresaId: number): UseAgendamentoPub
 
   // Handlers de navegação
   const handleServicoSelect = useCallback((servico: Servico) => {
+    console.log('🎯 Serviço selecionado:', servico.titulo);
     setModalStates(prev => ({
       ...prev,
       selectedServico: servico,
@@ -167,6 +213,7 @@ export function useAgendamentoPublicoLogic(empresaId: number): UseAgendamentoPub
   }, []);
 
   const handleProfissionaisSelect = useCallback((profissionais: Profissional[]) => {
+    console.log('👥 Profissional(is) selecionado(s):', profissionais.map(p => p.nome));
     setModalStates(prev => ({
       ...prev,
       selectedProfissionais: profissionais,
@@ -178,6 +225,7 @@ export function useAgendamentoPublicoLogic(empresaId: number): UseAgendamentoPub
   }, []);
 
   const handleDataSelect = useCallback((data: string) => {
+    console.log('📅 Data selecionada:', data);
     setModalStates(prev => ({
       ...prev,
       selectedDataAgendamento: data,
@@ -188,6 +236,8 @@ export function useAgendamentoPublicoLogic(empresaId: number): UseAgendamentoPub
   }, []);
 
   const handleHorarioSelect = useCallback((dataHora: string, profissionalId?: number) => {
+    console.log('⏰ Horário selecionado:', dataHora, 'Profissional ID:', profissionalId);
+    
     let profissionaisSelecionados = modalStates.selectedProfissionais;
     
     // Se um profissional específico foi selecionado no horário, usar apenas ele
@@ -195,6 +245,7 @@ export function useAgendamentoPublicoLogic(empresaId: number): UseAgendamentoPub
       const profissional = modalStates.selectedProfissionais.find(p => p.id === profissionalId);
       if (profissional) {
         profissionaisSelecionados = [profissional];
+        console.log('👤 Profissional específico selecionado:', profissional.nome);
       }
     }
 
@@ -228,6 +279,7 @@ export function useAgendamentoPublicoLogic(empresaId: number): UseAgendamentoPub
         proximaEtapa = 'servico';
     }
 
+    console.log('⬅️ Voltando da etapa:', etapaAtual, 'para:', proximaEtapa);
     setModalStates(prev => ({
       ...prev,
       etapaAtual: proximaEtapa
@@ -237,6 +289,7 @@ export function useAgendamentoPublicoLogic(empresaId: number): UseAgendamentoPub
 
   // Atualizar dados do cliente
   const atualizarDadosCliente = useCallback((campo: 'nomeCliente' | 'telefoneCliente', valor: string) => {
+    console.log('📝 Atualizando dados do cliente:', campo, valor);
     setModalStates(prev => ({
       ...prev,
       dadosCliente: {
@@ -260,8 +313,10 @@ export function useAgendamentoPublicoLogic(empresaId: number): UseAgendamentoPub
       case 'horario':
         return !!selectedDataHora;
       case 'dados':
-        return dadosCliente.nomeCliente.trim().length >= 3 && 
-               dadosCliente.telefoneCliente.length >= 17;
+        const nomeValido = dadosCliente.nomeCliente.trim().length >= 3;
+        const telefoneValido = dadosCliente.telefoneCliente.length >= 17;
+        console.log('✅ Validação dados:', { nomeValido, telefoneValido });
+        return nomeValido && telefoneValido;
       default:
         return false;
     }
@@ -270,6 +325,8 @@ export function useAgendamentoPublicoLogic(empresaId: number): UseAgendamentoPub
   // Finalizar agendamento
   const finalizarAgendamento = useCallback(async () => {
     const { selectedServico, selectedProfissionais, selectedDataHora, dadosCliente } = modalStates;
+
+    console.log('🎯 Finalizando agendamento...');
 
     if (!selectedServico || selectedProfissionais.length === 0 || !selectedDataHora) {
       setError('Dados incompletos para finalizar o agendamento.');
@@ -302,16 +359,24 @@ export function useAgendamentoPublicoLogic(empresaId: number): UseAgendamentoPub
         profissional: { id: selectedProfissionais[0].id }
       };
 
+      console.log('📤 Enviando agendamento:', agendamentoData);
+
       await agendamentosPublicosApi.createAgendamento(empresaId, agendamentoData);
+      
+      console.log('✅ Agendamento criado com sucesso!');
       
       setModalStates(prev => ({
         ...prev,
         etapaAtual: 'confirmacao'
       }));
       setSucesso(true);
-      addToast('success', 'Agendamento confirmado!', 'Seu agendamento foi realizado com sucesso.');
+      
+      // Determinar nome da empresa para o toast
+      const nomeEmpresa = empresa?.nome || empresaFromUrl.nomeFromUrl || 'empresa';
+      
+      addToast('success', 'Agendamento confirmado!', `Seu agendamento com ${nomeEmpresa} foi realizado com sucesso.`);
     } catch (error: any) {
-      console.error('Erro ao criar agendamento:', error);
+      console.error('❌ Erro ao criar agendamento:', error);
       
       if (error.response?.status === 409) {
         setError('Este horário não está mais disponível. Por favor, escolha outro horário.');
@@ -329,10 +394,11 @@ export function useAgendamentoPublicoLogic(empresaId: number): UseAgendamentoPub
     } finally {
       setLoading(false);
     }
-  }, [modalStates, empresaId, addToast]);
+  }, [modalStates, empresaId, addToast, empresa, empresaFromUrl]);
 
   // Reiniciar processo
   const reiniciarAgendamento = useCallback(() => {
+    console.log('🔄 Reiniciando processo de agendamento');
     setModalStates({
       etapaAtual: 'servico',
       selectedServico: null,
@@ -359,6 +425,9 @@ export function useAgendamentoPublicoLogic(empresaId: number): UseAgendamentoPub
     horariosDisponiveis,
     modalStates,
     
+    // Informações da URL
+    empresaFromUrl,
+    
     // Ações de navegação
     handleServicoSelect,
     handleProfissionaisSelect,
@@ -375,7 +444,6 @@ export function useAgendamentoPublicoLogic(empresaId: number): UseAgendamentoPub
     validarEtapa,
     
     // Carregamento de dados
-    carregarEmpresa,
     carregarServicos,
     carregarHorariosDisponiveis,
   };

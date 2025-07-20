@@ -1,10 +1,11 @@
-// src/components/agendamento/CompartilharLink.tsx - Com parâmetros na URL
+// src/components/agendamento/CompartilharLink.tsx - Atualizado com novos utilitários
 import React, { useState } from 'react';
-import { Share2, Copy, CheckCircle, ExternalLink, QrCode } from 'lucide-react';
+import { Share2, Copy, CheckCircle, ExternalLink, QrCode, AlertTriangle, Info } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { useAuthStore } from '@/store/authStore';
 import { useEmpresaAtual } from '@/hooks/useEmpresa';
+import { PublicSchedulingUrlManager, validateSchedulingUrlParams } from '@/utils/urlUtils';
 
 interface CompartilharLinkProps {
   onClose?: () => void;
@@ -21,30 +22,22 @@ export function CompartilharLink({ onClose }: CompartilharLinkProps) {
   // Usar hook para buscar dados da empresa
   const { data: empresa, isLoading: loadingEmpresa } = useEmpresaAtual();
   
-  // Função para codificar parâmetros da URL
-  const encodeUrlParam = (param: string) => {
-    return encodeURIComponent(param.replace(/\s+/g, '-').toLowerCase());
-  };
+  // Instanciar o gerenciador de URLs
+  const urlManager = new PublicSchedulingUrlManager();
 
-  // Gerar URL com parâmetros da empresa
-  const gerarLinkAgendamento = () => {
-    const baseUrl = window.location.origin;
-    
-    if (empresa?.nome && empresa?.telefone) {
-      const nomeEncoded = encodeUrlParam(empresa.nome);
-      const telefoneEncoded = encodeUrlParam(empresa.telefone);
-      return `${baseUrl}/agendamento/${empresaId}/${nomeEncoded}/${telefoneEncoded}`;
-    } else if (empresa?.nome) {
-      const nomeEncoded = encodeUrlParam(empresa.nome);
-      const telefoneEncoded = encodeUrlParam('sem-telefone');
-      return `${baseUrl}/agendamento/${empresaId}/${nomeEncoded}/${telefoneEncoded}`;
-    } else {
-      // Fallback para URL simples
-      return `${baseUrl}/agendamento/${empresaId}`;
-    }
-  };
+  // Gerar URL com validação
+  const { url: linkAgendamento, warnings } = urlManager.generateValidatedUrl(
+    empresaId,
+    empresa?.nome,
+    empresa?.telefone
+  );
 
-  const linkAgendamento = gerarLinkAgendamento();
+  // Validar parâmetros
+  const validation = validateSchedulingUrlParams({
+    empresaId: empresaId.toString(),
+    nomeEmpresa: empresa?.nome,
+    telefoneEmpresa: empresa?.telefone
+  });
 
   const copiarLink = async () => {
     try {
@@ -96,6 +89,9 @@ export function CompartilharLink({ onClose }: CompartilharLinkProps) {
     onClose?.();
   };
 
+  // Analisar URL para mostrar preview
+  const urlAnalysis = urlManager.parseUrl(linkAgendamento);
+
   return (
     <>
       <Button
@@ -114,48 +110,97 @@ export function CompartilharLink({ onClose }: CompartilharLinkProps) {
         size="lg"
       >
         <div className="space-y-6">
+          {/* Validações e Avisos */}
+          {!validation.isValid && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <div className="flex items-start space-x-3">
+                <AlertTriangle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <h4 className="font-medium text-red-900 mb-2">Problemas encontrados:</h4>
+                  <ul className="text-sm text-red-800 space-y-1">
+                    {validation.errors.map((error, index) => (
+                      <li key={index}>• {error}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {warnings.length > 0 && (
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+              <div className="flex items-start space-x-3">
+                <Info className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <h4 className="font-medium text-amber-900 mb-2">Avisos:</h4>
+                  <ul className="text-sm text-amber-800 space-y-1">
+                    {warnings.map((warning, index) => (
+                      <li key={index}>• {warning}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {validation.warnings.length > 0 && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div className="flex items-start space-x-3">
+                <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <h4 className="font-medium text-blue-900 mb-2">Dicas:</h4>
+                  <ul className="text-sm text-blue-800 space-y-1">
+                    {validation.warnings.map((warning, index) => (
+                      <li key={index}>• {warning}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Descrição */}
           <div className="text-center">
             <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <Share2 className="w-8 h-8 text-blue-600" />
             </div>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              Link Público de Agendamento
+              Link Inteligente de Agendamento
             </h3>
             <p className="text-gray-600 text-sm">
               {loadingEmpresa 
                 ? 'Carregando informações...'
-                : `Compartilhe este link para que os clientes possam agendar com ${empresa?.nome || 'sua empresa'}.`
+                : empresa?.nome
+                  ? `Link personalizado para ${empresa.nome} com informações pré-carregadas`
+                  : 'Link de agendamento com ID da empresa'
               }
             </p>
           </div>
 
-          {/* Nome da empresa */}
-          {empresa?.nome && !loadingEmpresa && (
-            <div className="bg-primary-50 border border-primary-200 rounded-lg p-4">
-              <div className="text-center mb-3">
-                <h4 className="font-semibold text-primary-900">{empresa.nome}</h4>
-                <p className="text-sm text-primary-700 mt-1">
-                  Os clientes verão este nome ao acessar o link
-                </p>
-              </div>
-              
-              {/* Informações incluídas na URL */}
-              <div className="bg-white rounded-lg p-3 border border-primary-200">
-                <p className="text-xs font-medium text-primary-800 mb-2">
-                  ✅ Informações incluídas no link:
-                </p>
-                <div className="space-y-1 text-xs text-primary-700">
-                  <p>📢 Nome: {empresa.nome}</p>
-                  {empresa.telefone ? (
-                    <p>📞 Telefone: {empresa.telefone}</p>
-                  ) : (
-                    <p>📞 Telefone: Não informado</p>
+          {/* Análise da URL */}
+          {urlAnalysis.isValid && (
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+              <h4 className="font-medium text-green-900 mb-3">✅ Informações incluídas no link:</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-green-800">
+                <div>
+                  <p><strong>ID da Empresa:</strong> {urlAnalysis.empresaId}</p>
+                  {urlAnalysis.nomeEmpresa && (
+                    <p><strong>Nome:</strong> {urlAnalysis.nomeEmpresa}</p>
                   )}
-                  <p className="mt-2 text-primary-600 italic">
-                    * Essas informações são enviadas pela URL e aparecerão automaticamente para o cliente
-                  </p>
                 </div>
+                <div>
+                  {urlAnalysis.telefoneEmpresa && (
+                    <p><strong>Telefone:</strong> {urlAnalysis.telefoneEmpresa}</p>
+                  )}
+                  {empresa?.email && (
+                    <p><strong>Email (via API):</strong> {empresa.email}</p>
+                  )}
+                </div>
+              </div>
+              <div className="mt-3 pt-3 border-t border-green-300">
+                <p className="text-xs text-green-700 italic">
+                  * Essas informações serão exibidas automaticamente quando o cliente acessar o link
+                </p>
               </div>
             </div>
           )}
@@ -163,7 +208,7 @@ export function CompartilharLink({ onClose }: CompartilharLinkProps) {
           {/* Link */}
           <div className="bg-gray-50 rounded-lg p-4">
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Link de Agendamento Inteligente
+              Link de Agendamento Personalizado
             </label>
             <div className="flex items-center space-x-2">
               <input
@@ -192,10 +237,13 @@ export function CompartilharLink({ onClose }: CompartilharLinkProps) {
               </Button>
             </div>
             
-            {/* Preview da URL */}
+            {/* Preview da estrutura da URL */}
             {empresa?.nome && !loadingEmpresa && (
               <div className="mt-2 p-2 bg-white border border-gray-200 rounded text-xs text-gray-600">
-                <span className="font-medium">Preview:</span> .../agendamento/{empresaId}/{encodeUrlParam(empresa.nome)}/{encodeUrlParam(empresa.telefone || 'sem-telefone')}
+                <span className="font-medium">Estrutura:</span> 
+                <span className="ml-1">
+                  /agendamento/{empresaId}/{empresa.nome ? 'nome-da-empresa' : 'sem-nome'}/{empresa.telefone ? 'telefone' : 'sem-telefone'}
+                </span>
               </div>
             )}
           </div>
@@ -260,13 +308,12 @@ export function CompartilharLink({ onClose }: CompartilharLinkProps) {
               <li>Imprima o QR Code para usar em materiais físicos</li>
               <li>Clientes poderão agendar 24h por dia, sem precisar te ligar</li>
               {empresa?.nome && (
-                <>
-                  <li>✨ O nome "{empresa.nome}" aparecerá automaticamente</li>
-                  {empresa.telefone && (
-                    <li>📞 O telefone "{empresa.telefone}" será exibido para contato</li>
-                  )}
-                </>
+                <li>✨ O nome "{empresa.nome}" aparecerá automaticamente</li>
               )}
+              {empresa?.telefone && (
+                <li>📞 O telefone "{empresa.telefone}" será exibido para contato</li>
+              )}
+              <li>💡 As informações são passadas pela URL, garantindo carregamento rápido</li>
             </ul>
           </div>
 
@@ -275,7 +322,7 @@ export function CompartilharLink({ onClose }: CompartilharLinkProps) {
             <Button variant="outline" onClick={fecharModal}>
               Fechar
             </Button>
-            <Button onClick={copiarLink}>
+            <Button onClick={copiarLink} disabled={!validation.isValid}>
               {linkCopiado ? 'Link Copiado!' : 'Copiar Link Inteligente'}
             </Button>
           </div>

@@ -1,4 +1,4 @@
-// src/pages/AgendamentoPublico.tsx - Versão refatorada e completa
+// src/pages/AgendamentoPublico.tsx - Versão com parâmetros da URL
 import React from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -14,7 +14,9 @@ import {
   ArrowLeft,
   DollarSign,
   Users,
-  ChevronLeft
+  ChevronLeft,
+  MapPin,
+  Mail
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -39,12 +41,44 @@ const etapas = [
 ];
 
 export default function AgendamentoPublico({ empresaId: propEmpresaId }: AgendamentoPublicoProps) {
-  const { empresaId: paramEmpresaId } = useParams<{ empresaId: string }>();
+  const { 
+    empresaId: paramEmpresaId, 
+    nomeEmpresa: nomeEmpresaParam, 
+    telefoneEmpresa: telefoneEmpresaParam 
+  } = useParams<{ 
+    empresaId: string; 
+    nomeEmpresa?: string; 
+    telefoneEmpresa?: string; 
+  }>();
   const [searchParams] = useSearchParams();
 
-  // Determinar empresaId
-  const empresaId = propEmpresaId || paramEmpresaId || searchParams.get('empresaId') || '1';
-  const empresaIdNum = Number(empresaId);
+  // Função para decodificar parâmetros da URL
+  const decodeUrlParam = (param: string | undefined): string => {
+    if (!param) return '';
+    try {
+      return decodeURIComponent(param.replace(/-/g, ' '));
+    } catch (error) {
+      console.error('Erro ao decodificar parâmetro:', error);
+      return param.replace(/-/g, ' ');
+    }
+  };
+
+  // Extrair informações da empresa da URL
+  const empresaInfo = {
+    id: propEmpresaId || paramEmpresaId || searchParams.get('empresaId') || '1',
+    nomeFromUrl: nomeEmpresaParam ? decodeUrlParam(nomeEmpresaParam) : null,
+    telefoneFromUrl: telefoneEmpresaParam && telefoneEmpresaParam !== 'sem-telefone' 
+      ? decodeUrlParam(telefoneEmpresaParam) : null
+  };
+
+  const empresaIdNum = Number(empresaInfo.id);
+
+  console.log('🔍 Parâmetros da URL extraídos:', {
+    empresaId: empresaInfo.id,
+    nomeFromUrl: empresaInfo.nomeFromUrl,
+    telefoneFromUrl: empresaInfo.telefoneFromUrl,
+    paramsRaw: { nomeEmpresaParam, telefoneEmpresaParam }
+  });
 
   // Hook customizado para toda a lógica
   const {
@@ -65,7 +99,22 @@ export default function AgendamentoPublico({ empresaId: propEmpresaId }: Agendam
     validarEtapa,
   } = useAgendamentoPublicoLogic(empresaIdNum);
 
-  if (!empresaId) {
+  // Determinar qual nome e telefone usar (prioridade: API > URL > fallback)
+  const empresaDisplay = {
+    nome: empresa?.nome || empresaInfo.nomeFromUrl || 'Empresa',
+    telefone: empresa?.telefone || empresaInfo.telefoneFromUrl || null,
+    email: empresa?.email || null
+  };
+
+  console.log('📊 Dados da empresa para exibição:', {
+    nomeApi: empresa?.nome,
+    nomeUrl: empresaInfo.nomeFromUrl,
+    telefoneApi: empresa?.telefone,
+    telefoneUrl: empresaInfo.telefoneFromUrl,
+    final: empresaDisplay
+  });
+
+  if (!empresaInfo.id) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -89,12 +138,46 @@ export default function AgendamentoPublico({ empresaId: propEmpresaId }: Agendam
           <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-primary-500 to-primary-600 rounded-2xl shadow-lg mb-6">
             <Calendar className="w-10 h-10 text-white" />
           </div>
+          
+          {/* Nome da empresa com destaque */}
           <h1 className="text-4xl font-bold text-gray-900 mb-2">
-            {empresa ? `${empresa.nome}` : 'Agende seu Atendimento'}
+            {empresaDisplay.nome}
           </h1>
-          <p className="text-xl text-gray-600">
-            {empresa ? 'Escolha o serviço, profissional e horário que melhor atende você' : 'Carregando informações...'}
-          </p>
+          
+          {/* Informações adicionais da empresa */}
+          <div className="space-y-2 mb-4">
+            <p className="text-xl text-gray-600">
+              Agende seu atendimento online
+            </p>
+            
+            {/* Informações de contato da empresa */}
+            <div className="flex items-center justify-center space-x-6 text-sm text-gray-500">
+              {empresaDisplay.telefone && (
+                <div className="flex items-center space-x-1">
+                  <Phone className="w-4 h-4" />
+                  <span>{empresaDisplay.telefone}</span>
+                </div>
+              )}
+              {empresaDisplay.email && (
+                <div className="flex items-center space-x-1">
+                  <Mail className="w-4 h-4" />
+                  <span>{empresaDisplay.email}</span>
+                </div>
+              )}
+              <div className="flex items-center space-x-1">
+                <Calendar className="w-4 h-4" />
+                <span>Agendamento 24h</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Indicador de fonte dos dados */}
+          {empresaInfo.nomeFromUrl && !empresa?.nome && (
+            <div className="inline-flex items-center px-3 py-1 rounded-full text-xs bg-blue-50 text-blue-700 border border-blue-200 mb-4">
+              <CheckCircle className="w-3 h-3 mr-1" />
+              Link personalizado para {empresaDisplay.nome}
+            </div>
+          )}
         </motion.div>
 
         {/* Breadcrumb Progress */}
@@ -199,7 +282,7 @@ export default function AgendamentoPublico({ empresaId: propEmpresaId }: Agendam
                       Escolha o Serviço
                     </h2>
                     <p className="text-gray-600">
-                      Selecione o tipo de atendimento que você deseja
+                      Selecione o tipo de atendimento que você deseja com {empresaDisplay.nome}
                     </p>
                   </div>
 
@@ -207,6 +290,11 @@ export default function AgendamentoPublico({ empresaId: propEmpresaId }: Agendam
                     <div className="text-center py-12">
                       <Tag className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                       <p className="text-gray-500">Nenhum serviço disponível no momento.</p>
+                      {empresaDisplay.telefone && (
+                        <p className="text-sm text-gray-400 mt-2">
+                          Entre em contato: {empresaDisplay.telefone}
+                        </p>
+                      )}
                     </div>
                   )}
 
@@ -269,7 +357,7 @@ export default function AgendamentoPublico({ empresaId: propEmpresaId }: Agendam
                         Escolha o Profissional
                       </h2>
                       <p className="text-gray-600">
-                        Selecione quem realizará seu atendimento
+                        Selecione quem realizará seu atendimento na {empresaDisplay.nome}
                       </p>
                     </div>
                     <Button
@@ -411,7 +499,7 @@ export default function AgendamentoPublico({ empresaId: propEmpresaId }: Agendam
                         Seus Dados
                       </h2>
                       <p className="text-gray-600">
-                        Finalize seu agendamento
+                        Finalize seu agendamento com {empresaDisplay.nome}
                       </p>
                     </div>
                     <Button
@@ -424,7 +512,7 @@ export default function AgendamentoPublico({ empresaId: propEmpresaId }: Agendam
                     </Button>
                   </div>
 
-                  {/* Resumo completo */}
+                  {/* Resumo completo com informações da empresa */}
                   <div className="bg-gradient-to-r from-primary-50 to-blue-50 border border-primary-200 rounded-xl p-6">
                     <h3 className="font-semibold text-primary-900 mb-4 flex items-center">
                       <CheckCircle className="w-5 h-5 mr-2" />
@@ -432,6 +520,7 @@ export default function AgendamentoPublico({ empresaId: propEmpresaId }: Agendam
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                       <div>
+                        <p><strong>Empresa:</strong> {empresaDisplay.nome}</p>
                         <p><strong>Serviço:</strong> {modalStates.selectedServico?.titulo}</p>
                         <p><strong>Profissional:</strong> {modalStates.selectedProfissionais[0]?.nome}</p>
                       </div>
@@ -441,6 +530,14 @@ export default function AgendamentoPublico({ empresaId: propEmpresaId }: Agendam
                         <p><strong>Valor:</strong> R$ {modalStates.selectedServico?.preco.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
                       </div>
                     </div>
+                    {empresaDisplay.telefone && (
+                      <div className="mt-3 pt-3 border-t border-primary-300">
+                        <p className="text-xs text-primary-700">
+                          <Phone className="w-3 h-3 inline mr-1" />
+                          Contato da empresa: {empresaDisplay.telefone}
+                        </p>
+                      </div>
+                    )}
                   </div>
 
                   {/* Formulário de dados */}
@@ -504,16 +601,20 @@ export default function AgendamentoPublico({ empresaId: propEmpresaId }: Agendam
                       🎉 Agendamento Confirmado!
                     </h2>
                     <p className="text-xl text-gray-600 mb-6">
-                      Seu atendimento foi agendado com sucesso
+                      Seu atendimento com {empresaDisplay.nome} foi agendado com sucesso
                     </p>
                   </div>
 
-                  {/* Detalhes finais */}
+                  {/* Detalhes finais com informações completas */}
                   <div className="bg-green-50 border border-green-200 rounded-xl p-6 text-left max-w-lg mx-auto">
                     <h3 className="font-bold text-green-900 mb-4 text-center">
                       Detalhes do seu Agendamento
                     </h3>
                     <div className="space-y-3 text-sm text-green-800">
+                      <div className="flex justify-between">
+                        <span className="font-medium">Empresa:</span>
+                        <span>{empresaDisplay.nome}</span>
+                      </div>
                       <div className="flex justify-between">
                         <span className="font-medium">Cliente:</span>
                         <span>{modalStates.dadosCliente.nomeCliente}</span>
@@ -550,6 +651,27 @@ export default function AgendamentoPublico({ empresaId: propEmpresaId }: Agendam
                         <span>R$ {modalStates.selectedServico?.preco.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
                       </div>
                     </div>
+                    
+                    {/* Informações de contato da empresa */}
+                    {(empresaDisplay.telefone || empresaDisplay.email) && (
+                      <div className="mt-4 pt-3 border-t border-green-300">
+                        <h4 className="font-medium text-green-900 mb-2">Contato da Empresa:</h4>
+                        <div className="space-y-1 text-xs text-green-700">
+                          {empresaDisplay.telefone && (
+                            <div className="flex items-center space-x-2">
+                              <Phone className="w-3 h-3" />
+                              <span>{empresaDisplay.telefone}</span>
+                            </div>
+                          )}
+                          {empresaDisplay.email && (
+                            <div className="flex items-center space-x-2">
+                              <Mail className="w-3 h-3" />
+                              <span>{empresaDisplay.email}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   {/* Informações importantes */}
@@ -560,6 +682,9 @@ export default function AgendamentoPublico({ empresaId: propEmpresaId }: Agendam
                       <p>• Em caso de imprevistos, entre em contato conosco</p>
                       <p>• Traga um documento de identificação</p>
                       <p>• Seu agendamento foi registrado com sucesso</p>
+                      {empresaDisplay.telefone && (
+                        <p>• Contato direto: {empresaDisplay.telefone}</p>
+                      )}
                     </div>
                   </div>
 
@@ -607,7 +732,7 @@ export default function AgendamentoPublico({ empresaId: propEmpresaId }: Agendam
           </motion.div>
         )}
 
-        {/* Help Section */}
+        {/* Help Section - Atualizada com informações da empresa */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -617,13 +742,21 @@ export default function AgendamentoPublico({ empresaId: propEmpresaId }: Agendam
           <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
             <h3 className="font-semibold text-gray-900 mb-2">Precisa de Ajuda?</h3>
             <p className="text-gray-600 text-sm mb-4">
-              Entre em contato conosco se tiver dúvidas sobre o agendamento
+              Entre em contato com {empresaDisplay.nome} se tiver dúvidas sobre o agendamento
             </p>
-            <div className="flex items-center justify-center space-x-6 text-sm">
-              <div className="flex items-center space-x-2 text-gray-600">
-                <Phone className="w-4 h-4" />
-                <span>Suporte por telefone</span>
-              </div>
+            <div className="flex items-center justify-center space-x-6 text-sm flex-wrap gap-2">
+              {empresaDisplay.telefone && (
+                <div className="flex items-center space-x-2 text-gray-600">
+                  <Phone className="w-4 h-4" />
+                  <span>{empresaDisplay.telefone}</span>
+                </div>
+              )}
+              {empresaDisplay.email && (
+                <div className="flex items-center space-x-2 text-gray-600">
+                  <Mail className="w-4 h-4" />
+                  <span>{empresaDisplay.email}</span>
+                </div>
+              )}
               <div className="flex items-center space-x-2 text-gray-600">
                 <Clock className="w-4 h-4" />
                 <span>Agendamento 24h</span>
@@ -633,6 +766,16 @@ export default function AgendamentoPublico({ empresaId: propEmpresaId }: Agendam
                 <span>Confirmação imediata</span>
               </div>
             </div>
+            
+            {/* Indicador da fonte dos dados */}
+            {empresaInfo.nomeFromUrl && (
+              <div className="mt-4 pt-3 border-t border-gray-100">
+                <p className="text-xs text-gray-400">
+                  ✨ Link personalizado para {empresaDisplay.nome}
+                  {empresaInfo.telefoneFromUrl && ` • ${empresaInfo.telefoneFromUrl}`}
+                </p>
+              </div>
+            )}
           </div>
         </motion.div>
       </div>
