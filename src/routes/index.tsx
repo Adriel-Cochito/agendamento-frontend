@@ -1,3 +1,4 @@
+// src/routes/index.tsx - Versão atualizada
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { Login } from '@/pages/Login';
 import { Signup } from '@/pages/Signup';
@@ -8,6 +9,7 @@ import { Disponibilidades } from '@/pages/Disponibilidades';
 import { Agendamentos } from '@/pages/Agendamentos';
 import { ProtectedRoute } from './ProtectedRoute';
 import { MainLayout } from '@/components/layout/MainLayout';
+import AgendamentoPublico from '@/pages/AgendamentoPublico';
 
 export const router = createBrowserRouter([
   {
@@ -17,6 +19,16 @@ export const router = createBrowserRouter([
   {
     path: '/cadastro',
     element: <Signup />,
+  },
+  // Rota pública para agendamentos
+  {
+    path: '/agendamento/:empresaId',
+    element: <AgendamentoPublico />,
+  },
+  // Rota alternativa com query param
+  {
+    path: '/agendamento',
+    element: <AgendamentoPublico />,
   },
   {
     path: '/',

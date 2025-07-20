@@ -1,9 +1,11 @@
+// src/pages/Agendamentos.tsx - Versão atualizada
 import { useState } from 'react';
-import { Plus, List, CalendarDays } from 'lucide-react';
+import { Plus, List, CalendarDays, Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { CalendarioView } from '@/components/calendario/CalendarioView';
 import { AgendamentosLista } from '@/components/agendamento/AgendamentosLista';
 import { AgendamentosModals } from '@/components/agendamento/AgendamentosModals';
+import { CompartilharLink } from '@/components/agendamento/CompartilharLink';
 import { useAuthStore } from '@/store/authStore';
 import { useAgendamentosLogic } from '@/hooks/useAgendamentosLogic';
 
@@ -100,6 +102,9 @@ export function Agendamentos() {
             </div>
           </div>
 
+          {/* Botão de Compartilhar Link */}
+          <CompartilharLink />
+
           <Button 
             onClick={() => handleNovoAgendamento()} 
             className="sm:w-auto shadow-lg"
@@ -138,8 +143,14 @@ export function Agendamentos() {
             )}
           </div>
           
-          <div className="text-xs text-gray-400">
-            {agendamentos?.length || 0} agendamento(s) total
+          <div className="flex items-center space-x-4">
+            <div className="text-xs text-gray-400">
+              {agendamentos?.length || 0} agendamento(s) total
+            </div>
+            <div className="flex items-center space-x-1 text-xs text-blue-600">
+              <Share2 className="w-3 h-3" />
+              <span>Link público disponível</span>
+            </div>
           </div>
         </div>
       </div>
