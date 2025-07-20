@@ -1,5 +1,5 @@
 // src/pages/AgendamentoPublico.tsx - Versão com parâmetros da URL
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -27,6 +27,9 @@ import { HorarioSelectorCompact } from '@/components/agendamento/HorarioSelector
 import { maskPhone } from '@/lib/masks';
 import { dateUtils } from '@/utils/dateUtils';
 import { useAgendamentoPublicoLogic } from '@/hooks/useAgendamentoPublico';
+import { ServicoPublico } from '@/api/agendamentosPublicos';
+import { Servico } from '@/types/servico';
+import { Profissional } from '@/types/profissional';
 
 interface AgendamentoPublicoProps {
   empresaId?: string;
@@ -40,6 +43,27 @@ const etapas = [
   { key: 'dados', label: 'Seus Dados', numero: 5 },
 ];
 
+// Função para converter ServicoPublico para Servico
+const mapServicoPublicoToServico = (servicoPublico: ServicoPublico): Servico => {
+  return {
+    id: servicoPublico.id,
+    titulo: servicoPublico.titulo,
+    descricao: servicoPublico.descricao,
+    preco: servicoPublico.preco,
+    duracao: servicoPublico.duracao,
+    empresaId: servicoPublico.empresaId,
+    ativo: servicoPublico.ativo,
+    profissionais: servicoPublico.profissionais?.map(prof => ({
+      id: prof.id,
+      nome: prof.nome,
+      email: prof.email,
+      perfil: (prof.perfil as 'OWNER' | 'ADMIN' | 'USER') || 'USER', // Type assertion com fallback
+      ativo: prof.ativo,
+      empresaId: prof.empresaId,
+    })) as Profissional[]
+  };
+};
+
 export default function AgendamentoPublico({ empresaId: propEmpresaId }: AgendamentoPublicoProps) {
   const { 
     empresaId: paramEmpresaId, 
@@ -52,7 +76,7 @@ export default function AgendamentoPublico({ empresaId: propEmpresaId }: Agendam
   }>();
   const [searchParams] = useSearchParams();
 
-  // Função para decodificar parâmetros da URL
+  // Função para decodificar parâmetros da URL (movida para dentro do componente)
   const decodeUrlParam = (param: string | undefined): string => {
     if (!param) return '';
     try {
@@ -63,24 +87,17 @@ export default function AgendamentoPublico({ empresaId: propEmpresaId }: Agendam
     }
   };
 
-  // Extrair informações da empresa da URL
-  const empresaInfo = {
+  // Extrair informações da empresa da URL (memoizado)
+  const empresaInfo = useMemo(() => ({
     id: propEmpresaId || paramEmpresaId || searchParams.get('empresaId') || '1',
     nomeFromUrl: nomeEmpresaParam ? decodeUrlParam(nomeEmpresaParam) : null,
     telefoneFromUrl: telefoneEmpresaParam && telefoneEmpresaParam !== 'sem-telefone' 
       ? decodeUrlParam(telefoneEmpresaParam) : null
-  };
+  }), [propEmpresaId, paramEmpresaId, nomeEmpresaParam, telefoneEmpresaParam, searchParams]);
 
   const empresaIdNum = Number(empresaInfo.id);
 
-  console.log('🔍 Parâmetros da URL extraídos:', {
-    empresaId: empresaInfo.id,
-    nomeFromUrl: empresaInfo.nomeFromUrl,
-    telefoneFromUrl: empresaInfo.telefoneFromUrl,
-    paramsRaw: { nomeEmpresaParam, telefoneEmpresaParam }
-  });
-
-  // Hook customizado para toda a lógica
+  // Hook customizado para toda a lógica (agora com dependências estáveis)
   const {
     loading,
     error,
@@ -99,20 +116,12 @@ export default function AgendamentoPublico({ empresaId: propEmpresaId }: Agendam
     validarEtapa,
   } = useAgendamentoPublicoLogic(empresaIdNum);
 
-  // Determinar qual nome e telefone usar (prioridade: API > URL > fallback)
-  const empresaDisplay = {
+  // Determinar qual nome e telefone usar (memoizado para evitar re-renders)
+  const empresaDisplay = useMemo(() => ({
     nome: empresa?.nome || empresaInfo.nomeFromUrl || 'Empresa',
     telefone: empresa?.telefone || empresaInfo.telefoneFromUrl || null,
     email: empresa?.email || null
-  };
-
-  console.log('📊 Dados da empresa para exibição:', {
-    nomeApi: empresa?.nome,
-    nomeUrl: empresaInfo.nomeFromUrl,
-    telefoneApi: empresa?.telefone,
-    telefoneUrl: empresaInfo.telefoneFromUrl,
-    final: empresaDisplay
-  });
+  }), [empresa?.nome, empresa?.telefone, empresa?.email, empresaInfo.nomeFromUrl, empresaInfo.telefoneFromUrl]);
 
   if (!empresaInfo.id) {
     return (
@@ -299,14 +308,18 @@ export default function AgendamentoPublico({ empresaId: propEmpresaId }: Agendam
                   )}
 
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                    {servicos.map((servico) => (
-                      <motion.button
-                        key={servico.id}
-                        onClick={() => handleServicoSelect(servico)}
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        className="text-left p-6 border-2 border-gray-200 rounded-xl hover:border-primary-300 hover:bg-primary-50 transition-all duration-200 group"
-                      >
+                    {servicos.map((servico) => {
+                      // Converter ServicoPublico para Servico antes de usar
+                      const servicoMapeado = mapServicoPublicoToServico(servico);
+                      
+                      return (
+                        <motion.button
+                          key={servico.id}
+                          onClick={() => handleServicoSelect(servicoMapeado)}
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          className="text-left p-6 border-2 border-gray-200 rounded-xl hover:border-primary-300 hover:bg-primary-50 transition-all duration-200 group"
+                        >
                         <div className="flex items-start justify-between mb-4">
                           <div className="flex-1">
                             <h3 className="text-lg font-semibold text-gray-900 group-hover:text-primary-700 transition-colors">
@@ -337,7 +350,8 @@ export default function AgendamentoPublico({ empresaId: propEmpresaId }: Agendam
                           </div>
                         </div>
                       </motion.button>
-                    ))}
+                      );
+                    })}
                   </div>
                 </motion.div>
               )}
@@ -373,8 +387,8 @@ export default function AgendamentoPublico({ empresaId: propEmpresaId }: Agendam
                   {/* Resumo do serviço */}
                   <div className="bg-primary-50 border border-primary-200 rounded-xl p-4">
                     <p className="text-sm text-primary-800">
-                      <strong>Serviço selecionado:</strong> {modalStates.selectedServico.titulo} - 
-                      <strong> R$ {modalStates.selectedServico.preco.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</strong>
+                      <strong>Serviço selecionado:</strong> {modalStates.selectedServico?.titulo} - 
+                      <strong> R$ {modalStates.selectedServico?.preco.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</strong>
                     </p>
                   </div>
 

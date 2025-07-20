@@ -1,5 +1,5 @@
-// src/components/agendamento/ProfissionalSelector.tsx
-import { useState } from 'react';
+// src/components/agendamento/ProfissionalSelector.tsx - Versão otimizada
+import { useState, useCallback, useMemo, memo } from 'react';
 import { User, Users, Check, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Profissional } from '@/types/profissional';
@@ -10,31 +10,98 @@ interface ProfissionalSelectorProps {
   onProfissionaisSelect: (profissionais: Profissional[]) => void;
   selectedProfissionais?: Profissional[];
   singleSelect?: boolean;
-  profissionaisDisponiveis?: Profissional[]; // Novos: profissionais pré-filtrados
+  profissionaisDisponiveis?: Profissional[];
 }
 
-export function ProfissionalSelector({
+// Componente de item de profissional memoizado
+const ProfissionalItem = memo(({ 
+  profissional, 
+  isSelected, 
+  onToggle 
+}: { 
+  profissional: Profissional; 
+  isSelected: boolean; 
+  onToggle: (profissional: Profissional) => void;
+}) => {
+  const handleClick = useCallback(() => {
+    onToggle(profissional);
+  }, [profissional, onToggle]);
+
+  return (
+    <button
+      onClick={handleClick}
+      className={`w-full text-left p-4 border-2 rounded-lg transition-all ${
+        isSelected
+          ? 'border-primary-300 bg-primary-50'
+          : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+      }`}
+    >
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-3">
+          <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold ${
+            isSelected 
+              ? 'bg-primary-600' 
+              : 'bg-gray-400'
+          }`}>
+            {profissional.nome.charAt(0).toUpperCase()}
+          </div>
+          <div>
+            <h4 className="font-medium text-gray-900">
+              {profissional.nome}
+            </h4>
+            <p className="text-sm text-gray-500">
+              {profissional.email}
+            </p>
+            <p className="text-xs text-gray-400">
+              {profissional.perfil === 'OWNER' && 'Proprietário'}
+              {profissional.perfil === 'ADMIN' && 'Administrador'}
+              {profissional.perfil === 'USER' && 'Usuário'}
+            </p>
+          </div>
+        </div>
+        
+        {isSelected && (
+          <div className="w-6 h-6 bg-primary-600 rounded-full flex items-center justify-center">
+            <Check className="w-4 h-4 text-white" />
+          </div>
+        )}
+      </div>
+    </button>
+  );
+});
+
+ProfissionalItem.displayName = 'ProfissionalItem';
+
+export const ProfissionalSelector = memo(({
   servico,
   onProfissionaisSelect,
   selectedProfissionais = [],
   singleSelect = false,
   profissionaisDisponiveis
-}: ProfissionalSelectorProps) {
+}: ProfissionalSelectorProps) => {
+  // IDs selecionados como estado local
   const [selectedIds, setSelectedIds] = useState<number[]>(
     selectedProfissionais.map(p => p.id)
   );
 
-  // Usar profissionais pré-filtrados se fornecidos, senão usar os do serviço
-  const profissionaisParaEscolha = profissionaisDisponiveis || servico.profissionais || [];
+  // Memoizar lista de profissionais para escolha
+  const profissionaisParaEscolha = useMemo(() => {
+    const lista = profissionaisDisponiveis || servico.profissionais || [];
+    
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🎯 ProfissionalSelector profissionais:', {
+        servicoProfissionais: servico.profissionais?.length || 0,
+        profissionaisDisponiveis: profissionaisDisponiveis?.length || 0,
+        profissionaisParaEscolha: lista.length,
+        nomes: lista.map(p => p.nome)
+      });
+    }
+    
+    return lista;
+  }, [profissionaisDisponiveis, servico.profissionais]);
 
-  console.log('🎯 ProfissionalSelector:', {
-    servicoProfissionais: servico.profissionais?.length || 0,
-    profissionaisDisponiveis: profissionaisDisponiveis?.length || 0,
-    profissionaisParaEscolha: profissionaisParaEscolha.length,
-    nomes: profissionaisParaEscolha.map(p => p.nome)
-  });
-
-  const handleProfissionalToggle = (profissional: Profissional) => {
+  // Handler de toggle memoizado
+  const handleProfissionalToggle = useCallback((profissional: Profissional) => {
     let newSelectedIds: number[];
     
     if (singleSelect) {
@@ -57,19 +124,21 @@ export function ProfissionalSelector({
     );
     
     onProfissionaisSelect(profissionaisSelecionados);
-  };
+  }, [selectedIds, singleSelect, profissionaisParaEscolha, onProfissionaisSelect]);
 
-  const handleSelectAll = () => {
+  // Handlers de seleção em massa memoizados
+  const handleSelectAll = useCallback(() => {
     const allIds = profissionaisParaEscolha.map(p => p.id);
     setSelectedIds(allIds);
     onProfissionaisSelect(profissionaisParaEscolha);
-  };
+  }, [profissionaisParaEscolha, onProfissionaisSelect]);
 
-  const handleClearAll = () => {
+  const handleClearAll = useCallback(() => {
     setSelectedIds([]);
     onProfissionaisSelect([]);
-  };
+  }, [onProfissionaisSelect]);
 
+  // Verificar se há profissionais disponíveis
   if (profissionaisParaEscolha.length === 0) {
     return (
       <div className="text-center py-8">
@@ -133,52 +202,14 @@ export function ProfissionalSelector({
 
       {/* Lista de profissionais */}
       <div className="grid grid-cols-1 gap-3">
-        {profissionaisParaEscolha.map((profissional) => {
-          const isSelected = selectedIds.includes(profissional.id);
-          
-          return (
-            <button
-              key={profissional.id}
-              onClick={() => handleProfissionalToggle(profissional)}
-              className={`w-full text-left p-4 border-2 rounded-lg transition-all ${
-                isSelected
-                  ? 'border-primary-300 bg-primary-50'
-                  : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-              }`}
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold ${
-                    isSelected 
-                      ? 'bg-primary-600' 
-                      : 'bg-gray-400'
-                  }`}>
-                    {profissional.nome.charAt(0).toUpperCase()}
-                  </div>
-                  <div>
-                    <h4 className="font-medium text-gray-900">
-                      {profissional.nome}
-                    </h4>
-                    <p className="text-sm text-gray-500">
-                      {profissional.email}
-                    </p>
-                    <p className="text-xs text-gray-400">
-                      {profissional.perfil === 'OWNER' && 'Proprietário'}
-                      {profissional.perfil === 'ADMIN' && 'Administrador'}
-                      {profissional.perfil === 'USER' && 'Usuário'}
-                    </p>
-                  </div>
-                </div>
-                
-                {isSelected && (
-                  <div className="w-6 h-6 bg-primary-600 rounded-full flex items-center justify-center">
-                    <Check className="w-4 h-4 text-white" />
-                  </div>
-                )}
-              </div>
-            </button>
-          );
-        })}
+        {profissionaisParaEscolha.map((profissional) => (
+          <ProfissionalItem
+            key={profissional.id}
+            profissional={profissional}
+            isSelected={selectedIds.includes(profissional.id)}
+            onToggle={handleProfissionalToggle}
+          />
+        ))}
       </div>
 
       {/* Resumo da seleção */}
@@ -199,4 +230,6 @@ export function ProfissionalSelector({
       )}
     </div>
   );
-}
+});
+
+ProfissionalSelector.displayName = 'ProfissionalSelector';

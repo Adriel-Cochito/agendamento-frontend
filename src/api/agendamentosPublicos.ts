@@ -1,4 +1,4 @@
-// src/api/agendamentosPublicos.ts - Atualizado com dados da empresa
+// src/api/agendamentosPublicos.ts - Corrigido para reduzir logs
 import axios from 'axios';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
@@ -11,10 +11,13 @@ export const publicApiClient = axios.create({
   },
 });
 
-// Interceptor para logs (sem token)
+// Interceptor para logs (reduzido)
 publicApiClient.interceptors.request.use(
   (config) => {
-    console.log('Public Request:', config.method?.toUpperCase(), config.url);
+    // Log apenas em desenvolvimento ou quando necessário
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Public Request:', config.method?.toUpperCase(), config.url);
+    }
     return config;
   },
   (error) => {
@@ -24,10 +27,14 @@ publicApiClient.interceptors.request.use(
 
 publicApiClient.interceptors.response.use(
   (response) => {
-    console.log('Public Response:', response.status, response.config.url);
+    // Log apenas em desenvolvimento
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Public Response:', response.status, response.config.url);
+    }
     return response;
   },
   async (error) => {
+    // Log de erro sempre importante
     console.error('Public API Error:', {
       url: error.config?.url,
       method: error.config?.method,
@@ -109,16 +116,55 @@ export interface CreateAgendamentoPublico {
   profissional: { id: number };
 }
 
+// Cache simples para evitar múltiplas chamadas desnecessárias
+const cache = new Map<string, { data: any; timestamp: number }>();
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutos
+
+function getCacheKey(method: string, url: string): string {
+  return `${method}:${url}`;
+}
+
+function getFromCache<T>(key: string): T | null {
+  const cached = cache.get(key);
+  if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+    return cached.data;
+  }
+  cache.delete(key);
+  return null;
+}
+
+function setCache(key: string, data: any): void {
+  cache.set(key, { data, timestamp: Date.now() });
+}
+
 export const agendamentosPublicosApi = {
-  // Buscar dados da empresa
+  // Buscar dados da empresa com cache
   getEmpresa: async (empresaId: number): Promise<EmpresaPublica> => {
+    const cacheKey = getCacheKey('GET', `/agendamentos/empresa/${empresaId}`);
+    const cached = getFromCache<EmpresaPublica>(cacheKey);
+    
+    if (cached) {
+      console.log('📋 Empresa carregada do cache');
+      return cached;
+    }
+
     const response = await publicApiClient.get(`/agendamentos/empresa/${empresaId}`);
+    setCache(cacheKey, response.data);
     return response.data;
   },
 
-  // Buscar serviços disponíveis para a empresa
+  // Buscar serviços disponíveis para a empresa com cache
   getServicos: async (empresaId: number): Promise<ServicoPublico[]> => {
+    const cacheKey = getCacheKey('GET', `/agendamentos/servicos?empresaId=${empresaId}`);
+    const cached = getFromCache<ServicoPublico[]>(cacheKey);
+    
+    if (cached) {
+      console.log('📋 Serviços carregados do cache');
+      return cached;
+    }
+
     const response = await publicApiClient.get(`/agendamentos/servicos?empresaId=${empresaId}`);
+    setCache(cacheKey, response.data);
     return response.data;
   },
 
@@ -128,6 +174,7 @@ export const agendamentosPublicosApi = {
     profissionalId: number, 
     data: string
   ): Promise<DisponibilidadePublica[]> => {
+    // Não fazer cache de disponibilidades pois podem mudar frequentemente
     const response = await publicApiClient.get(
       `/agendamentos/disponibilidade/profissional/data?empresaId=${empresaId}&profissionalId=${profissionalId}&data=${data}`
     );
@@ -141,6 +188,7 @@ export const agendamentosPublicosApi = {
     profissionalId: number,
     data: string
   ): Promise<AgendaPublica[]> => {
+    // Não fazer cache de agenda pois muda frequentemente
     const response = await publicApiClient.get(
       `/agendamentos/agenda?empresaId=${empresaId}&servicoId=${servicoId}&profissionalId=${profissionalId}&data=${data}`
     );
@@ -153,6 +201,19 @@ export const agendamentosPublicosApi = {
     data: CreateAgendamentoPublico
   ): Promise<any> => {
     const response = await publicApiClient.post(`/agendamentos?empresaId=${empresaId}`, data);
+    
+    // Limpar cache relacionado após criação
+    const keysToDelete = Array.from(cache.keys()).filter(key => 
+      key.includes('agenda') || key.includes('disponibilidade')
+    );
+    keysToDelete.forEach(key => cache.delete(key));
+    
     return response.data;
   },
+
+  // Função para limpar cache manualmente se necessário
+  clearCache: () => {
+    cache.clear();
+    console.log('🗑️ Cache da API pública limpo');
+  }
 };

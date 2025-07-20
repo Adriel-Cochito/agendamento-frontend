@@ -1,5 +1,5 @@
-// src/hooks/useAgendamentoPublico.ts - Atualizado com suporte a parâmetros da URL
-import { useState, useCallback, useEffect } from 'react';
+// src/hooks/useAgendamentoPublico.ts - Corrigido para evitar loops infinitos
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { agendamentosPublicosApi, ServicoPublico, AgendaPublica, EmpresaPublica } from '@/api/agendamentosPublicos';
 import { useToast } from '@/hooks/useToast';
 import { Servico } from '@/types/servico';
@@ -84,14 +84,16 @@ export function useAgendamentoPublicoLogic(
     },
   });
 
-  // Informações da empresa vindas da URL
-  const empresaFromUrl: EmpresaInfoUrl = empresaInfoUrl || {
+  // Informações da empresa vindas da URL - memoizado para evitar re-criações
+  const empresaFromUrl: EmpresaInfoUrl = useMemo(() => empresaInfoUrl || {
     nomeFromUrl: null,
     telefoneFromUrl: null
-  };
+  }, [empresaInfoUrl]);
 
-  // Carregar dados da empresa
+  // Carregar dados da empresa - memoizado com useCallback
   const carregarEmpresa = useCallback(async () => {
+    if (loading) return; // Evita chamadas simultâneas
+    
     try {
       setLoading(true);
       setError(null);
@@ -102,37 +104,24 @@ export function useAgendamentoPublicoLogic(
       
       setEmpresa(empresaData);
       
-      // Log para comparar dados da API vs URL
-      if (empresaFromUrl.nomeFromUrl || empresaFromUrl.telefoneFromUrl) {
-        console.log('📊 Comparação API vs URL:', {
-          api: {
-            nome: empresaData.nome,
-            telefone: empresaData.telefone
-          },
-          url: {
-            nome: empresaFromUrl.nomeFromUrl,
-            telefone: empresaFromUrl.telefoneFromUrl
-          }
-        });
-      }
-      
     } catch (error: any) {
       const errorMessage = 'Erro ao carregar dados da empresa.';
       setError(errorMessage);
       console.error('❌ Erro ao carregar empresa:', error);
       
-      // Se há informações da URL, pelo menos temos um fallback
+      // Se há informações da URL, usar como fallback sem mostrar toast
       if (empresaFromUrl.nomeFromUrl) {
         console.log('💡 Usando dados da URL como fallback');
-        addToast('info', 'Aviso', 'Usando informações do link. Alguns dados podem estar desatualizados.');
       }
     } finally {
       setLoading(false);
     }
-  }, [empresaId, empresaFromUrl, addToast]);
+  }, [empresaId, empresaFromUrl.nomeFromUrl]); // Dependências mínimas
 
-  // Carregar serviços
+  // Carregar serviços - memoizado
   const carregarServicos = useCallback(async () => {
+    if (loading) return; // Evita chamadas simultâneas
+    
     try {
       setLoading(true);
       setError(null);
@@ -146,19 +135,28 @@ export function useAgendamentoPublicoLogic(
     } finally {
       setLoading(false);
     }
-  }, [empresaId]);
+  }, [empresaId]); // Só empresaId como dependência
 
-  // Carregar horários disponíveis
+  // Carregar horários disponíveis - memoizado e com condições claras
   const carregarHorariosDisponiveis = useCallback(async () => {
     const { selectedServico, selectedProfissionais, selectedDataAgendamento } = modalStates;
     
     if (!selectedServico || selectedProfissionais.length === 0 || !selectedDataAgendamento) {
+      console.log('⚠️ Dados insuficientes para carregar horários');
       return;
     }
+
+    if (loading) return; // Evita chamadas simultâneas
 
     try {
       setLoading(true);
       setError(null);
+      
+      console.log('🔄 Carregando horários para:', {
+        servico: selectedServico.id,
+        profissional: selectedProfissionais[0].id,
+        data: selectedDataAgendamento
+      });
       
       const horarios = await agendamentosPublicosApi.getAgenda(
         empresaId,
@@ -176,29 +174,53 @@ export function useAgendamentoPublicoLogic(
     } finally {
       setLoading(false);
     }
-  }, [empresaId, modalStates.selectedServico, modalStates.selectedProfissionais, modalStates.selectedDataAgendamento]);
+  }, [
+    empresaId, 
+    modalStates.selectedServico?.id, 
+    modalStates.selectedProfissionais[0]?.id, 
+    modalStates.selectedDataAgendamento
+  ]); // Dependências específicas
 
-  // Carregar dados iniciais automaticamente ao montar
+  // Efeito para carregar dados iniciais - apenas uma vez
   useEffect(() => {
+    let mounted = true;
+
     const carregarDadosIniciais = async () => {
       console.log('🚀 Iniciando carregamento de dados iniciais');
-      await Promise.all([
-        carregarEmpresa(),
-        carregarServicos()
-      ]);
+      
+      if (mounted) {
+        await carregarEmpresa();
+      }
+      
+      if (mounted) {
+        await carregarServicos();
+      }
     };
     
     carregarDadosIniciais();
-  }, [carregarEmpresa, carregarServicos]);
 
-  // Carregar horários quando chegar na etapa horario
+    return () => {
+      mounted = false;
+    };
+  }, [empresaId]); // Só empresaId como dependência
+
+  // Efeito para carregar horários quando necessário - com condições específicas
   useEffect(() => {
-    if (modalStates.etapaAtual === 'horario') {
+    if (modalStates.etapaAtual === 'horario' && 
+        modalStates.selectedServico && 
+        modalStates.selectedProfissionais.length > 0 && 
+        modalStates.selectedDataAgendamento) {
       carregarHorariosDisponiveis();
     }
-  }, [modalStates.etapaAtual, carregarHorariosDisponiveis]);
+  }, [
+    modalStates.etapaAtual,
+    modalStates.selectedServico?.id,
+    modalStates.selectedProfissionais[0]?.id,
+    modalStates.selectedDataAgendamento,
+    carregarHorariosDisponiveis
+  ]);
 
-  // Handlers de navegação
+  // Handlers de navegação - todos memoizados
   const handleServicoSelect = useCallback((servico: Servico) => {
     console.log('🎯 Serviço selecionado:', servico.titulo);
     setModalStates(prev => ({
@@ -238,58 +260,62 @@ export function useAgendamentoPublicoLogic(
   const handleHorarioSelect = useCallback((dataHora: string, profissionalId?: number) => {
     console.log('⏰ Horário selecionado:', dataHora, 'Profissional ID:', profissionalId);
     
-    let profissionaisSelecionados = modalStates.selectedProfissionais;
-    
-    // Se um profissional específico foi selecionado no horário, usar apenas ele
-    if (profissionalId) {
-      const profissional = modalStates.selectedProfissionais.find(p => p.id === profissionalId);
-      if (profissional) {
-        profissionaisSelecionados = [profissional];
-        console.log('👤 Profissional específico selecionado:', profissional.nome);
+    setModalStates(prev => {
+      let profissionaisSelecionados = prev.selectedProfissionais;
+      
+      // Se um profissional específico foi selecionado no horário, usar apenas ele
+      if (profissionalId) {
+        const profissional = prev.selectedProfissionais.find(p => p.id === profissionalId);
+        if (profissional) {
+          profissionaisSelecionados = [profissional];
+          console.log('👤 Profissional específico selecionado:', profissional.nome);
+        }
       }
-    }
 
-    setModalStates(prev => ({
-      ...prev,
-      selectedDataHora: dataHora,
-      selectedProfissionais: profissionaisSelecionados,
-      etapaAtual: 'dados'
-    }));
+      return {
+        ...prev,
+        selectedDataHora: dataHora,
+        selectedProfissionais: profissionaisSelecionados,
+        etapaAtual: 'dados'
+      };
+    });
     setError(null);
-  }, [modalStates.selectedProfissionais]);
+  }, []);
 
   const voltarEtapa = useCallback(() => {
-    const etapaAtual = modalStates.etapaAtual;
-    let proximaEtapa: Etapa = 'servico';
+    setModalStates(prev => {
+      const etapaAtual = prev.etapaAtual;
+      let proximaEtapa: Etapa = 'servico';
 
-    switch (etapaAtual) {
-      case 'profissionais':
-        proximaEtapa = 'servico';
-        break;
-      case 'data':
-        proximaEtapa = 'profissionais';
-        break;
-      case 'horario':
-        proximaEtapa = 'data';
-        break;
-      case 'dados':
-        proximaEtapa = 'horario';
-        break;
-      default:
-        proximaEtapa = 'servico';
-    }
+      switch (etapaAtual) {
+        case 'profissionais':
+          proximaEtapa = 'servico';
+          break;
+        case 'data':
+          proximaEtapa = 'profissionais';
+          break;
+        case 'horario':
+          proximaEtapa = 'data';
+          break;
+        case 'dados':
+          proximaEtapa = 'horario';
+          break;
+        default:
+          proximaEtapa = 'servico';
+      }
 
-    console.log('⬅️ Voltando da etapa:', etapaAtual, 'para:', proximaEtapa);
-    setModalStates(prev => ({
-      ...prev,
-      etapaAtual: proximaEtapa
-    }));
+      console.log('⬅️ Voltando da etapa:', etapaAtual, 'para:', proximaEtapa);
+      
+      return {
+        ...prev,
+        etapaAtual: proximaEtapa
+      };
+    });
     setError(null);
-  }, [modalStates.etapaAtual]);
+  }, []);
 
-  // Atualizar dados do cliente
+  // Atualizar dados do cliente - memoizado
   const atualizarDadosCliente = useCallback((campo: 'nomeCliente' | 'telefoneCliente', valor: string) => {
-    console.log('📝 Atualizando dados do cliente:', campo, valor);
     setModalStates(prev => ({
       ...prev,
       dadosCliente: {
@@ -299,7 +325,7 @@ export function useAgendamentoPublicoLogic(
     }));
   }, []);
 
-  // Validar etapa atual
+  // Validar etapa atual - memoizado
   const validarEtapa = useCallback(() => {
     const { etapaAtual, selectedServico, selectedProfissionais, selectedDataAgendamento, selectedDataHora, dadosCliente } = modalStates;
 
@@ -315,14 +341,13 @@ export function useAgendamentoPublicoLogic(
       case 'dados':
         const nomeValido = dadosCliente.nomeCliente.trim().length >= 3;
         const telefoneValido = dadosCliente.telefoneCliente.length >= 17;
-        console.log('✅ Validação dados:', { nomeValido, telefoneValido });
         return nomeValido && telefoneValido;
       default:
         return false;
     }
   }, [modalStates]);
 
-  // Finalizar agendamento
+  // Finalizar agendamento - memoizado
   const finalizarAgendamento = useCallback(async () => {
     const { selectedServico, selectedProfissionais, selectedDataHora, dadosCliente } = modalStates;
 
@@ -396,7 +421,7 @@ export function useAgendamentoPublicoLogic(
     }
   }, [modalStates, empresaId, addToast, empresa, empresaFromUrl]);
 
-  // Reiniciar processo
+  // Reiniciar processo - memoizado
   const reiniciarAgendamento = useCallback(() => {
     console.log('🔄 Reiniciando processo de agendamento');
     setModalStates({
