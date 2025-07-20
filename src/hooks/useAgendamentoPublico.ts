@@ -1,281 +1,355 @@
-// src/hooks/useAgendamentoPublico.ts
-import { useState, useCallback } from 'react';
+// src/hooks/useAgendamentoPublicoLogic.ts
+import { useState, useCallback, useEffect } from 'react';
 import { agendamentosPublicosApi, ServicoPublico, AgendaPublica } from '@/api/agendamentosPublicos';
-import { 
-  validarAgendamentoPublico, 
-  formatarErrosValidacao, 
-  DadosAgendamentoPublico,
-  ErroValidacao 
-} from '@/utils/validacoesAgendamentoPublico';
+import { useToast } from '@/hooks/useToast';
+import { Servico } from '@/types/servico';
+import { Profissional } from '@/types/profissional';
 
-type Etapa = 'servico' | 'profissional' | 'data' | 'horario' | 'dados' | 'confirmacao';
+type Etapa = 'servico' | 'profissionais' | 'data' | 'horario' | 'dados' | 'confirmacao';
 
 interface EstadoAgendamento {
   etapaAtual: Etapa;
-  loading: boolean;
-  error: string | null;
-  sucesso: boolean;
-  
-  // Dados selecionados
-  servicos: ServicoPublico[];
-  servicoSelecionado: ServicoPublico | null;
-  profissionalSelecionado: any;
-  dataSelecionada: string;
-  horarioSelecionado: string;
-  horariosDisponiveis: AgendaPublica[];
-  
-  // Dados do cliente
+  selectedServico: Servico | null;
+  selectedProfissionais: Profissional[];
+  selectedDataAgendamento: string;
+  selectedDataHora: string;
   dadosCliente: {
     nomeCliente: string;
     telefoneCliente: string;
   };
-  
-  // Validações
-  errosValidacao: ErroValidacao[];
 }
 
-export function useAgendamentoPublico(empresaId: number) {
-  const [estado, setEstado] = useState<EstadoAgendamento>({
+interface UseAgendamentoPublicoLogicResult {
+  // Estados
+  loading: boolean;
+  error: string | null;
+  sucesso: boolean;
+  servicos: ServicoPublico[];
+  horariosDisponiveis: AgendaPublica[];
+  modalStates: EstadoAgendamento;
+  
+  // Ações de navegação
+  handleServicoSelect: (servico: Servico) => void;
+  handleProfissionaisSelect: (profissionais: Profissional[]) => void;
+  handleDataSelect: (data: string) => void;
+  handleHorarioSelect: (dataHora: string, profissionalId?: number) => void;
+  voltarEtapa: () => void;
+  
+  // Ações de dados
+  atualizarDadosCliente: (campo: 'nomeCliente' | 'telefoneCliente', valor: string) => void;
+  finalizarAgendamento: () => Promise<void>;
+  reiniciarAgendamento: () => void;
+  
+  // Validações
+  validarEtapa: () => boolean;
+  
+  // Carregamento de dados
+  carregarServicos: () => Promise<void>;
+  carregarHorariosDisponiveis: () => Promise<void>;
+}
+
+export function useAgendamentoPublicoLogic(empresaId: number): UseAgendamentoPublicoLogicResult {
+  const { addToast } = useToast();
+
+  // Estados principais
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [sucesso, setSucesso] = useState(false);
+  const [servicos, setServicos] = useState<ServicoPublico[]>([]);
+  const [horariosDisponiveis, setHorariosDisponiveis] = useState<AgendaPublica[]>([]);
+
+  // Estado do modal/fluxo
+  const [modalStates, setModalStates] = useState<EstadoAgendamento>({
     etapaAtual: 'servico',
-    loading: false,
-    error: null,
-    sucesso: false,
-    servicos: [],
-    servicoSelecionado: null,
-    profissionalSelecionado: null,
-    dataSelecionada: '',
-    horarioSelecionado: '',
-    horariosDisponiveis: [],
+    selectedServico: null,
+    selectedProfissionais: [],
+    selectedDataAgendamento: '',
+    selectedDataHora: '',
     dadosCliente: {
       nomeCliente: '',
-      telefoneCliente: '+55 '
+      telefoneCliente: '+55 ',
     },
-    errosValidacao: []
   });
 
   // Carregar serviços
   const carregarServicos = useCallback(async () => {
     try {
-      setEstado(prev => ({ ...prev, loading: true, error: null }));
+      setLoading(true);
+      setError(null);
       const servicosData = await agendamentosPublicosApi.getServicos(empresaId);
-      setEstado(prev => ({ 
-        ...prev, 
-        servicos: servicosData.filter(s => s.ativo),
-        loading: false 
-      }));
+      setServicos(servicosData.filter(s => s.ativo));
     } catch (error: any) {
-      setEstado(prev => ({ 
-        ...prev, 
-        error: 'Erro ao carregar serviços. Tente novamente.',
-        loading: false 
-      }));
+      const errorMessage = 'Erro ao carregar serviços. Tente recarregar a página.';
+      setError(errorMessage);
       console.error('Erro ao carregar serviços:', error);
+    } finally {
+      setLoading(false);
     }
   }, [empresaId]);
 
   // Carregar horários disponíveis
   const carregarHorariosDisponiveis = useCallback(async () => {
-    const { servicoSelecionado, profissionalSelecionado, dataSelecionada } = estado;
+    const { selectedServico, selectedProfissionais, selectedDataAgendamento } = modalStates;
     
-    if (!servicoSelecionado || !profissionalSelecionado || !dataSelecionada) return;
+    if (!selectedServico || selectedProfissionais.length === 0 || !selectedDataAgendamento) {
+      return;
+    }
 
     try {
-      setEstado(prev => ({ ...prev, loading: true, error: null }));
+      setLoading(true);
+      setError(null);
+      
       const horarios = await agendamentosPublicosApi.getAgenda(
         empresaId,
-        servicoSelecionado.id,
-        profissionalSelecionado.id,
-        dataSelecionada
+        selectedServico.id,
+        selectedProfissionais[0].id,
+        selectedDataAgendamento
       );
-      setEstado(prev => ({ 
-        ...prev, 
-        horariosDisponiveis: horarios,
-        loading: false 
-      }));
+      
+      setHorariosDisponiveis(horarios);
     } catch (error: any) {
-      setEstado(prev => ({ 
-        ...prev, 
-        error: 'Erro ao carregar horários disponíveis.',
-        loading: false 
-      }));
+      const errorMessage = 'Erro ao carregar horários disponíveis.';
+      setError(errorMessage);
       console.error('Erro ao carregar horários:', error);
+    } finally {
+      setLoading(false);
     }
-  }, [empresaId, estado.servicoSelecionado, estado.profissionalSelecionado, estado.dataSelecionada]);
+  }, [empresaId, modalStates.selectedServico, modalStates.selectedProfissionais, modalStates.selectedDataAgendamento]);
 
-  // Ações de navegação
-  const selecionarServico = useCallback((servico: ServicoPublico) => {
-    setEstado(prev => ({
+  // Carregar serviços automaticamente ao montar
+  useEffect(() => {
+    carregarServicos();
+  }, [carregarServicos]);
+
+  // Carregar horários quando chegar na etapa horario
+  useEffect(() => {
+    if (modalStates.etapaAtual === 'horario') {
+      carregarHorariosDisponiveis();
+    }
+  }, [modalStates.etapaAtual, carregarHorariosDisponiveis]);
+
+  // Handlers de navegação
+  const handleServicoSelect = useCallback((servico: Servico) => {
+    setModalStates(prev => ({
       ...prev,
-      servicoSelecionado: servico,
-      profissionalSelecionado: null,
-      dataSelecionada: '',
-      horarioSelecionado: '',
-      horariosDisponiveis: [],
-      etapaAtual: 'profissional',
-      error: null
+      selectedServico: servico,
+      selectedProfissionais: [],
+      selectedDataAgendamento: '',
+      selectedDataHora: '',
+      etapaAtual: 'profissionais'
     }));
+    setError(null);
   }, []);
 
-  const selecionarProfissional = useCallback((profissional: any) => {
-    setEstado(prev => ({
+  const handleProfissionaisSelect = useCallback((profissionais: Profissional[]) => {
+    setModalStates(prev => ({
       ...prev,
-      profissionalSelecionado: profissional,
-      dataSelecionada: '',
-      horarioSelecionado: '',
-      horariosDisponiveis: [],
-      etapaAtual: 'data',
-      error: null
+      selectedProfissionais: profissionais,
+      selectedDataAgendamento: '',
+      selectedDataHora: '',
+      etapaAtual: 'data'
     }));
+    setError(null);
   }, []);
 
-  const selecionarData = useCallback((data: string) => {
-    setEstado(prev => ({
+  const handleDataSelect = useCallback((data: string) => {
+    setModalStates(prev => ({
       ...prev,
-      dataSelecionada: data,
-      horarioSelecionado: '',
-      horariosDisponiveis: [],
-      etapaAtual: 'horario',
-      error: null
+      selectedDataAgendamento: data,
+      selectedDataHora: '',
+      etapaAtual: 'horario'
     }));
+    setError(null);
   }, []);
 
-  const selecionarHorario = useCallback((horario: string) => {
-    setEstado(prev => ({
-      ...prev,
-      horarioSelecionado: horario,
-      etapaAtual: 'dados',
-      error: null
-    }));
-  }, []);
+  const handleHorarioSelect = useCallback((dataHora: string, profissionalId?: number) => {
+    let profissionaisSelecionados = modalStates.selectedProfissionais;
+    
+    // Se um profissional específico foi selecionado no horário, usar apenas ele
+    if (profissionalId) {
+      const profissional = modalStates.selectedProfissionais.find(p => p.id === profissionalId);
+      if (profissional) {
+        profissionaisSelecionados = [profissional];
+      }
+    }
 
-  const atualizarDadosCliente = useCallback((dados: Partial<EstadoAgendamento['dadosCliente']>) => {
-    setEstado(prev => ({
+    setModalStates(prev => ({
       ...prev,
-      dadosCliente: { ...prev.dadosCliente, ...dados },
-      error: null
+      selectedDataHora: dataHora,
+      selectedProfissionais: profissionaisSelecionados,
+      etapaAtual: 'dados'
     }));
-  }, []);
+    setError(null);
+  }, [modalStates.selectedProfissionais]);
 
   const voltarEtapa = useCallback(() => {
-    setEstado(prev => {
-      const etapas: Etapa[] = ['servico', 'profissional', 'data', 'horario', 'dados'];
-      const indiceAtual = etapas.indexOf(prev.etapaAtual);
-      const proximaEtapa = indiceAtual > 0 ? etapas[indiceAtual - 1] : 'servico';
-      
-      return {
-        ...prev,
-        etapaAtual: proximaEtapa,
-        error: null
-      };
-    });
-  }, []);
+    const etapaAtual = modalStates.etapaAtual;
+    let proximaEtapa: Etapa = 'servico';
 
-  // Validar dados antes de finalizar
-  const validarDados = useCallback((): boolean => {
-    const dadosParaValidar: Partial<DadosAgendamentoPublico> = {
-      nomeCliente: estado.dadosCliente.nomeCliente,
-      telefoneCliente: estado.dadosCliente.telefoneCliente,
-      servicoId: estado.servicoSelecionado?.id,
-      profissionalId: estado.profissionalSelecionado?.id,
-      data: estado.dataSelecionada,
-      horario: estado.horarioSelecionado
-    };
-
-    const erros = validarAgendamentoPublico(dadosParaValidar);
-    
-    setEstado(prev => ({ ...prev, errosValidacao: erros }));
-
-    if (erros.length > 0) {
-      setEstado(prev => ({ 
-        ...prev, 
-        error: formatarErrosValidacao(erros) 
-      }));
-      return false;
+    switch (etapaAtual) {
+      case 'profissionais':
+        proximaEtapa = 'servico';
+        break;
+      case 'data':
+        proximaEtapa = 'profissionais';
+        break;
+      case 'horario':
+        proximaEtapa = 'data';
+        break;
+      case 'dados':
+        proximaEtapa = 'horario';
+        break;
+      default:
+        proximaEtapa = 'servico';
     }
 
-    return true;
-  }, [estado]);
+    setModalStates(prev => ({
+      ...prev,
+      etapaAtual: proximaEtapa
+    }));
+    setError(null);
+  }, [modalStates.etapaAtual]);
+
+  // Atualizar dados do cliente
+  const atualizarDadosCliente = useCallback((campo: 'nomeCliente' | 'telefoneCliente', valor: string) => {
+    setModalStates(prev => ({
+      ...prev,
+      dadosCliente: {
+        ...prev.dadosCliente,
+        [campo]: valor
+      }
+    }));
+  }, []);
+
+  // Validar etapa atual
+  const validarEtapa = useCallback(() => {
+    const { etapaAtual, selectedServico, selectedProfissionais, selectedDataAgendamento, selectedDataHora, dadosCliente } = modalStates;
+
+    switch (etapaAtual) {
+      case 'servico':
+        return !!selectedServico;
+      case 'profissionais':
+        return selectedProfissionais.length > 0;
+      case 'data':
+        return !!selectedDataAgendamento;
+      case 'horario':
+        return !!selectedDataHora;
+      case 'dados':
+        return dadosCliente.nomeCliente.trim().length >= 3 && 
+               dadosCliente.telefoneCliente.length >= 17;
+      default:
+        return false;
+    }
+  }, [modalStates]);
 
   // Finalizar agendamento
   const finalizarAgendamento = useCallback(async () => {
-    if (!validarDados()) return;
+    const { selectedServico, selectedProfissionais, selectedDataHora, dadosCliente } = modalStates;
+
+    if (!selectedServico || selectedProfissionais.length === 0 || !selectedDataHora) {
+      setError('Dados incompletos para finalizar o agendamento.');
+      return;
+    }
+
+    // Validações finais
+    if (dadosCliente.nomeCliente.trim().length < 3) {
+      setError('Nome deve ter pelo menos 3 caracteres.');
+      return;
+    }
+
+    const telefoneRegex = /^\+55\s\d{2}\s\d{5}-\d{4}$/;
+    if (!telefoneRegex.test(dadosCliente.telefoneCliente)) {
+      setError('Formato de telefone inválido. Use: +55 31 99999-8888');
+      return;
+    }
 
     try {
-      setEstado(prev => ({ ...prev, loading: true, error: null }));
+      setLoading(true);
+      setError(null);
 
       const agendamentoData = {
-        nomeCliente: estado.dadosCliente.nomeCliente,
-        telefoneCliente: estado.dadosCliente.telefoneCliente,
-        dataHora: `${estado.dataSelecionada}T${estado.horarioSelecionado}:00Z`,
+        nomeCliente: dadosCliente.nomeCliente.trim(),
+        telefoneCliente: dadosCliente.telefoneCliente,
+        dataHora: selectedDataHora,
         status: 'AGENDADO' as const,
         empresa: { id: empresaId },
-        servico: { id: estado.servicoSelecionado!.id },
-        profissional: { id: estado.profissionalSelecionado.id }
+        servico: { id: selectedServico.id },
+        profissional: { id: selectedProfissionais[0].id }
       };
 
       await agendamentosPublicosApi.createAgendamento(empresaId, agendamentoData);
       
-      setEstado(prev => ({
+      setModalStates(prev => ({
         ...prev,
-        etapaAtual: 'confirmacao',
-        sucesso: true,
-        loading: false
+        etapaAtual: 'confirmacao'
       }));
+      setSucesso(true);
+      addToast('success', 'Agendamento confirmado!', 'Seu agendamento foi realizado com sucesso.');
     } catch (error: any) {
-      setEstado(prev => ({
-        ...prev,
-        error: 'Erro ao criar agendamento. Tente novamente.',
-        loading: false
-      }));
       console.error('Erro ao criar agendamento:', error);
+      
+      if (error.response?.status === 409) {
+        setError('Este horário não está mais disponível. Por favor, escolha outro horário.');
+        setModalStates(prev => ({ ...prev, etapaAtual: 'horario' }));
+      } else if (error.response?.status === 400) {
+        const errorData = error.response.data;
+        if (errorData?.errors?.length > 0) {
+          setError(errorData.errors[0].message || 'Dados inválidos. Verifique as informações.');
+        } else {
+          setError('Dados inválidos. Verifique as informações.');
+        }
+      } else {
+        setError('Erro ao confirmar agendamento. Tente novamente.');
+      }
+    } finally {
+      setLoading(false);
     }
-  }, [empresaId, estado, validarDados]);
+  }, [modalStates, empresaId, addToast]);
 
   // Reiniciar processo
   const reiniciarAgendamento = useCallback(() => {
-    setEstado({
+    setModalStates({
       etapaAtual: 'servico',
-      loading: false,
-      error: null,
-      sucesso: false,
-      servicos: estado.servicos, // Manter os serviços carregados
-      servicoSelecionado: null,
-      profissionalSelecionado: null,
-      dataSelecionada: '',
-      horarioSelecionado: '',
-      horariosDisponiveis: [],
+      selectedServico: null,
+      selectedProfissionais: [],
+      selectedDataAgendamento: '',
+      selectedDataHora: '',
       dadosCliente: {
         nomeCliente: '',
-        telefoneCliente: '+55 '
+        telefoneCliente: '+55 ',
       },
-      errosValidacao: []
     });
-  }, [estado.servicos]);
+    setSucesso(false);
+    setError(null);
+    setHorariosDisponiveis([]);
+  }, []);
 
   return {
-    // Estado
-    ...estado,
+    // Estados
+    loading,
+    error,
+    sucesso,
+    servicos,
+    horariosDisponiveis,
+    modalStates,
     
-    // Ações
-    carregarServicos,
-    carregarHorariosDisponiveis,
-    selecionarServico,
-    selecionarProfissional,
-    selecionarData,
-    selecionarHorario,
-    atualizarDadosCliente,
+    // Ações de navegação
+    handleServicoSelect,
+    handleProfissionaisSelect,
+    handleDataSelect,
+    handleHorarioSelect,
     voltarEtapa,
+    
+    // Ações de dados
+    atualizarDadosCliente,
     finalizarAgendamento,
     reiniciarAgendamento,
     
-    // Utilitários
-    podeAvancar: {
-      servico: !!estado.servicoSelecionado,
-      profissional: !!estado.profissionalSelecionado,
-      data: !!estado.dataSelecionada,
-      horario: !!estado.horarioSelecionado,
-      dados: estado.dadosCliente.nomeCliente.length >= 3 && 
-             estado.dadosCliente.telefoneCliente.length >= 17
-    }
+    // Validações
+    validarEtapa,
+    
+    // Carregamento de dados
+    carregarServicos,
+    carregarHorariosDisponiveis,
   };
 }
