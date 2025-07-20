@@ -1,10 +1,12 @@
+// src/components/layout/MainLayout.tsx - Atualizado
 import { ReactNode } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Calendar, Users, LogOut, Menu, X, Home, Tag, Clock } from 'lucide-react';
-import { useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { useAuthStore } from '@/store/authStore';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useEmpresaAtual } from '@/hooks/useEmpresa';
+import { useState } from 'react';
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -15,6 +17,9 @@ export function MainLayout({ children }: MainLayoutProps) {
   const location = useLocation();
   const { user, logout } = useAuthStore();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  
+  // Usar o hook para buscar dados da empresa
+  const { data: empresa, isLoading: loadingEmpresa } = useEmpresaAtual();
 
   const handleLogout = () => {
     logout();
@@ -30,6 +35,16 @@ export function MainLayout({ children }: MainLayoutProps) {
   ];
 
   const isActive = (path: string) => location.pathname === path;
+
+  const getTituloSistema = () => {
+    if (loadingEmpresa) {
+      return 'AgendaSIM';
+    }
+    if (empresa?.nome) {
+      return `AgendaSIM - ${empresa.nome}`;
+    }
+    return 'AgendaSIM';
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -53,7 +68,23 @@ export function MainLayout({ children }: MainLayoutProps) {
                 <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-600 rounded-xl shadow-md flex items-center justify-center">
                   <Calendar className="w-6 h-6 text-white" />
                 </div>
-                <h1 className="text-xl font-bold text-gray-900">AgendaSIM</h1>
+                <div className="flex flex-col">
+                  <h1 className="text-xl font-bold text-gray-900">
+                    {loadingEmpresa ? (
+                      <div className="flex items-center space-x-2">
+                        <span>AgendaSIM</span>
+                        <div className="w-4 h-4 border-2 border-primary-600 border-t-transparent rounded-full animate-spin"></div>
+                      </div>
+                    ) : (
+                      getTituloSistema()
+                    )}
+                  </h1>
+                  {empresa?.nome && !loadingEmpresa && (
+                    <span className="text-xs text-gray-500 font-medium">
+                      Sistema de Agendamentos
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -101,6 +132,19 @@ export function MainLayout({ children }: MainLayoutProps) {
         }`}
       >
         <nav className="p-4 space-y-1">
+          {/* Info da empresa no sidebar */}
+          {empresa?.nome && !loadingEmpresa && (
+            <div className="mb-6 p-3 bg-primary-50 rounded-lg border border-primary-200">
+              <h3 className="font-semibold text-primary-900 text-sm">{empresa.nome}</h3>
+              <p className="text-xs text-primary-700">
+                ID: {user?.empresaId} • {user?.role || 'USER'}
+              </p>
+              {empresa.email && (
+                <p className="text-xs text-primary-600 mt-1">{empresa.email}</p>
+              )}
+            </div>
+          )}
+
           {menuItems.map((item) => (
             <Link
               key={item.path}
@@ -117,6 +161,20 @@ export function MainLayout({ children }: MainLayoutProps) {
             </Link>
           ))}
         </nav>
+
+        {/* Footer do sidebar com informações da empresa */}
+        <div className="absolute bottom-4 left-4 right-4">
+          <div className="text-center p-3 bg-gray-50 rounded-lg">
+            <p className="text-xs text-gray-500 font-medium">
+              AgendaSIM v1.0
+            </p>
+            {empresa?.nome && !loadingEmpresa && (
+              <p className="text-xs text-gray-400 mt-1">
+                {empresa.nome}
+              </p>
+            )}
+          </div>
+        </div>
       </aside>
 
       {/* Main Content */}

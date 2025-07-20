@@ -51,6 +51,7 @@ export default function AgendamentoPublico({ empresaId: propEmpresaId }: Agendam
     loading,
     error,
     sucesso,
+    empresa,
     servicos,
     modalStates,
     handleServicoSelect,
@@ -89,10 +90,10 @@ export default function AgendamentoPublico({ empresaId: propEmpresaId }: Agendam
             <Calendar className="w-10 h-10 text-white" />
           </div>
           <h1 className="text-4xl font-bold text-gray-900 mb-2">
-            Agende seu Atendimento
+            {empresa ? `${empresa.nome}` : 'Agende seu Atendimento'}
           </h1>
           <p className="text-xl text-gray-600">
-            Escolha o serviço, profissional e horário que melhor atende você
+            {empresa ? 'Escolha o serviço, profissional e horário que melhor atende você' : 'Carregando informações...'}
           </p>
         </motion.div>
 

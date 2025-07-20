@@ -1,8 +1,10 @@
+// src/components/agendamento/CompartilharLink.tsx - Com parâmetros na URL
 import React, { useState } from 'react';
 import { Share2, Copy, CheckCircle, ExternalLink, QrCode } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { useAuthStore } from '@/store/authStore';
+import { useEmpresaAtual } from '@/hooks/useEmpresa';
 
 interface CompartilharLinkProps {
   onClose?: () => void;
@@ -16,9 +18,33 @@ export function CompartilharLink({ onClose }: CompartilharLinkProps) {
   const user = useAuthStore((state) => state.user);
   const empresaId = user?.empresaId || 1;
   
-  // URL base da aplicação
-  const baseUrl = window.location.origin;
-  const linkAgendamento = `${baseUrl}/agendamento/${empresaId}`;
+  // Usar hook para buscar dados da empresa
+  const { data: empresa, isLoading: loadingEmpresa } = useEmpresaAtual();
+  
+  // Função para codificar parâmetros da URL
+  const encodeUrlParam = (param: string) => {
+    return encodeURIComponent(param.replace(/\s+/g, '-').toLowerCase());
+  };
+
+  // Gerar URL com parâmetros da empresa
+  const gerarLinkAgendamento = () => {
+    const baseUrl = window.location.origin;
+    
+    if (empresa?.nome && empresa?.telefone) {
+      const nomeEncoded = encodeUrlParam(empresa.nome);
+      const telefoneEncoded = encodeUrlParam(empresa.telefone);
+      return `${baseUrl}/agendamento/${empresaId}/${nomeEncoded}/${telefoneEncoded}`;
+    } else if (empresa?.nome) {
+      const nomeEncoded = encodeUrlParam(empresa.nome);
+      const telefoneEncoded = encodeUrlParam('sem-telefone');
+      return `${baseUrl}/agendamento/${empresaId}/${nomeEncoded}/${telefoneEncoded}`;
+    } else {
+      // Fallback para URL simples
+      return `${baseUrl}/agendamento/${empresaId}`;
+    }
+  };
+
+  const linkAgendamento = gerarLinkAgendamento();
 
   const copiarLink = async () => {
     try {
@@ -43,8 +69,8 @@ export function CompartilharLink({ onClose }: CompartilharLinkProps) {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: 'Agende seu horário',
-          text: 'Clique no link para agendar seu horário conosco:',
+          title: `Agendamento - ${empresa?.nome || 'Nossa Empresa'}`,
+          text: `Agende seu horário com ${empresa?.nome || 'nossa empresa'}:`,
           url: linkAgendamento,
         });
       } catch (error) {
@@ -97,14 +123,47 @@ export function CompartilharLink({ onClose }: CompartilharLinkProps) {
               Link Público de Agendamento
             </h3>
             <p className="text-gray-600 text-sm">
-              Compartilhe este link com seus clientes para que eles possam fazer agendamentos diretamente.
+              {loadingEmpresa 
+                ? 'Carregando informações...'
+                : `Compartilhe este link para que os clientes possam agendar com ${empresa?.nome || 'sua empresa'}.`
+              }
             </p>
           </div>
+
+          {/* Nome da empresa */}
+          {empresa?.nome && !loadingEmpresa && (
+            <div className="bg-primary-50 border border-primary-200 rounded-lg p-4">
+              <div className="text-center mb-3">
+                <h4 className="font-semibold text-primary-900">{empresa.nome}</h4>
+                <p className="text-sm text-primary-700 mt-1">
+                  Os clientes verão este nome ao acessar o link
+                </p>
+              </div>
+              
+              {/* Informações incluídas na URL */}
+              <div className="bg-white rounded-lg p-3 border border-primary-200">
+                <p className="text-xs font-medium text-primary-800 mb-2">
+                  ✅ Informações incluídas no link:
+                </p>
+                <div className="space-y-1 text-xs text-primary-700">
+                  <p>📢 Nome: {empresa.nome}</p>
+                  {empresa.telefone ? (
+                    <p>📞 Telefone: {empresa.telefone}</p>
+                  ) : (
+                    <p>📞 Telefone: Não informado</p>
+                  )}
+                  <p className="mt-2 text-primary-600 italic">
+                    * Essas informações são enviadas pela URL e aparecerão automaticamente para o cliente
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Link */}
           <div className="bg-gray-50 rounded-lg p-4">
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Link de Agendamento
+              Link de Agendamento Inteligente
             </label>
             <div className="flex items-center space-x-2">
               <input
@@ -132,6 +191,13 @@ export function CompartilharLink({ onClose }: CompartilharLinkProps) {
                 )}
               </Button>
             </div>
+            
+            {/* Preview da URL */}
+            {empresa?.nome && !loadingEmpresa && (
+              <div className="mt-2 p-2 bg-white border border-gray-200 rounded text-xs text-gray-600">
+                <span className="font-medium">Preview:</span> .../agendamento/{empresaId}/{encodeUrlParam(empresa.nome)}/{encodeUrlParam(empresa.telefone || 'sem-telefone')}
+              </div>
+            )}
           </div>
 
           {/* Ações de Compartilhamento */}
@@ -177,17 +243,30 @@ export function CompartilharLink({ onClose }: CompartilharLinkProps) {
               <p className="text-sm text-gray-600">
                 Escaneie este QR Code com a câmera do celular para acessar o link
               </p>
+              {empresa?.nome && (
+                <p className="text-xs text-gray-500">
+                  Link inteligente para agendamento com {empresa.nome}
+                </p>
+              )}
             </div>
           )}
 
           {/* Instruções */}
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <h4 className="font-medium text-blue-900 mb-2">Como usar:</h4>
+            <h4 className="font-medium text-blue-900 mb-2">Como usar o Link Inteligente:</h4>
             <ul className="text-sm text-blue-800 space-y-1 list-disc list-inside">
               <li>Copie e cole o link em suas redes sociais, WhatsApp ou email</li>
               <li>Adicione o link ao seu site ou bio do Instagram</li>
               <li>Imprima o QR Code para usar em materiais físicos</li>
               <li>Clientes poderão agendar 24h por dia, sem precisar te ligar</li>
+              {empresa?.nome && (
+                <>
+                  <li>✨ O nome "{empresa.nome}" aparecerá automaticamente</li>
+                  {empresa.telefone && (
+                    <li>📞 O telefone "{empresa.telefone}" será exibido para contato</li>
+                  )}
+                </>
+              )}
             </ul>
           </div>
 
@@ -197,7 +276,7 @@ export function CompartilharLink({ onClose }: CompartilharLinkProps) {
               Fechar
             </Button>
             <Button onClick={copiarLink}>
-              {linkCopiado ? 'Link Copiado!' : 'Copiar Link'}
+              {linkCopiado ? 'Link Copiado!' : 'Copiar Link Inteligente'}
             </Button>
           </div>
         </div>

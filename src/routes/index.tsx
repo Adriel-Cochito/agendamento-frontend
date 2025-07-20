@@ -1,4 +1,4 @@
-// src/routes/index.tsx - Versão atualizada
+// src/routes/index.tsx - Atualizado com parâmetros da empresa
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { Login } from '@/pages/Login';
 import { Signup } from '@/pages/Signup';
@@ -20,12 +20,17 @@ export const router = createBrowserRouter([
     path: '/cadastro',
     element: <Signup />,
   },
-  // Rota pública para agendamentos
+  // Rota pública para agendamentos com parâmetros da empresa
+  {
+    path: '/agendamento/:empresaId/:nomeEmpresa/:telefoneEmpresa',
+    element: <AgendamentoPublico />,
+  },
+  // Rota alternativa com apenas empresaId (fallback)
   {
     path: '/agendamento/:empresaId',
     element: <AgendamentoPublico />,
   },
-  // Rota alternativa com query param
+  // Rota alternativa com query params (fallback)
   {
     path: '/agendamento',
     element: <AgendamentoPublico />,

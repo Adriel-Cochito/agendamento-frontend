@@ -1,4 +1,4 @@
-// src/api/agendamentosPublicos.ts
+// src/api/agendamentosPublicos.ts - Atualizado com dados da empresa
 import axios from 'axios';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
@@ -37,6 +37,15 @@ publicApiClient.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+export interface EmpresaPublica {
+  id: number;
+  nome: string;
+  email: string;
+  telefone: string;
+  cnpj?: string;
+  ativo: boolean;
+}
 
 export interface ServicoPublico {
   id: number;
@@ -101,6 +110,12 @@ export interface CreateAgendamentoPublico {
 }
 
 export const agendamentosPublicosApi = {
+  // Buscar dados da empresa
+  getEmpresa: async (empresaId: number): Promise<EmpresaPublica> => {
+    const response = await publicApiClient.get(`/agendamentos/empresa/${empresaId}`);
+    return response.data;
+  },
+
   // Buscar serviços disponíveis para a empresa
   getServicos: async (empresaId: number): Promise<ServicoPublico[]> => {
     const response = await publicApiClient.get(`/agendamentos/servicos?empresaId=${empresaId}`);

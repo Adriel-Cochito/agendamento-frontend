@@ -1,6 +1,6 @@
 // src/hooks/useAgendamentoPublicoLogic.ts
 import { useState, useCallback, useEffect } from 'react';
-import { agendamentosPublicosApi, ServicoPublico, AgendaPublica } from '@/api/agendamentosPublicos';
+import { agendamentosPublicosApi, ServicoPublico, AgendaPublica, EmpresaPublica } from '@/api/agendamentosPublicos';
 import { useToast } from '@/hooks/useToast';
 import { Servico } from '@/types/servico';
 import { Profissional } from '@/types/profissional';
@@ -24,6 +24,7 @@ interface UseAgendamentoPublicoLogicResult {
   loading: boolean;
   error: string | null;
   sucesso: boolean;
+  empresa: EmpresaPublica | null;
   servicos: ServicoPublico[];
   horariosDisponiveis: AgendaPublica[];
   modalStates: EstadoAgendamento;
@@ -55,6 +56,7 @@ export function useAgendamentoPublicoLogic(empresaId: number): UseAgendamentoPub
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sucesso, setSucesso] = useState(false);
+  const [empresa, setEmpresa] = useState<EmpresaPublica | null>(null);
   const [servicos, setServicos] = useState<ServicoPublico[]>([]);
   const [horariosDisponiveis, setHorariosDisponiveis] = useState<AgendaPublica[]>([]);
 
@@ -70,6 +72,22 @@ export function useAgendamentoPublicoLogic(empresaId: number): UseAgendamentoPub
       telefoneCliente: '+55 ',
     },
   });
+
+  // Carregar dados da empresa
+  const carregarEmpresa = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const empresaData = await agendamentosPublicosApi.getEmpresa(empresaId);
+      setEmpresa(empresaData);
+    } catch (error: any) {
+      const errorMessage = 'Erro ao carregar dados da empresa.';
+      setError(errorMessage);
+      console.error('Erro ao carregar empresa:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [empresaId]);
 
   // Carregar serviços
   const carregarServicos = useCallback(async () => {
@@ -116,10 +134,17 @@ export function useAgendamentoPublicoLogic(empresaId: number): UseAgendamentoPub
     }
   }, [empresaId, modalStates.selectedServico, modalStates.selectedProfissionais, modalStates.selectedDataAgendamento]);
 
-  // Carregar serviços automaticamente ao montar
+  // Carregar dados iniciais automaticamente ao montar
   useEffect(() => {
-    carregarServicos();
-  }, [carregarServicos]);
+    const carregarDadosIniciais = async () => {
+      await Promise.all([
+        carregarEmpresa(),
+        carregarServicos()
+      ]);
+    };
+    
+    carregarDadosIniciais();
+  }, [carregarEmpresa, carregarServicos]);
 
   // Carregar horários quando chegar na etapa horario
   useEffect(() => {
@@ -329,6 +354,7 @@ export function useAgendamentoPublicoLogic(empresaId: number): UseAgendamentoPub
     loading,
     error,
     sucesso,
+    empresa,
     servicos,
     horariosDisponiveis,
     modalStates,
@@ -349,6 +375,7 @@ export function useAgendamentoPublicoLogic(empresaId: number): UseAgendamentoPub
     validarEtapa,
     
     // Carregamento de dados
+    carregarEmpresa,
     carregarServicos,
     carregarHorariosDisponiveis,
   };
