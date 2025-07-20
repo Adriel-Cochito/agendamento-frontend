@@ -1,0 +1,287 @@
+/* src/styles/responsive-utilities.css - Classes para modais responsivos */
+
+/* Modal específico - responsividade melhorada */
+.modal-container {
+  @apply fixed inset-0 z-50 flex items-center justify-center;
+  @apply p-2 sm:p-4 md:p-6 lg:p-8;
+}
+
+.modal-content {
+  @apply bg-white rounded-lg shadow-2xl;
+  @apply w-full max-w-sm sm:max-w-md md:max-w-lg lg:max-w-2xl xl:max-w-4xl;
+  @apply max-h-[95vh] sm:max-h-[90vh] md:max-h-[85vh];
+  @apply flex flex-col;
+}
+
+.modal-scrollable {
+  @apply overflow-y-auto;
+  /* Custom scrollbar */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
+}
+
+.modal-scrollable::-webkit-scrollbar {
+  width: 6px;
+}
+
+.modal-scrollable::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.modal-scrollable::-webkit-scrollbar-thumb {
+  background-color: rgba(156, 163, 175, 0.5);
+  border-radius: 3px;
+}
+
+.modal-scrollable::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(156, 163, 175, 0.7);
+}
+
+/* Layout responsivo para cards dentro de modais */
+.modal-card-grid {
+  @apply grid gap-3;
+  @apply grid-cols-1 sm:grid-cols-2 lg:grid-cols-3;
+}
+
+.modal-button-grid {
+  @apply grid gap-2;
+  @apply grid-cols-2 sm:grid-cols-3 md:grid-cols-4;
+}
+
+/* Texto responsivo */
+.modal-title {
+  @apply text-base sm:text-lg md:text-xl font-semibold;
+}
+
+.modal-subtitle {
+  @apply text-sm sm:text-base text-gray-600;
+}
+
+.modal-body-text {
+  @apply text-sm sm:text-base;
+}
+
+.modal-caption {
+  @apply text-xs sm:text-sm text-gray-500;
+}
+
+/* Espaçamento responsivo */
+.modal-padding {
+  @apply p-3 sm:p-4 md:p-6;
+}
+
+.modal-padding-sm {
+  @apply p-2 sm:p-3 md:p-4;
+}
+
+.modal-margin {
+  @apply m-3 sm:m-4 md:m-6;
+}
+
+/* Botões responsivos */
+.modal-button {
+  @apply px-3 py-2 sm:px-4 sm:py-2 md:px-6 md:py-3;
+  @apply text-sm sm:text-base;
+  @apply rounded-lg transition-all;
+}
+
+.modal-button-sm {
+  @apply px-2 py-1 sm:px-3 sm:py-2;
+  @apply text-xs sm:text-sm;
+  @apply rounded-md transition-all;
+}
+
+/* Input fields responsivos */
+.modal-input {
+  @apply w-full p-2 sm:p-3;
+  @apply text-sm sm:text-base;
+  @apply border border-gray-300 rounded-lg;
+  @apply focus:ring-2 focus:ring-primary-500 focus:border-primary-500;
+}
+
+/* Alerts e notificações responsivas */
+.modal-alert {
+  @apply p-3 sm:p-4 rounded-lg border;
+  @apply text-sm sm:text-base;
+}
+
+.modal-alert-compact {
+  @apply p-2 sm:p-3 rounded-md border;
+  @apply text-xs sm:text-sm;
+}
+
+/* Layout flex responsivo */
+.modal-flex-responsive {
+  @apply flex flex-col sm:flex-row;
+  @apply space-y-2 sm:space-y-0 sm:space-x-3;
+}
+
+.modal-flex-reverse {
+  @apply flex flex-col-reverse sm:flex-row;
+  @apply space-y-reverse space-y-2 sm:space-y-0 sm:space-x-3;
+}
+
+/* Headers e footers fixos */
+.modal-header-fixed {
+  @apply sticky top-0 bg-white z-10;
+  @apply border-b border-gray-200;
+  @apply px-3 py-3 sm:px-4 sm:py-4 md:px-6 md:py-5;
+}
+
+.modal-footer-fixed {
+  @apply sticky bottom-0 bg-white z-10;
+  @apply border-t border-gray-200;
+  @apply px-3 py-3 sm:px-4 sm:py-4 md:px-6 md:py-5;
+}
+
+/* Breakpoints específicos para modais */
+@media (max-width: 640px) {
+  .modal-mobile-full {
+    @apply fixed inset-0 rounded-none;
+    @apply max-h-none h-full;
+  }
+  
+  .modal-mobile-bottom {
+    @apply fixed bottom-0 left-0 right-0;
+    @apply rounded-b-none rounded-t-xl;
+    @apply max-h-[85vh];
+  }
+}
+
+/* Animações responsivas */
+.modal-fade-in {
+  animation: modalFadeIn 0.2s ease-out;
+}
+
+.modal-slide-up {
+  animation: modalSlideUp 0.3s ease-out;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes modalSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Overlay responsivo */
+.modal-overlay {
+  @apply fixed inset-0 bg-black/50 z-40;
+  @apply backdrop-blur-sm;
+  animation: modalOverlayFadeIn 0.2s ease-out;
+}
+
+@keyframes modalOverlayFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Utilities para ocultar/mostrar em diferentes tamanhos */
+.modal-hide-mobile {
+  @apply hidden sm:block;
+}
+
+.modal-hide-desktop {
+  @apply block sm:hidden;
+}
+
+.modal-show-mobile-only {
+  @apply block sm:hidden;
+}
+
+.modal-show-tablet-up {
+  @apply hidden md:block;
+}
+
+/* QR Code responsivo */
+.qr-container {
+  @apply inline-block p-2 sm:p-4;
+  @apply bg-white border-2 border-gray-200 rounded-lg;
+}
+
+.qr-image {
+  @apply w-24 h-24 sm:w-32 sm:h-32 md:w-48 md:h-48;
+  @apply mx-auto;
+}
+
+/* Link input responsivo */
+.link-input-container {
+  @apply flex flex-col sm:flex-row;
+  @apply space-y-2 sm:space-y-0 sm:space-x-2;
+}
+
+.link-input {
+  @apply flex-1 p-2 sm:p-3;
+  @apply bg-white border border-gray-300 rounded-lg;
+  @apply text-xs sm:text-sm font-mono;
+  @apply break-all;
+  @apply focus:ring-2 focus:ring-primary-500;
+}
+
+/* Seções colapsáveis */
+.collapsible-section {
+  @apply border border-gray-200 rounded-lg overflow-hidden;
+}
+
+.collapsible-trigger {
+  @apply w-full p-3 sm:p-4;
+  @apply text-left hover:bg-gray-50;
+  @apply transition-colors rounded-lg;
+  @apply focus:outline-none focus:ring-2 focus:ring-primary-500;
+}
+
+.collapsible-content {
+  @apply px-3 pb-3 sm:px-4 sm:pb-4;
+  @apply border-t border-gray-200;
+}
+
+/* Loading states responsivos */
+.loading-container {
+  @apply flex flex-col items-center justify-center;
+  @apply py-6 sm:py-8 md:py-12;
+}
+
+.loading-icon {
+  @apply w-8 h-8 sm:w-12 sm:h-12 md:w-16 md:h-16;
+  @apply mb-3 sm:mb-4 md:mb-6;
+}
+
+.loading-text {
+  @apply text-sm sm:text-base md:text-lg;
+  @apply font-medium text-gray-900;
+}
+
+.loading-description {
+  @apply text-xs sm:text-sm;
+  @apply text-gray-600 mt-1 sm:mt-2;
+}
+
+/* Responsividade para diferentes orientações */
+@media (orientation: landscape) and (max-height: 600px) {
+  .modal-landscape-compact {
+    @apply max-h-[95vh] py-2;
+  }
+  
+  .modal-landscape-compact .modal-padding {
+    @apply p-2 sm:p-3;
+  }
+}

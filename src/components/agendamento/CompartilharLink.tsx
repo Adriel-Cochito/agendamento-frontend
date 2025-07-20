@@ -1,6 +1,6 @@
-// src/components/agendamento/CompartilharLink.tsx - Atualizado com novos utilitários
+// src/components/agendamento/CompartilharLink.tsx - Versão responsiva otimizada
 import React, { useState } from 'react';
-import { Share2, Copy, CheckCircle, ExternalLink, QrCode, AlertTriangle, Info } from 'lucide-react';
+import { Share2, Copy, CheckCircle, ExternalLink, QrCode, AlertTriangle, Info, X, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { useAuthStore } from '@/store/authStore';
@@ -15,6 +15,8 @@ export function CompartilharLink({ onClose }: CompartilharLinkProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [linkCopiado, setLinkCopiado] = useState(false);
   const [mostrarQR, setMostrarQR] = useState(false);
+  const [mostrarDetalhes, setMostrarDetalhes] = useState(false);
+  const [mostrarInstrucoes, setMostrarInstrucoes] = useState(false);
   
   const user = useAuthStore((state) => state.user);
   const empresaId = user?.empresaId || 1;
@@ -86,6 +88,9 @@ export function CompartilharLink({ onClose }: CompartilharLinkProps) {
 
   const fecharModal = () => {
     setIsModalOpen(false);
+    setMostrarQR(false);
+    setMostrarDetalhes(false);
+    setMostrarInstrucoes(false);
     onClose?.();
   };
 
@@ -100,231 +105,300 @@ export function CompartilharLink({ onClose }: CompartilharLinkProps) {
         className="flex items-center space-x-2"
       >
         <Share2 className="w-4 h-4" />
-        <span>Compartilhar Link</span>
+        <span className="hidden sm:inline">Compartilhar Link</span>
+        <span className="sm:hidden">Link</span>
       </Button>
 
       <Modal
         isOpen={isModalOpen}
         onClose={fecharModal}
-        title="Compartilhar Link de Agendamento"
+        title=""
         size="lg"
       >
-        <div className="space-y-6">
-          {/* Validações e Avisos */}
-          {!validation.isValid && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-              <div className="flex items-start space-x-3">
-                <AlertTriangle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-                <div>
-                  <h4 className="font-medium text-red-900 mb-2">Problemas encontrados:</h4>
-                  <ul className="text-sm text-red-800 space-y-1">
-                    {validation.errors.map((error, index) => (
-                      <li key={index}>• {error}</li>
-                    ))}
-                  </ul>
-                </div>
+        {/* Container com scroll otimizado */}
+        <div className="max-h-[80vh] overflow-y-auto">
+          {/* Header customizado responsivo */}
+          <div className="flex items-center justify-between p-4 pb-6 border-b sticky top-0 bg-white z-10">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
+                <Share2 className="w-5 h-5 text-blue-600" />
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900">Link de Agendamento</h2>
+                <p className="text-sm text-gray-500">Compartilhe com seus clientes</p>
               </div>
             </div>
-          )}
-
-          {warnings.length > 0 && (
-            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-              <div className="flex items-start space-x-3">
-                <Info className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-                <div>
-                  <h4 className="font-medium text-amber-900 mb-2">Avisos:</h4>
-                  <ul className="text-sm text-amber-800 space-y-1">
-                    {warnings.map((warning, index) => (
-                      <li key={index}>• {warning}</li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {validation.warnings.length > 0 && (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <div className="flex items-start space-x-3">
-                <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                <div>
-                  <h4 className="font-medium text-blue-900 mb-2">Dicas:</h4>
-                  <ul className="text-sm text-blue-800 space-y-1">
-                    {validation.warnings.map((warning, index) => (
-                      <li key={index}>• {warning}</li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Descrição */}
-          <div className="text-center">
-            <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Share2 className="w-8 h-8 text-blue-600" />
-            </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              Link Inteligente de Agendamento
-            </h3>
-            <p className="text-gray-600 text-sm">
-              {loadingEmpresa 
-                ? 'Carregando informações...'
-                : empresa?.nome
-                  ? `Link personalizado para ${empresa.nome} com informações pré-carregadas`
-                  : 'Link de agendamento com ID da empresa'
-              }
-            </p>
+            <button
+              onClick={fecharModal}
+              className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+            >
+              <X className="w-5 h-5 text-gray-500" />
+            </button>
           </div>
 
-          {/* Análise da URL */}
-          {urlAnalysis.isValid && (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-              <h4 className="font-medium text-green-900 mb-3">✅ Informações incluídas no link:</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-green-800">
-                <div>
-                  <p><strong>ID da Empresa:</strong> {urlAnalysis.empresaId}</p>
-                  {urlAnalysis.nomeEmpresa && (
-                    <p><strong>Nome:</strong> {urlAnalysis.nomeEmpresa}</p>
-                  )}
-                </div>
-                <div>
-                  {urlAnalysis.telefoneEmpresa && (
-                    <p><strong>Telefone:</strong> {urlAnalysis.telefoneEmpresa}</p>
-                  )}
-                  {empresa?.email && (
-                    <p><strong>Email (via API):</strong> {empresa.email}</p>
-                  )}
+          <div className="p-4 space-y-6">
+            {/* Alertas de validação - compactos */}
+            {!validation.isValid && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                <div className="flex items-start space-x-2">
+                  <AlertTriangle className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <h4 className="font-medium text-red-900 text-sm mb-1">Problemas encontrados:</h4>
+                    <ul className="text-xs text-red-800 space-y-1">
+                      {validation.errors.slice(0, 2).map((error, index) => (
+                        <li key={index}>• {error}</li>
+                      ))}
+                      {validation.errors.length > 2 && (
+                        <li className="text-red-600">• +{validation.errors.length - 2} outros problemas</li>
+                      )}
+                    </ul>
+                  </div>
                 </div>
               </div>
-              <div className="mt-3 pt-3 border-t border-green-300">
-                <p className="text-xs text-green-700 italic">
-                  * Essas informações serão exibidas automaticamente quando o cliente acessar o link
-                </p>
+            )}
+
+            {warnings.length > 0 && (
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+                <div className="flex items-start space-x-2">
+                  <Info className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <h4 className="font-medium text-amber-900 text-sm mb-1">Avisos:</h4>
+                    <p className="text-xs text-amber-800">
+                      {warnings[0]}
+                      {warnings.length > 1 && ` (+${warnings.length - 1} outros)`}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Info da empresa - compacta */}
+            <div className="text-center">
+              <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                Link para {empresa?.nome || 'Sua Empresa'}
+              </h3>
+              <p className="text-sm text-gray-600">
+                {loadingEmpresa ? 'Carregando...' : 'Clientes podem agendar 24h por dia'}
+              </p>
+            </div>
+
+            {/* Link principal - responsivo */}
+            <div className="bg-gray-50 rounded-lg p-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Seu Link Personalizado
+              </label>
+              <div className="space-y-3">
+                {/* Input do link - responsivo */}
+                <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
+                  <input
+                    type="text"
+                    value={linkAgendamento}
+                    readOnly
+                    className="flex-1 p-3 bg-white border border-gray-300 rounded-lg text-sm font-mono break-all"
+                    onClick={(e) => e.currentTarget.select()}
+                  />
+                  <Button
+                    onClick={copiarLink}
+                    variant="outline"
+                    size="sm"
+                    className={`flex items-center justify-center space-x-1 whitespace-nowrap ${
+                      linkCopiado ? 'bg-green-50 border-green-300' : ''
+                    }`}
+                  >
+                    {linkCopiado ? (
+                      <>
+                        <CheckCircle className="w-4 h-4 text-green-600" />
+                        <span className="text-green-600">Copiado!</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-4 h-4" />
+                        <span>Copiar</span>
+                      </>
+                    )}
+                  </Button>
+                </div>
+                
+                {/* Preview da estrutura da URL - colapsável */}
+                {empresa?.nome && !loadingEmpresa && (
+                  <button
+                    onClick={() => setMostrarDetalhes(!mostrarDetalhes)}
+                    className="w-full text-left p-2 bg-white border border-gray-200 rounded text-xs text-gray-600 hover:bg-gray-50 transition-colors"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span>
+                        <span className="font-medium">Estrutura:</span> 
+                        <span className="ml-1">
+                          /agendamento/{empresaId}/{empresa.nome ? 'nome-da-empresa' : 'sem-nome'}/...
+                        </span>
+                      </span>
+                      {mostrarDetalhes ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                    </div>
+                    {mostrarDetalhes && (
+                      <div className="mt-2 pt-2 border-t border-gray-200">
+                        <p>URL completa: {linkAgendamento}</p>
+                      </div>
+                    )}
+                  </button>
+                )}
               </div>
             </div>
-          )}
 
-          {/* Link */}
-          <div className="bg-gray-50 rounded-lg p-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Link de Agendamento Personalizado
-            </label>
-            <div className="flex items-center space-x-2">
-              <input
-                type="text"
-                value={linkAgendamento}
-                readOnly
-                className="flex-1 p-3 bg-white border border-gray-300 rounded-lg text-sm font-mono"
-              />
+            {/* Análise da URL - colapsável */}
+            {urlAnalysis.isValid && (
+              <div className="bg-green-50 border border-green-200 rounded-lg">
+                <button
+                  onClick={() => setMostrarDetalhes(!mostrarDetalhes)}
+                  className="w-full p-3 text-left hover:bg-green-100 transition-colors rounded-lg"
+                >
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-medium text-green-900 flex items-center">
+                      <CheckCircle className="w-4 h-4 mr-2" />
+                      Informações do Link
+                    </h4>
+                    {mostrarDetalhes ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                  </div>
+                </button>
+                
+                {mostrarDetalhes && (
+                  <div className="px-3 pb-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm text-green-800">
+                      <div>
+                        <p><strong>ID da Empresa:</strong> {urlAnalysis.empresaId}</p>
+                        {urlAnalysis.nomeEmpresa && (
+                          <p><strong>Nome:</strong> {urlAnalysis.nomeEmpresa}</p>
+                        )}
+                      </div>
+                      <div>
+                        {urlAnalysis.telefoneEmpresa && (
+                          <p><strong>Telefone:</strong> {urlAnalysis.telefoneEmpresa}</p>
+                        )}
+                        {empresa?.email && (
+                          <p><strong>Email:</strong> {empresa.email}</p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Ações de Compartilhamento - responsivas */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               <Button
-                onClick={copiarLink}
+                onClick={compartilharNativo}
                 variant="outline"
                 size="sm"
-                className={`flex items-center space-x-1 ${linkCopiado ? 'bg-green-50 border-green-300' : ''}`}
+                className="flex items-center justify-center space-x-1"
               >
-                {linkCopiado ? (
-                  <>
-                    <CheckCircle className="w-4 h-4 text-green-600" />
-                    <span className="text-green-600">Copiado!</span>
-                  </>
-                ) : (
-                  <>
-                    <Copy className="w-4 h-4" />
-                    <span>Copiar</span>
-                  </>
-                )}
+                <Share2 className="w-4 h-4" />
+                <span className="hidden sm:inline">Compartilhar</span>
+              </Button>
+
+              <Button
+                onClick={abrirLink}
+                variant="outline"
+                size="sm"
+                className="flex items-center justify-center space-x-1"
+              >
+                <ExternalLink className="w-4 h-4" />
+                <span className="hidden sm:inline">Visualizar</span>
+              </Button>
+
+              <Button
+                onClick={() => setMostrarQR(!mostrarQR)}
+                variant="outline"
+                size="sm"
+                className="flex items-center justify-center space-x-1"
+              >
+                <QrCode className="w-4 h-4" />
+                <span className="hidden sm:inline">QR Code</span>
+              </Button>
+
+              <Button
+                onClick={() => setMostrarInstrucoes(!mostrarInstrucoes)}
+                variant="outline"
+                size="sm"
+                className="flex items-center justify-center space-x-1"
+              >
+                <Info className="w-4 h-4" />
+                <span className="hidden sm:inline">Como Usar</span>
               </Button>
             </div>
-            
-            {/* Preview da estrutura da URL */}
-            {empresa?.nome && !loadingEmpresa && (
-              <div className="mt-2 p-2 bg-white border border-gray-200 rounded text-xs text-gray-600">
-                <span className="font-medium">Estrutura:</span> 
-                <span className="ml-1">
-                  /agendamento/{empresaId}/{empresa.nome ? 'nome-da-empresa' : 'sem-nome'}/{empresa.telefone ? 'telefone' : 'sem-telefone'}
-                </span>
+
+            {/* QR Code - colapsável */}
+            {mostrarQR && (
+              <div className="text-center space-y-3 border-t pt-4">
+                <div className="inline-block p-4 bg-white border-2 border-gray-200 rounded-lg">
+                  <img
+                    src={gerarQRCode()}
+                    alt="QR Code do link de agendamento"
+                    className="w-32 h-32 sm:w-48 sm:h-48 mx-auto"
+                  />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600">
+                    Escaneie com a câmera do celular
+                  </p>
+                  {empresa?.nome && (
+                    <p className="text-xs text-gray-500 mt-1">
+                      Link para {empresa.nome}
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Instruções - colapsáveis */}
+            {mostrarInstrucoes && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 border-t pt-4">
+                <h4 className="font-medium text-blue-900 mb-3 flex items-center">
+                  <Info className="w-4 h-4 mr-2" />
+                  Como Usar o Link
+                </h4>
+                <div className="text-sm text-blue-800 space-y-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div>
+                      <p>• Cole no WhatsApp/Instagram</p>
+                      <p>• Adicione ao seu site</p>
+                      <p>• Imprima o QR Code</p>
+                    </div>
+                    <div>
+                      <p>• Funciona 24h por dia</p>
+                      <p>• Confirmação automática</p>
+                      <p>• Dados pré-carregados</p>
+                    </div>
+                  </div>
+                  {empresa?.nome && (
+                    <div className="mt-3 pt-3 border-t border-blue-300">
+                      <p className="text-xs">
+                        ✨ Informações de "{empresa.nome}" já incluídas no link
+                      </p>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
           </div>
 
-          {/* Ações de Compartilhamento */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <Button
-              onClick={compartilharNativo}
-              variant="outline"
-              className="flex items-center justify-center space-x-2"
-            >
-              <Share2 className="w-4 h-4" />
-              <span>Compartilhar</span>
-            </Button>
-
-            <Button
-              onClick={abrirLink}
-              variant="outline"
-              className="flex items-center justify-center space-x-2"
-            >
-              <ExternalLink className="w-4 h-4" />
-              <span>Visualizar</span>
-            </Button>
-
-            <Button
-              onClick={() => setMostrarQR(!mostrarQR)}
-              variant="outline"
-              className="flex items-center justify-center space-x-2"
-            >
-              <QrCode className="w-4 h-4" />
-              <span>QR Code</span>
-            </Button>
-          </div>
-
-          {/* QR Code */}
-          {mostrarQR && (
-            <div className="text-center space-y-3">
-              <div className="inline-block p-4 bg-white border-2 border-gray-200 rounded-lg">
-                <img
-                  src={gerarQRCode()}
-                  alt="QR Code do link de agendamento"
-                  className="w-48 h-48 mx-auto"
-                />
-              </div>
-              <p className="text-sm text-gray-600">
-                Escaneie este QR Code com a câmera do celular para acessar o link
-              </p>
-              {empresa?.nome && (
-                <p className="text-xs text-gray-500">
-                  Link inteligente para agendamento com {empresa.nome}
-                </p>
-              )}
+          {/* Footer fixo */}
+          <div className="sticky bottom-0 bg-white border-t p-4">
+            <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3">
+              <Button 
+                variant="outline" 
+                onClick={fecharModal}
+                className="order-2 sm:order-1"
+              >
+                Fechar
+              </Button>
+              <Button 
+                onClick={copiarLink} 
+                disabled={!validation.isValid}
+                className="order-1 sm:order-2"
+              >
+                {linkCopiado ? '✓ Copiado!' : 'Copiar Link'}
+              </Button>
             </div>
-          )}
-
-          {/* Instruções */}
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <h4 className="font-medium text-blue-900 mb-2">Como usar o Link Inteligente:</h4>
-            <ul className="text-sm text-blue-800 space-y-1 list-disc list-inside">
-              <li>Copie e cole o link em suas redes sociais, WhatsApp ou email</li>
-              <li>Adicione o link ao seu site ou bio do Instagram</li>
-              <li>Imprima o QR Code para usar em materiais físicos</li>
-              <li>Clientes poderão agendar 24h por dia, sem precisar te ligar</li>
-              {empresa?.nome && (
-                <li>✨ O nome "{empresa.nome}" aparecerá automaticamente</li>
-              )}
-              {empresa?.telefone && (
-                <li>📞 O telefone "{empresa.telefone}" será exibido para contato</li>
-              )}
-              <li>💡 As informações são passadas pela URL, garantindo carregamento rápido</li>
-            </ul>
-          </div>
-
-          {/* Botões de Ação */}
-          <div className="flex justify-end space-x-3">
-            <Button variant="outline" onClick={fecharModal}>
-              Fechar
-            </Button>
-            <Button onClick={copiarLink} disabled={!validation.isValid}>
-              {linkCopiado ? 'Link Copiado!' : 'Copiar Link Inteligente'}
-            </Button>
           </div>
         </div>
       </Modal>
