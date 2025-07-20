@@ -154,8 +154,9 @@ export function obterCorPorStatus(status: string): string {
   const cores = {
     'AGENDADO': 'bg-blue-500',
     'CONFIRMADO': 'bg-green-500',
-    'EM_ANDAMENTO': 'bg-yellow-500',
-    'CONCLUIDO': 'bg-gray-500',
+    'REALIZADO': 'bg-gray-500', // Alterado para cinza, igual à visão diária e de lista
+    //'EM_ANDAMENTO': 'bg-yellow-500',
+    //'CONCLUIDO': 'bg-gray-500',
     'CANCELADO': 'bg-red-500',
   };
   

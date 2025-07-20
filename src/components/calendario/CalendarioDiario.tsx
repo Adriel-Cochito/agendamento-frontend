@@ -478,7 +478,19 @@ export function CalendarioDiario({
                     </div>
                   ) : (
                     <div className="space-y-2">
-                      {agendamentosNoHorario.map((agendamento) => (
+                      {agendamentosNoHorario.map((agendamento) => {
+                        // Debug: verificar dados do agendamento
+                        console.log('📋 Agendamento no calendário diário:', {
+                          id: agendamento.id,
+                          cliente: agendamento.nomeCliente,
+                          servicoTitulo: agendamento.servicoTitulo,
+                          profissionalNome: agendamento.profissionalNome,
+                          servico: agendamento.servico,
+                          profissional: agendamento.profissional,
+                          dadosCompletos: agendamento
+                        });
+
+                        return (
                         <div
                           key={agendamento.id}
                           className="bg-gray-50 rounded-lg p-4 border-l-4 cursor-pointer hover:bg-gray-100 transition-colors"
@@ -520,11 +532,19 @@ export function CalendarioDiario({
                               <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm text-gray-600">
                                 <div className="flex items-center space-x-1">
                                   <Tag className="w-3 h-3" />
-                                  <span>{agendamento.servicoTitulo}</span>
+                                  <span>
+                                    {agendamento.servicoTitulo || 
+                                     agendamento.servico?.titulo || 
+                                     'Serviço não informado'}
+                                  </span>
                                 </div>
                                 <div className="flex items-center space-x-1">
                                   <User className="w-3 h-3" />
-                                  <span>{agendamento.profissionalNome}</span>
+                                  <span>
+                                    {agendamento.profissionalNome || 
+                                     agendamento.profissional?.nome || 
+                                     'Profissional não informado'}
+                                  </span>
                                 </div>
                                 <div className="flex items-center space-x-1">
                                   <Clock className="w-3 h-3" />
@@ -542,7 +562,8 @@ export function CalendarioDiario({
                             </div>
                           </div>
                         </div>
-                      ))}
+                        );
+                      })}
 
                       {/* Botão para adicionar mais agendamentos no mesmo horário */}
                       <div
