@@ -36,17 +36,8 @@ export function Modal({
     };
   }, [isOpen]);
 
-  // Responsive size classes
+  // Classes de tamanho com margens e padding restaurados
   const sizeClasses = {
-    sm: 'max-w-sm',
-    md: 'max-w-md',
-    lg: 'max-w-2xl',
-    xl: 'max-w-4xl',
-    full: 'max-w-full mx-4',
-  };
-
-  // Mobile-first responsive classes
-  const responsiveClasses = {
     sm: 'w-full max-w-sm mx-4',
     md: 'w-full max-w-md mx-4',
     lg: 'w-full max-w-md mx-4 sm:max-w-lg md:max-w-2xl',
@@ -94,17 +85,17 @@ export function Modal({
               transition={{ duration: 0.2, ease: "easeOut" }}
               className={cn(
                 'bg-white rounded-xl shadow-2xl border border-gray-200',
-                responsiveClasses[size],
+                sizeClasses[size],
                 maxHeight && 'max-h-[90vh]',
                 'my-4 relative flex flex-col'
               )}
               onClick={(e) => e.stopPropagation()}
             >
-              {/* Header - apenas se tiver título ou showCloseButton */}
+              {/* Header - SEMPRE renderizar se tem título ou botão de fechar */}
               {(title || showCloseButton) && (
-                <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 flex-shrink-0">
+                <div className="flex items-center justify-between p-6 border-b border-gray-200 flex-shrink-0">
                   {title && (
-                    <h2 className="text-lg sm:text-xl font-semibold text-gray-900 pr-4">
+                    <h2 className="text-xl font-semibold text-gray-900 pr-4">
                       {title}
                     </h2>
                   )}
@@ -120,12 +111,12 @@ export function Modal({
                 </div>
               )}
               
-              {/* Content */}
+              {/* Content - COM PADDING RESTAURADO */}
               <div className={cn(
-                'flex-1',
+                'flex-1 p-6', // PADDING RESTAURADO AQUI
                 maxHeight && 'overflow-y-auto',
-                // Se não tem header, adiciona padding superior
-                !(title || showCloseButton) && 'pt-4 sm:pt-6'
+                // Se não tem header, não remove o padding superior
+                !(title || showCloseButton) && 'pt-6'
               )}>
                 {children}
               </div>
@@ -137,7 +128,7 @@ export function Modal({
   );
 }
 
-// Modal variants para casos específicos
+// Modal variants para casos específicos (mantidos iguais)
 export function BottomSheetModal({ 
   isOpen, 
   onClose, 
@@ -179,7 +170,7 @@ export function BottomSheetModal({
               </div>
             )}
             
-            <div className="overflow-y-auto max-h-[calc(85vh-4rem)]">
+            <div className="overflow-y-auto max-h-[calc(85vh-4rem)] p-4">
               {children}
             </div>
           </motion.div>
@@ -189,7 +180,7 @@ export function BottomSheetModal({
   );
 }
 
-// Full screen modal para mobile
+// Full screen modal para mobile (mantido igual)
 export function FullScreenModal({ 
   isOpen, 
   onClose, 
@@ -225,7 +216,7 @@ export function FullScreenModal({
           </div>
           
           {/* Content */}
-          <div className="flex-1 overflow-y-auto">
+          <div className="flex-1 overflow-y-auto p-4">
             {children}
           </div>
         </motion.div>

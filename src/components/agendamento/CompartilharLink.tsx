@@ -1,4 +1,4 @@
-// src/components/agendamento/CompartilharLink.tsx - Versão responsiva otimizada
+// src/components/agendamento/CompartilharLink.tsx - Versão com estilos inline
 import React, { useState } from 'react';
 import { Share2, Copy, CheckCircle, ExternalLink, QrCode, AlertTriangle, Info, X, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
@@ -21,20 +21,15 @@ export function CompartilharLink({ onClose }: CompartilharLinkProps) {
   const user = useAuthStore((state) => state.user);
   const empresaId = user?.empresaId || 1;
   
-  // Usar hook para buscar dados da empresa
   const { data: empresa, isLoading: loadingEmpresa } = useEmpresaAtual();
-  
-  // Instanciar o gerenciador de URLs
   const urlManager = new PublicSchedulingUrlManager();
 
-  // Gerar URL com validação
   const { url: linkAgendamento, warnings } = urlManager.generateValidatedUrl(
     empresaId,
     empresa?.nome,
     empresa?.telefone
   );
 
-  // Validar parâmetros
   const validation = validateSchedulingUrlParams({
     empresaId: empresaId.toString(),
     nomeEmpresa: empresa?.nome,
@@ -48,7 +43,6 @@ export function CompartilharLink({ onClose }: CompartilharLinkProps) {
       setTimeout(() => setLinkCopiado(false), 3000);
     } catch (error) {
       console.error('Erro ao copiar link:', error);
-      // Fallback para browsers antigos
       const textArea = document.createElement('textarea');
       textArea.value = linkAgendamento;
       document.body.appendChild(textArea);
@@ -72,7 +66,6 @@ export function CompartilharLink({ onClose }: CompartilharLinkProps) {
         console.error('Erro ao compartilhar:', error);
       }
     } else {
-      // Fallback: copiar link
       copiarLink();
     }
   };
@@ -82,7 +75,6 @@ export function CompartilharLink({ onClose }: CompartilharLinkProps) {
   };
 
   const gerarQRCode = () => {
-    // URL da API do QR Server (gratuita)
     return `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(linkAgendamento)}`;
   };
 
@@ -94,8 +86,62 @@ export function CompartilharLink({ onClose }: CompartilharLinkProps) {
     onClose?.();
   };
 
-  // Analisar URL para mostrar preview
   const urlAnalysis = urlManager.parseUrl(linkAgendamento);
+
+  // Estilos inline para responsividade
+  const modalStyles = {
+    container: {
+      maxHeight: '80vh',
+      overflowY: 'auto' as const,
+    },
+    header: {
+      position: 'sticky' as const,
+      top: 0,
+      backgroundColor: 'white',
+      zIndex: 10,
+    },
+    inputGroup: {
+      display: 'flex',
+      flexDirection: 'column' as const,
+      gap: '0.5rem',
+    },
+    inputGroupDesktop: {
+      display: 'flex',
+      flexDirection: 'row' as const,
+      gap: '0.5rem',
+    },
+    input: {
+      flex: 1,
+      padding: '0.75rem',
+      backgroundColor: 'white',
+      border: '1px solid #d1d5db',
+      borderRadius: '0.5rem',
+      fontSize: '0.875rem',
+      fontFamily: 'monospace',
+      wordBreak: 'break-all' as const,
+    },
+    buttonGrid: {
+      display: 'grid',
+      gridTemplateColumns: 'repeat(2, 1fr)',
+      gap: '0.5rem',
+    },
+    buttonGridDesktop: {
+      display: 'grid',
+      gridTemplateColumns: 'repeat(4, 1fr)',
+      gap: '0.5rem',
+    },
+    qrImage: {
+      width: '8rem',
+      height: '8rem',
+    },
+    qrImageDesktop: {
+      width: '12rem',
+      height: '12rem',
+    },
+  };
+
+  // Detectar se é desktop
+  const isDesktop = window.innerWidth >= 640;
 
   return (
     <>
@@ -115,10 +161,9 @@ export function CompartilharLink({ onClose }: CompartilharLinkProps) {
         title=""
         size="lg"
       >
-        {/* Container com scroll otimizado */}
-        <div className="max-h-[80vh] overflow-y-auto">
-          {/* Header customizado responsivo */}
-          <div className="flex items-center justify-between p-4 pb-6 border-b sticky top-0 bg-white z-10">
+        <div style={modalStyles.container}>
+          {/* Header customizado */}
+          <div style={modalStyles.header} className="flex items-center justify-between p-4 pb-6 border-b">
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
                 <Share2 className="w-5 h-5 text-blue-600" />
@@ -136,10 +181,10 @@ export function CompartilharLink({ onClose }: CompartilharLinkProps) {
             </button>
           </div>
 
-          <div className="p-4 space-y-6">
-            {/* Alertas de validação - compactos */}
+          <div className="p-6 space-y-6">
+            {/* Alertas de validação */}
             {!validation.isValid && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
                 <div className="flex items-start space-x-2">
                   <AlertTriangle className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
                   <div>
@@ -158,7 +203,7 @@ export function CompartilharLink({ onClose }: CompartilharLinkProps) {
             )}
 
             {warnings.length > 0 && (
-              <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
                 <div className="flex items-start space-x-2">
                   <Info className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
                   <div>
@@ -172,7 +217,7 @@ export function CompartilharLink({ onClose }: CompartilharLinkProps) {
               </div>
             )}
 
-            {/* Info da empresa - compacta */}
+            {/* Info da empresa */}
             <div className="text-center">
               <h3 className="text-lg font-semibold text-gray-900 mb-1">
                 Link para {empresa?.nome || 'Sua Empresa'}
@@ -182,26 +227,26 @@ export function CompartilharLink({ onClose }: CompartilharLinkProps) {
               </p>
             </div>
 
-            {/* Link principal - responsivo */}
+            {/* Link principal */}
             <div className="bg-gray-50 rounded-lg p-4">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Seu Link Personalizado
               </label>
               <div className="space-y-3">
                 {/* Input do link - responsivo */}
-                <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
+                <div style={isDesktop ? modalStyles.inputGroupDesktop : modalStyles.inputGroup}>
                   <input
                     type="text"
                     value={linkAgendamento}
                     readOnly
-                    className="flex-1 p-3 bg-white border border-gray-300 rounded-lg text-sm font-mono break-all"
+                    style={modalStyles.input}
                     onClick={(e) => e.currentTarget.select()}
                   />
                   <Button
                     onClick={copiarLink}
                     variant="outline"
                     size="sm"
-                    className={`flex items-center justify-center space-x-1 whitespace-nowrap ${
+                    className={`flex items-center justify-center space-x-1 whitespace-nowrap min-w-[100px] ${
                       linkCopiado ? 'bg-green-50 border-green-300' : ''
                     }`}
                   >
@@ -219,7 +264,7 @@ export function CompartilharLink({ onClose }: CompartilharLinkProps) {
                   </Button>
                 </div>
                 
-                {/* Preview da estrutura da URL - colapsável */}
+                {/* Preview da estrutura da URL */}
                 {empresa?.nome && !loadingEmpresa && (
                   <button
                     onClick={() => setMostrarDetalhes(!mostrarDetalhes)}
@@ -244,7 +289,7 @@ export function CompartilharLink({ onClose }: CompartilharLinkProps) {
               </div>
             </div>
 
-            {/* Análise da URL - colapsável */}
+            {/* Análise da URL */}
             {urlAnalysis.isValid && (
               <div className="bg-green-50 border border-green-200 rounded-lg">
                 <button
@@ -284,7 +329,7 @@ export function CompartilharLink({ onClose }: CompartilharLinkProps) {
             )}
 
             {/* Ações de Compartilhamento - responsivas */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            <div style={isDesktop ? modalStyles.buttonGridDesktop : modalStyles.buttonGrid}>
               <Button
                 onClick={compartilharNativo}
                 variant="outline"
@@ -326,14 +371,15 @@ export function CompartilharLink({ onClose }: CompartilharLinkProps) {
               </Button>
             </div>
 
-            {/* QR Code - colapsável */}
+            {/* QR Code */}
             {mostrarQR && (
               <div className="text-center space-y-3 border-t pt-4">
                 <div className="inline-block p-4 bg-white border-2 border-gray-200 rounded-lg">
                   <img
                     src={gerarQRCode()}
                     alt="QR Code do link de agendamento"
-                    className="w-32 h-32 sm:w-48 sm:h-48 mx-auto"
+                    style={isDesktop ? modalStyles.qrImageDesktop : modalStyles.qrImage}
+                    className="mx-auto"
                   />
                 </div>
                 <div>
@@ -349,7 +395,7 @@ export function CompartilharLink({ onClose }: CompartilharLinkProps) {
               </div>
             )}
 
-            {/* Instruções - colapsáveis */}
+            {/* Instruções */}
             {mostrarInstrucoes && (
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 border-t pt-4">
                 <h4 className="font-medium text-blue-900 mb-3 flex items-center">
@@ -381,7 +427,7 @@ export function CompartilharLink({ onClose }: CompartilharLinkProps) {
             )}
           </div>
 
-          {/* Footer fixo */}
+          {/* Footer */}
           <div className="sticky bottom-0 bg-white border-t p-4">
             <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3">
               <Button 

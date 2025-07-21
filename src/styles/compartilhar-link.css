@@ -1,0 +1,213 @@
+/* src/styles/compartilhar-link.css - Estilos específicos para o modal de compartilhar link */
+
+/* Container principal do modal */
+.compartilhar-link-modal {
+  /* Estilos específicos que não afetam outros modais */
+}
+
+/* Header do modal */
+.compartilhar-link-header {
+  /* Sticky header já definido inline */
+}
+
+.compartilhar-link-title {
+  @apply text-lg sm:text-xl font-semibold text-gray-900;
+}
+
+.compartilhar-link-subtitle {
+  @apply text-sm text-gray-500;
+}
+
+/* Conteúdo principal */
+.compartilhar-link-content {
+  @apply p-4 space-y-6;
+}
+
+/* Seções do modal */
+.compartilhar-link-section {
+  @apply bg-gray-50 rounded-lg p-4;
+}
+
+/* Alertas específicos */
+.compartilhar-link-alert {
+  @apply rounded-lg p-3;
+}
+
+/* Input group responsivo */
+.compartilhar-link-input-group {
+  @apply flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2;
+}
+
+.compartilhar-link-input {
+  @apply flex-1 p-3 bg-white border border-gray-300 rounded-lg text-sm font-mono break-all;
+  @apply focus:ring-2 focus:ring-primary-500 focus:border-primary-500;
+  @apply transition-all duration-200;
+}
+
+.compartilhar-link-button {
+  @apply flex items-center justify-center space-x-1 whitespace-nowrap;
+  @apply transition-all duration-200;
+  @apply min-w-[100px]; /* Largura mínima para evitar quebra */
+}
+
+/* Botões colapsáveis */
+.compartilhar-link-collapsible {
+  @apply w-full text-left p-2 bg-white border border-gray-200 rounded text-xs text-gray-600;
+  @apply hover:bg-gray-50 transition-colors duration-200;
+}
+
+/* Análise da URL */
+.compartilhar-link-analysis {
+  @apply bg-green-50 border border-green-200 rounded-lg;
+}
+
+/* Grid responsivo */
+.compartilhar-link-grid {
+  @apply grid gap-3;
+}
+
+/* Grid para informações */
+.compartilhar-link-grid.info-grid {
+  @apply grid-cols-1 sm:grid-cols-2;
+}
+
+/* Ações de compartilhamento */
+.compartilhar-link-actions {
+  @apply grid gap-2;
+  @apply grid-cols-2 sm:grid-cols-4;
+}
+
+/* QR Code */
+.compartilhar-link-qr {
+  @apply text-center space-y-3 border-t pt-4;
+}
+
+.compartilhar-link-qr-image {
+  @apply mx-auto;
+  @apply w-32 h-32 sm:w-48 sm:h-48;
+}
+
+/* Instruções */
+.compartilhar-link-instructions {
+  @apply bg-blue-50 border border-blue-200 rounded-lg p-4;
+}
+
+/* Footer */
+.compartilhar-link-footer {
+  @apply sticky bottom-0 bg-white border-t p-4;
+}
+
+/* Responsividade específica para mobile */
+@media (max-width: 640px) {
+  .compartilhar-link-modal {
+    @apply max-h-[95vh];
+  }
+  
+  .compartilhar-link-content {
+    @apply p-3 space-y-4;
+  }
+  
+  .compartilhar-link-section {
+    @apply p-3;
+  }
+  
+  .compartilhar-link-input {
+    @apply p-2 text-xs;
+  }
+  
+  .compartilhar-link-button {
+    @apply min-w-[80px] text-xs px-2 py-2;
+  }
+  
+  .compartilhar-link-actions {
+    @apply grid-cols-2 gap-1;
+  }
+  
+  .compartilhar-link-qr-image {
+    @apply w-24 h-24;
+  }
+  
+  .compartilhar-link-title {
+    @apply text-base;
+  }
+  
+  .compartilhar-link-subtitle {
+    @apply text-xs;
+  }
+}
+
+/* Tablet */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .compartilhar-link-actions {
+    @apply grid-cols-3;
+  }
+}
+
+/* Desktop */
+@media (min-width: 1025px) {
+  .compartilhar-link-actions {
+    @apply grid-cols-4;
+  }
+  
+  .compartilhar-link-qr-image {
+    @apply w-56 h-56;
+  }
+}
+
+/* Animações específicas */
+.compartilhar-link-modal .fade-in {
+  animation: compartilharLinkFadeIn 0.2s ease-out;
+}
+
+@keyframes compartilharLinkFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Estados específicos */
+.compartilhar-link-button.copied {
+  @apply bg-green-50 border-green-300 text-green-600;
+}
+
+.compartilhar-link-input:focus {
+  @apply ring-2 ring-primary-500 border-primary-500;
+}
+
+/* Utilitários específicos para o modal */
+.compartilhar-link-break-all {
+  word-break: break-all;
+  word-wrap: break-word;
+}
+
+.compartilhar-link-no-wrap {
+  white-space: nowrap;
+}
+
+/* Scrollbar customizado para o modal */
+.compartilhar-link-modal {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
+}
+
+.compartilhar-link-modal::-webkit-scrollbar {
+  width: 6px;
+}
+
+.compartilhar-link-modal::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.compartilhar-link-modal::-webkit-scrollbar-thumb {
+  background-color: rgba(156, 163, 175, 0.5);
+  border-radius: 3px;
+}
+
+.compartilhar-link-modal::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(156, 163, 175, 0.7);
+}
