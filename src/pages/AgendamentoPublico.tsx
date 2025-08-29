@@ -1,4 +1,4 @@
-// src/pages/AgendamentoPublico.tsx - Versão com parâmetros da URL e WhatsApp
+// src/pages/AgendamentoPublico.tsx - Versão corrigida sem problemas de timezone
 import React, { useMemo } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -574,15 +574,10 @@ export default function AgendamentoPublico({ empresaId: propEmpresaId }: Agendam
                     </Button>
                   </div>
 
-                  {/* Resumo */}
+                  {/* Resumo - CORRIGIDO AQUI */}
                   <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
                     <p className="text-sm text-gray-700">
-                      <strong>Data selecionada:</strong> {new Intl.DateTimeFormat('pt-BR', {
-                        weekday: 'long',
-                        day: '2-digit',
-                        month: 'long',
-                        year: 'numeric'
-                      }).format(new Date(modalStates.selectedDataAgendamento))}
+                      <strong>Data selecionada:</strong> {dateUtils.formatDateForDisplay(modalStates.selectedDataAgendamento)}
                     </p>
                   </div>
 
@@ -624,7 +619,7 @@ export default function AgendamentoPublico({ empresaId: propEmpresaId }: Agendam
                     </Button>
                   </div>
 
-                  {/* Resumo completo com informações da empresa */}
+                  {/* Resumo completo - CORRIGIDO AQUI */}
                   <div className="bg-gradient-to-r from-primary-50 to-blue-50 border border-primary-200 rounded-xl p-6">
                     <h3 className="font-semibold text-primary-900 mb-4 flex items-center">
                       <CheckCircle className="w-5 h-5 mr-2" />
@@ -637,7 +632,7 @@ export default function AgendamentoPublico({ empresaId: propEmpresaId }: Agendam
                         <p><strong>Profissional:</strong> {modalStates.selectedProfissionais[0]?.nome}</p>
                       </div>
                       <div>
-                        <p><strong>Data:</strong> {new Intl.DateTimeFormat('pt-BR').format(new Date(modalStates.selectedDataAgendamento))}</p>
+                        <p><strong>Data:</strong> {dateUtils.formatDateSimple(modalStates.selectedDataAgendamento)}</p>
                         <p><strong>Horário:</strong> {dateUtils.formatTimeLocal(modalStates.selectedDataHora)}</p>
                         <p><strong>Valor:</strong> R$ {modalStates.selectedServico?.preco.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
                       </div>
@@ -714,14 +709,14 @@ export default function AgendamentoPublico({ empresaId: propEmpresaId }: Agendam
                   
                   <div>
                     <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                      🎉 Agendamento Confirmado!
+                      Agendamento Confirmado!
                     </h2>
                     <p className="text-xl text-gray-600 mb-6">
                       Seu atendimento com {empresaDisplay.nome} foi agendado com sucesso
                     </p>
                   </div>
 
-                  {/* Detalhes finais com informações completas */}
+                  {/* Detalhes finais - CORRIGIDO AQUI */}
                   <div className="bg-green-50 border border-green-200 rounded-xl p-6 text-left max-w-lg mx-auto">
                     <h3 className="font-bold text-green-900 mb-4 text-center">
                       Detalhes do seu Agendamento
@@ -749,14 +744,7 @@ export default function AgendamentoPublico({ empresaId: propEmpresaId }: Agendam
                       </div>
                       <div className="flex justify-between">
                         <span className="font-medium">Data:</span>
-                        <span>
-                          {new Intl.DateTimeFormat('pt-BR', {
-                            weekday: 'long',
-                            day: '2-digit',
-                            month: 'long',
-                            year: 'numeric'
-                          }).format(new Date(modalStates.selectedDataAgendamento))}
-                        </span>
+                        <span>{dateUtils.formatDateForDisplay(modalStates.selectedDataAgendamento)}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="font-medium">Horário:</span>
@@ -777,7 +765,7 @@ export default function AgendamentoPublico({ empresaId: propEmpresaId }: Agendam
                             <div className="flex items-center space-x-2">
                               <WhatsAppPhone 
                                 phone={empresaDisplay.telefone}
-                                message={`Olá! Confirmei meu agendamento na ${empresaDisplay.nome} para ${new Intl.DateTimeFormat('pt-BR').format(new Date(modalStates.selectedDataAgendamento))} às ${dateUtils.formatTimeLocal(modalStates.selectedDataHora)}. Cliente: ${modalStates.dadosCliente.nomeCliente}.`}
+                                message={`Olá! Confirmei meu agendamento na ${empresaDisplay.nome} para ${dateUtils.formatDateSimple(modalStates.selectedDataAgendamento)} às ${dateUtils.formatTimeLocal(modalStates.selectedDataHora)}. Cliente: ${modalStates.dadosCliente.nomeCliente}.`}
                                 className="text-xs text-green-700 hover:text-green-600"
                               />
                             </div>
@@ -851,7 +839,7 @@ export default function AgendamentoPublico({ empresaId: propEmpresaId }: Agendam
           </motion.div>
         )}
 
-        {/* Help Section - Atualizada com informações da empresa */}
+        {/* Help Section */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -897,7 +885,7 @@ export default function AgendamentoPublico({ empresaId: propEmpresaId }: Agendam
             {empresaInfo.nomeFromUrl && (
               <div className="mt-4 pt-3 border-t border-gray-100">
                 <p className="text-xs text-gray-400">
-                  ✨ Link personalizado para {empresaDisplay.nome}
+                  Link personalizado para {empresaDisplay.nome}
                   {empresaInfo.telefoneFromUrl && ` • ${empresaInfo.telefoneFromUrl}`}
                 </p>
               </div>

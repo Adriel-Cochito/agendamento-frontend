@@ -11,10 +11,13 @@ export const publicApiClient = axios.create({
   },
 });
 
-// Interceptor para logs (reduzido)
+// Interceptor para garantir que NUNCA seja enviado token para APIs públicas
 publicApiClient.interceptors.request.use(
   (config) => {
-    // Log apenas em desenvolvimento ou quando necessário
+    // IMPORTANTE: Remover qualquer header Authorization que possa existir
+    delete config.headers.Authorization;
+    
+    // Log apenas em desenvolvimento
     if (process.env.NODE_ENV === 'development') {
       console.log('Public Request:', config.method?.toUpperCase(), config.url);
     }

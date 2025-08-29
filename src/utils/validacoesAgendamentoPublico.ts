@@ -1,22 +1,22 @@
 // src/utils/validacoesAgendamentoPublico.ts
-export interface DadosAgendamentoPublico {
-  nomeCliente: string;
-  telefoneCliente: string;
-  servicoId: number;
-  profissionalId: number;
-  data: string;
-  horario: string;
-}
+import { dateUtils } from './dateUtils';
 
 export interface ErroValidacao {
-  campo: keyof DadosAgendamentoPublico | 'geral';
+  campo: string;
   mensagem: string;
 }
 
-export function validarAgendamentoPublico(dados: Partial<DadosAgendamentoPublico>): ErroValidacao[] {
+export interface DadosAgendamento {
+  nomeCliente: string;
+  telefoneCliente: string;
+  data?: string;
+  horario?: string;
+}
+
+export function validarDadosAgendamento(dados: DadosAgendamento): ErroValidacao[] {
   const erros: ErroValidacao[] = [];
 
-  // Validar nome do cliente
+  // Validar nome
   if (!dados.nomeCliente || dados.nomeCliente.trim().length < 3) {
     erros.push({
       campo: 'nomeCliente',
@@ -40,61 +40,9 @@ export function validarAgendamentoPublico(dados: Partial<DadosAgendamentoPublico
     }
   }
 
-  // Validar serviço selecionado
-  if (!dados.servicoId) {
-    erros.push({
-      campo: 'servicoId',
-      mensagem: 'Selecione um serviço'
-    });
-  }
-
-  // Validar profissional selecionado
-  if (!dados.profissionalId) {
-    erros.push({
-      campo: 'profissionalId',
-      mensagem: 'Selecione um profissional'
-    });
-  }
-
-  // Validar data selecionada
-  if (!dados.data) {
-    erros.push({
-      campo: 'data',
-      mensagem: 'Selecione uma data'
-    });
-  } else {
-    const dataSelecionada = new Date(dados.data);
-    const hoje = new Date();
-    hoje.setHours(0, 0, 0, 0);
-    
-    if (dataSelecionada < hoje) {
-      erros.push({
-        campo: 'data',
-        mensagem: 'Não é possível agendar para datas passadas'
-      });
-    }
-
-    // Validar se não é muito no futuro (6 meses)
-    const seisMesesFuturo = new Date();
-    seisMesesFuturo.setMonth(seisMesesFuturo.getMonth() + 6);
-    
-    if (dataSelecionada > seisMesesFuturo) {
-      erros.push({
-        campo: 'data',
-        mensagem: 'Não é possível agendar com mais de 6 meses de antecedência'
-      });
-    }
-  }
-
-  // Validar horário selecionado
-  if (!dados.horario) {
-    erros.push({
-      campo: 'horario',
-      mensagem: 'Selecione um horário'
-    });
-  } else {
-    // Validar formato do horário
-    const horarioRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
+  // Validar horário se fornecido
+  if (dados.horario) {
+    const horarioRegex = /^([01][0-9]|2[0-3]):[0-5][0-9]$/;
     if (!horarioRegex.test(dados.horario)) {
       erros.push({
         campo: 'horario',
@@ -104,11 +52,10 @@ export function validarAgendamentoPublico(dados: Partial<DadosAgendamentoPublico
 
     // Se data é hoje, validar se horário não é no passado
     if (dados.data) {
-      const agora = new Date();
-      const dataAgendamento = new Date(dados.data);
-      
-      if (dataAgendamento.toDateString() === agora.toDateString()) {
+      const hoje = dateUtils.toDateString(new Date());
+      if (dados.data === hoje) {
         const [hora, minuto] = dados.horario.split(':').map(Number);
+        const agora = new Date();
         const horarioAgendamento = new Date();
         horarioAgendamento.setHours(hora, minuto, 0, 0);
         
@@ -177,13 +124,9 @@ export const formatUtils = {
     return masked.substring(0, 17);
   },
 
+  // CORRIGIDO: Usar função sem timezone
   formatarDataExibicao: (data: string): string => {
-    return new Intl.DateTimeFormat('pt-BR', {
-      weekday: 'long',
-      day: '2-digit',
-      month: 'long',
-      year: 'numeric'
-    }).format(new Date(data));
+    return dateUtils.formatDateForDisplay(data);
   },
 
   formatarPreco: (preco: number): string => {

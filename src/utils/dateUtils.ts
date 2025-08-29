@@ -1,3 +1,4 @@
+// src/utils/dateUtils.ts
 export const dateUtils = {
   // Para backend WITHOUT TIME ZONE - apenas formata strings
   formatLocal: (isoString: string): string => {
@@ -73,5 +74,36 @@ export const dateUtils = {
     const newDate = new Date(dateBase);
     newDate.setHours(hour, minute, 0, 0);
     return newDate;
+  },
+
+  // CORREÇÃO: Converte string YYYY-MM-DD para Date SEM problemas de timezone
+  fromDateString: (dateString: string): Date => {
+    const [year, month, day] = dateString.split('-').map(Number);
+    return new Date(year, month - 1, day);
+  },
+
+  // CORREÇÃO: Formatar data para exibição SEM timezone
+  formatDateForDisplay: (dateString: string): string => {
+    const [year, month, day] = dateString.split('-').map(Number);
+    const date = new Date(year, month - 1, day);
+    
+    return new Intl.DateTimeFormat('pt-BR', {
+      weekday: 'long',
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric'
+    }).format(date);
+  },
+
+  // CORREÇÃO: Formatar data simples para exibição SEM timezone
+  formatDateSimple: (dateString: string): string => {
+    const [year, month, day] = dateString.split('-').map(Number);
+    const date = new Date(year, month - 1, day);
+    
+    return new Intl.DateTimeFormat('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    }).format(date);
   }
 };
