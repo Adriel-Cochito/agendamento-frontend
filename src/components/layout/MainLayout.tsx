@@ -1,12 +1,15 @@
-// src/components/layout/MainLayout.tsx - Atualizado
-import { ReactNode } from 'react';
+// src/components/layout/MainLayout.tsx (atualizado)
+import { ReactNode, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Calendar, Users, LogOut, Menu, X, Home, Tag, Clock } from 'lucide-react';
+import { Calendar, Users, LogOut, Menu, X, Home, Tag, Clock, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import { Modal } from '@/components/ui/Modal';
 import { useAuthStore } from '@/store/authStore';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useEmpresaAtual } from '@/hooks/useEmpresa';
-import { useState } from 'react';
+import { useEmpresaAtual, useUpdateEmpresa } from '@/hooks/useEmpresa';
+import { useToast } from '@/hooks/useToast';
+import { getErrorMessage } from '@/lib/error-handler';
+import { EmpresaForm } from '@/components/forms/EmpresaForm';
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -16,14 +19,33 @@ export function MainLayout({ children }: MainLayoutProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuthStore();
+  const { addToast } = useToast();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isEmpresaModalOpen, setIsEmpresaModalOpen] = useState(false);
   
   // Usar o hook para buscar dados da empresa
   const { data: empresa, isLoading: loadingEmpresa } = useEmpresaAtual();
+  const updateEmpresaMutation = useUpdateEmpresa();
 
   const handleLogout = () => {
     logout();
     navigate('/login');
+  };
+
+  const handleEmpresaSubmit = async (data: any) => {
+    console.log('📤 Dados recebidos do formulário:', data);
+    
+    try {
+      const result = await updateEmpresaMutation.mutateAsync(data);
+      console.log('✅ Empresa atualizada com sucesso:', result);
+      addToast('success', 'Empresa atualizada com sucesso!');
+      setIsEmpresaModalOpen(false);
+    } catch (error: any) {
+      console.error('❌ Erro ao atualizar empresa:', error);
+      console.error('📋 Response data:', error.response?.data);
+      console.error('📋 Status:', error.response?.status);
+      addToast('error', 'Erro ao atualizar empresa', getErrorMessage(error));
+    }
   };
 
   const menuItems = [
@@ -35,6 +57,7 @@ export function MainLayout({ children }: MainLayoutProps) {
   ];
 
   const isActive = (path: string) => location.pathname === path;
+  const isOwner = user?.role === 'OWNER';
 
   const getTituloSistema = () => {
     if (loadingEmpresa) {
@@ -135,12 +158,29 @@ export function MainLayout({ children }: MainLayoutProps) {
           {/* Info da empresa no sidebar */}
           {empresa?.nome && !loadingEmpresa && (
             <div className="mb-6 p-3 bg-primary-50 rounded-lg border border-primary-200">
-              <h3 className="font-semibold text-primary-900 text-sm">{empresa.nome}</h3>
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="font-semibold text-primary-900 text-sm">{empresa.nome}</h3>
+                {/* Botão de configurações só para OWNER */}
+                {isOwner && (
+                  <button
+                    onClick={() => setIsEmpresaModalOpen(true)}
+                    className="p-1 text-primary-600 hover:text-primary-800 hover:bg-primary-100 rounded transition-colors"
+                    title="Configurações da Empresa"
+                  >
+                    <Settings className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
               <p className="text-xs text-primary-700">
                 ID: {user?.empresaId} • {user?.role || 'USER'}
               </p>
               {empresa.email && (
                 <p className="text-xs text-primary-600 mt-1">{empresa.email}</p>
+              )}
+              {isOwner && (
+                <p className="text-xs text-primary-500 mt-1 italic">
+                  Clique no ⚙️ para configurar
+                </p>
               )}
             </div>
           )}
@@ -160,6 +200,20 @@ export function MainLayout({ children }: MainLayoutProps) {
               <span className="font-medium">{item.label}</span>
             </Link>
           ))}
+
+          {/* Separador e link direto para configurações da empresa (OWNER) */}
+          {/* {isOwner && (
+            <>
+              <div className="border-t border-gray-200 my-4"></div>
+              <button
+                onClick={() => setIsEmpresaModalOpen(true)}
+                className="w-full flex items-center space-x-3 px-4 py-2.5 rounded-lg transition-colors text-gray-700 hover:bg-gray-100"
+              >
+                <Settings className="w-5 h-5" />
+                <span className="font-medium">Configurações da Empresa</span>
+              </button>
+            </>
+          )} */}
         </nav>
 
         {/* Footer do sidebar com informações da empresa */}
@@ -183,6 +237,22 @@ export function MainLayout({ children }: MainLayoutProps) {
           {children}
         </div>
       </main>
+
+      {/* Modal de Configurações da Empresa */}
+      {isOwner && empresa && (
+        <Modal
+          isOpen={isEmpresaModalOpen}
+          onClose={() => setIsEmpresaModalOpen(false)}
+          title="Configurações da Empresa"
+          size="lg"
+        >
+          <EmpresaForm
+            empresa={empresa}
+            onSubmit={handleEmpresaSubmit}
+            isLoading={updateEmpresaMutation.isPending}
+          />
+        </Modal>
+      )}
     </div>
   );
 }

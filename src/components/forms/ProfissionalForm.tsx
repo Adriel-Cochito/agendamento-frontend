@@ -6,6 +6,7 @@ import { User, Mail, Lock, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Profissional } from '@/types/profissional';
+import { useServicosPermissions } from '@/hooks/usePermissions';
 
 const createSchema = z.object({
   nome: z.string().min(3, 'Nome deve ter no mínimo 3 caracteres'),
@@ -18,7 +19,11 @@ const createSchema = z.object({
 const updateSchema = z.object({
   nome: z.string().min(3, 'Nome deve ter no mínimo 3 caracteres'),
   email: z.string().email('Email inválido'),
-  senha: z.string().min(6, 'A senha deve ter no mínimo 6 caracteres').optional().or(z.literal('')),
+  senha: z
+    .string()
+    .min(6, 'A senha deve ter no mínimo 6 caracteres')
+    .optional()
+    .or(z.literal('')),
   perfil: z.enum(['OWNER', 'ADMIN', 'USER']),
   ativo: z.boolean(),
 });
@@ -32,9 +37,16 @@ interface ProfissionalFormProps {
   empresaId: number;
 }
 
-export function ProfissionalForm({ profissional, onSubmit, isLoading, empresaId }: ProfissionalFormProps) {
+export function ProfissionalForm({
+  profissional,
+  onSubmit,
+  isLoading,
+  empresaId,
+}: ProfissionalFormProps) {
   const isEditing = !!profissional;
-  
+
+  const permissions = useServicosPermissions(); // ÚNICA ADIÇÃO NOVA
+
   const {
     register,
     handleSubmit,
@@ -60,11 +72,11 @@ export function ProfissionalForm({ profissional, onSubmit, isLoading, empresaId 
         perfil: data.perfil,
         ativo: data.ativo,
       };
-      
+
       if (data.senha) {
         updateData.senha = data.senha;
       }
-      
+
       onSubmit(updateData);
     } else {
       onSubmit({
@@ -153,22 +165,21 @@ export function ProfissionalForm({ profissional, onSubmit, isLoading, empresaId 
             className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
             {...register('ativo')}
           />
-          <span className="text-sm font-medium text-gray-700">
-            Profissional ativo
-          </span>
+          <span className="text-sm font-medium text-gray-700">Profissional ativo</span>
         </label>
         <p className="mt-1 text-xs text-gray-500">
-          {ativoValue ? 'O profissional pode acessar o sistema' : 'O profissional não poderá fazer login'}
+          {ativoValue
+            ? 'O profissional pode acessar o sistema'
+            : 'O profissional não poderá fazer login'}
         </p>
       </div>
 
       <div className="flex justify-end space-x-4 pt-4">
-        <Button
-          type="submit"
-          loading={isLoading}
-        >
-          {isEditing ? 'Atualizar' : 'Criar'} Profissional
-        </Button>
+        {permissions.canUpdate && (
+          <Button type="submit" loading={isLoading}>
+            {isEditing ? 'Atualizar' : 'Criar'} Profissional
+          </Button>
+        )}
       </div>
     </form>
   );

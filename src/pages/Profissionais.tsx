@@ -16,9 +16,10 @@ import { useAuthStore } from '@/store/authStore';
 import { Profissional } from '@/types/profissional';
 import { useToast } from '@/hooks/useToast';
 import { getErrorMessage } from '@/lib/error-handler';
+import { useServicosPermissions } from '@/hooks/usePermissions';
 
 export function Profissionais() {
-
+  const permissions = useServicosPermissions(); // ÚNICA ADIÇÃO NOVA
   const { addToast } = useToast();
   const user = useAuthStore((state) => state.user);
   const [search, setSearch] = useState('');
@@ -45,7 +46,7 @@ export function Profissionais() {
       prof.email.toLowerCase().includes(search.toLowerCase())
   );
 
-    const confirmDelete = async () => {
+  const confirmDelete = async () => {
     if (profissionalToDelete) {
       try {
         await deleteMutation.mutateAsync(profissionalToDelete.id);
@@ -54,9 +55,11 @@ export function Profissionais() {
         setProfissionalToDelete(null);
       } catch (error: any) {
         console.error('Erro ao deletar:', error);
-        
+
         // Tratar erro específico de integridade referencial
-        if (error.response?.data?.errors?.[0]?.code === 'REFERENTIAL_INTEGRITY_VIOLATION') {
+        if (
+          error.response?.data?.errors?.[0]?.code === 'REFERENTIAL_INTEGRITY_VIOLATION'
+        ) {
           addToast(
             'error',
             'Não foi possível excluir',
@@ -83,7 +86,6 @@ export function Profissionais() {
     setProfissionalToDelete(profissional);
     setIsDeleteModalOpen(true);
   };
-
 
   const handleSubmit = async (data: any) => {
     try {
@@ -226,13 +228,15 @@ export function Profissionais() {
                       >
                         <Edit2 className="w-4 h-4" />
                       </button>
-                      <button
-                        onClick={() => handleDelete(profissional)}
-                        className="text-red-600 hover:text-red-900"
-                        disabled={profissional.id === user?.id}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                      {permissions.canUpdate && (
+                        <button
+                          onClick={() => handleDelete(profissional)}
+                          className="text-red-600 hover:text-red-900"
+                          disabled={profissional.id === user?.id}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
                     </td>
                   </motion.tr>
                 ))

@@ -1,4 +1,4 @@
-// src/api/empresas.ts - Atualizado
+// src/api/empresas.ts (atualizada)
 import { apiClient } from './client';
 import { CreateEmpresaWithOwnerRequest } from '@/types/empresa';
 
@@ -11,6 +11,15 @@ export interface EmpresaResponse {
   ativo: boolean;
   createdAt: string;
   updatedAt: string | null;
+}
+
+// Interface para update da empresa
+export interface UpdateEmpresaRequest {
+  nome: string;
+  email: string;
+  telefone: string;
+  cnpj: string;
+  ativo: boolean;
 }
 
 export const empresasApi = {
@@ -30,9 +39,20 @@ export const empresasApi = {
     return response.data;
   },
 
-  // Para uso futuro - atualizar empresa
-  update: async (id: number, data: Partial<CreateEmpresaWithOwnerRequest>): Promise<EmpresaResponse> => {
-    const response = await apiClient.put(`/empresas/${id}`, data);
+  // ATUALIZADO: Função para atualizar empresa
+  update: async (id: number, data: UpdateEmpresaRequest): Promise<EmpresaResponse> => {
+    // Formatação para o backend conforme CURL
+    const payload = {
+      nome: data.nome,
+      email: data.email,
+      telefone: data.telefone, // enviado como string limpa (sem máscara)
+      cnpj: data.cnpj, // enviado como string limpa (sem máscara)
+      ativo: data.ativo
+    };
+    
+    console.log('Enviando payload para API:', payload);
+    
+    const response = await apiClient.put(`/empresas/${id}`, payload);
     return response.data;
   },
 };
