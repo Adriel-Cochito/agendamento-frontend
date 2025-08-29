@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/Input';
 import { Servico } from '@/types/servico';
 import { useProfissionais } from '@/hooks/useProfissionais';
 import { Loading } from '@/components/ui/Loading';
+import { useServicosPermissions } from '@/hooks/usePermissions';
 
 const schema = z.object({
   titulo: z.string().min(3, 'Título deve ter no mínimo 3 caracteres'),
@@ -34,6 +35,8 @@ export function ServicoForm({ servico, onSubmit, isLoading, empresaId }: Servico
   const isEditing = !!servico;
   const [selectedProfissionais, setSelectedProfissionais] = useState<number[]>([]);
   const [submitError, setSubmitError] = useState('');
+
+    const permissions = useServicosPermissions(); // ÚNICA ADIÇÃO NOVA
   
   const { data: profissionais, isLoading: isLoadingProfissionais } = useProfissionais(empresaId);
   
@@ -244,6 +247,8 @@ const onFormSubmit = async (data: FormData) => {
       )}
 
       <div className="flex justify-end space-x-4 pt-4">
+        {/* CONTROLE DE PERMISSÃO: só mostra botão de editar se pode editar */}
+                  {permissions.canUpdate && (
         <Button
           type="submit"
           loading={isLoading}
@@ -251,6 +256,7 @@ const onFormSubmit = async (data: FormData) => {
         >
           {isEditing ? 'Atualizar' : 'Criar'} Serviço
         </Button>
+        )}
       </div>
     </form>
   );

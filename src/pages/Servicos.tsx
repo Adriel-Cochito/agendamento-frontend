@@ -1,3 +1,4 @@
+// src/pages/Servicos.tsx (mantendo código original + adicionando apenas controle de permissões)
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import {
@@ -26,12 +27,15 @@ import { Servico } from '@/types/servico';
 import { useToast } from '@/hooks/useToast';
 import { getErrorMessage } from '@/lib/error-handler';
 import { useAuthStore } from '@/store/authStore';
+import { useServicosPermissions } from '@/hooks/usePermissions';
 
 export function Servicos() {
   const deleteMutation = useDeleteServico();
 
   const { addToast } = useToast();
   const user = useAuthStore((state) => state.user);
+  const permissions = useServicosPermissions(); // ÚNICA ADIÇÃO NOVA
+  
   const [search, setSearch] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedServico, setSelectedServico] = useState<Servico | null>(null);
@@ -206,10 +210,13 @@ export function Servicos() {
             Gerencie os serviços oferecidos pela sua empresa
           </p>
         </div>
-        <Button onClick={handleCreate} className="sm:w-auto">
-          <Plus className="w-4 h-4 mr-2" />
-          Novo Serviço
-        </Button>
+        {/* CONTROLE DE PERMISSÃO: só mostra botão se pode criar */}
+        {permissions.canCreate && (
+          <Button onClick={handleCreate} className="sm:w-auto">
+            <Plus className="w-4 h-4 mr-2" />
+            Novo Serviço
+          </Button>
+        )}
       </div>
 
       {/* Search */}
@@ -230,10 +237,13 @@ export function Servicos() {
           <div className="col-span-full bg-white rounded-lg shadow p-12 text-center">
             <Tag className="w-12 h-12 text-gray-400 mx-auto mb-4" />
             <p className="text-gray-500">Nenhum serviço encontrado</p>
-            <Button onClick={handleCreate} className="mt-4" variant="outline">
-              <Plus className="w-4 h-4 mr-2" />
-              Criar primeiro serviço
-            </Button>
+            {/* CONTROLE DE PERMISSÃO: só mostra botão se pode criar */}
+            {permissions.canCreate && (
+              <Button onClick={handleCreate} className="mt-4" variant="outline">
+                <Plus className="w-4 h-4 mr-2" />
+                Criar primeiro serviço
+              </Button>
+            )}
           </div>
         ) : (
           filteredServicos?.map((servico) => (
@@ -299,17 +309,22 @@ export function Servicos() {
                 )}
 
                 <div className="flex justify-end space-x-2 pt-4 border-t">
-                  <Button variant="ghost" size="sm" onClick={() => handleEdit(servico)}>
-                    <Edit2 className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleDelete(servico)}
-                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
+                  
+                    <Button variant="ghost" size="sm" onClick={() => handleEdit(servico)}>
+                      <Edit2 className="w-4 h-4" />
+                    </Button>
+                  
+                  {/* CONTROLE DE PERMISSÃO: só mostra botão de deletar se pode deletar */}
+                  {permissions.canDelete && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleDelete(servico)}
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  )}
                 </div>
               </div>
             </motion.div>
@@ -318,67 +333,73 @@ export function Servicos() {
       </div>
 
       {/* Create/Edit Modal */}
-      <Modal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        title={selectedServico ? 'Editar Serviço' : 'Novo Serviço'}
-        size="lg"
-      >
-        <ServicoForm
-          servico={selectedServico || undefined}
-          onSubmit={handleSubmit}
-          isLoading={createMutation.isPending || updateMutation.isPending}
-          empresaId={empresaId}
-        />
-      </Modal>
+      {/* CONTROLE DE PERMISSÃO: só renderiza modal se pode criar ou editar */}
+      { (
+        <Modal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          title={selectedServico ? 'Editar Serviço' : 'Novo Serviço'}
+          size="lg"
+        >
+          <ServicoForm
+            servico={selectedServico || undefined}
+            onSubmit={handleSubmit}
+            isLoading={createMutation.isPending || updateMutation.isPending}
+            empresaId={empresaId}
+          />
+        </Modal>
+      )}
 
       {/* Delete Modal com Aviso Melhorado */}
-      <Modal
-        isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
-        title="Confirmar Exclusão"
-        size="sm"
-      >
-        <div className="space-y-4">
-          <div className="flex items-start space-x-3">
-            <AlertTriangle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
-            <div>
-              <p className="text-gray-900 font-medium">
-                Tem certeza que deseja excluir o serviço{' '}
-                <strong>{servicoToDelete?.titulo}</strong>?
-              </p>
-              <p className="text-sm text-gray-600 mt-1">
-                Esta ação não pode ser desfeita.
+      {/* CONTROLE DE PERMISSÃO: só renderiza modal de delete se pode deletar */}
+      {permissions.canDelete && (
+        <Modal
+          isOpen={isDeleteModalOpen}
+          onClose={() => setIsDeleteModalOpen(false)}
+          title="Confirmar Exclusão"
+          size="sm"
+        >
+          <div className="space-y-4">
+            <div className="flex items-start space-x-3">
+              <AlertTriangle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-gray-900 font-medium">
+                  Tem certeza que deseja excluir o serviço{' '}
+                  <strong>{servicoToDelete?.titulo}</strong>?
+                </p>
+                <p className="text-sm text-gray-600 mt-1">
+                  Esta ação não pode ser desfeita.
+                </p>
+              </div>
+            </div>
+
+            {/* Avisos adicionais */}
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+              <p className="text-sm text-amber-800">
+                <strong>Atenção:</strong> Se este serviço tiver agendamentos futuros, eles
+                precisarão ser cancelados ou remarcados.
               </p>
             </div>
-          </div>
 
-          {/* Avisos adicionais */}
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
-            <p className="text-sm text-amber-800">
-              <strong>Atenção:</strong> Se este serviço tiver agendamentos futuros, eles
-              precisarão ser cancelados ou remarcados.
-            </p>
+            <div className="flex justify-end space-x-3 pt-2">
+              <Button
+                variant="outline"
+                onClick={() => setIsDeleteModalOpen(false)}
+                disabled={deleteMutation.isPending}
+              >
+                Cancelar
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={confirmDelete}
+                loading={deleteMutation.isPending}
+              >
+                Excluir Serviço
+              </Button>
+            </div>
           </div>
-
-          <div className="flex justify-end space-x-3 pt-2">
-            <Button
-              variant="outline"
-              onClick={() => setIsDeleteModalOpen(false)}
-              disabled={deleteMutation.isPending}
-            >
-              Cancelar
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={confirmDelete}
-              loading={deleteMutation.isPending}
-            >
-              Excluir Serviço
-            </Button>
-          </div>
-        </div>
-      </Modal>
+        </Modal>
+      )}
     </div>
   );
 }
