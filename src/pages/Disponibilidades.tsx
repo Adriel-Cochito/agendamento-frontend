@@ -30,17 +30,22 @@ import { Disponibilidade, TipoDisponibilidade } from '@/types/disponibilidade';
 import { useToast } from '@/hooks/useToast';
 import { getErrorMessage } from '@/lib/error-handler';
 import { useAuthStore } from '@/store/authStore';
+import { useServicosPermissions } from '@/hooks/usePermissions';
 
 export function Disponibilidades() {
+  const permissions = useServicosPermissions(); // ÚNICA ADIÇÃO NOVA
+
   const { addToast } = useToast();
   const user = useAuthStore((state) => state.user);
   const [search, setSearch] = useState('');
   const [selectedTipo, setSelectedTipo] = useState<TipoDisponibilidade | 'ALL'>('ALL');
   const [selectedProfissional, setSelectedProfissional] = useState<number | 'ALL'>('ALL');
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedDisponibilidade, setSelectedDisponibilidade] = useState<Disponibilidade | null>(null);
+  const [selectedDisponibilidade, setSelectedDisponibilidade] =
+    useState<Disponibilidade | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [disponibilidadeToDelete, setDisponibilidadeToDelete] = useState<Disponibilidade | null>(null);
+  const [disponibilidadeToDelete, setDisponibilidadeToDelete] =
+    useState<Disponibilidade | null>(null);
 
   const empresaId = user?.empresaId || 1;
 
@@ -51,12 +56,13 @@ export function Disponibilidades() {
   const deleteMutation = useDeleteDisponibilidade();
 
   const filteredDisponibilidades = disponibilidades?.filter((disp) => {
-    const matchesSearch = 
+    const matchesSearch =
       disp.profissional.nome.toLowerCase().includes(search.toLowerCase()) ||
       disp.observacao.toLowerCase().includes(search.toLowerCase());
-    
+
     const matchesTipo = selectedTipo === 'ALL' || disp.tipo === selectedTipo;
-    const matchesProfissional = selectedProfissional === 'ALL' || disp.profissional.id === selectedProfissional;
+    const matchesProfissional =
+      selectedProfissional === 'ALL' || disp.profissional.id === selectedProfissional;
 
     return matchesSearch && matchesTipo && matchesProfissional;
   });
@@ -101,7 +107,7 @@ export function Disponibilidades() {
           updateData.profissional = { id: data.profissionalId };
           delete updateData.profissionalId;
         }
-        
+
         await updateMutation.mutateAsync({
           id: selectedDisponibilidade.id,
           data: updateData,
@@ -157,7 +163,10 @@ export function Disponibilidades() {
 
   const formatDiasSemana = (dias: number[]) => {
     const nomes = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
-    return dias.sort().map(dia => nomes[dia]).join(', ');
+    return dias
+      .sort()
+      .map((dia) => nomes[dia])
+      .join(', ');
   };
 
   if (isLoading) {
@@ -205,7 +214,9 @@ export function Disponibilidades() {
             <select
               className="flex h-11 w-full rounded-lg border border-gray-300 bg-white pl-10 pr-3 py-2 text-sm transition-all hover:border-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
               value={selectedTipo}
-              onChange={(e) => setSelectedTipo(e.target.value as TipoDisponibilidade | 'ALL')}
+              onChange={(e) =>
+                setSelectedTipo(e.target.value as TipoDisponibilidade | 'ALL')
+              }
             >
               <option value="ALL">Todos os tipos</option>
               <option value="GRADE">Grade Horária</option>
@@ -220,7 +231,11 @@ export function Disponibilidades() {
             <select
               className="flex h-11 w-full rounded-lg border border-gray-300 bg-white pl-10 pr-3 py-2 text-sm transition-all hover:border-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
               value={selectedProfissional}
-              onChange={(e) => setSelectedProfissional(e.target.value === 'ALL' ? 'ALL' : Number(e.target.value))}
+              onChange={(e) =>
+                setSelectedProfissional(
+                  e.target.value === 'ALL' ? 'ALL' : Number(e.target.value)
+                )
+              }
             >
               <option value="ALL">Todos os profissionais</option>
               {profissionais?.map((prof) => (
@@ -241,8 +256,7 @@ export function Disponibilidades() {
             <p className="text-gray-500 mb-4">
               {search || selectedTipo !== 'ALL' || selectedProfissional !== 'ALL'
                 ? 'Nenhuma disponibilidade encontrada com os filtros aplicados'
-                : 'Nenhuma disponibilidade cadastrada'
-              }
+                : 'Nenhuma disponibilidade cadastrada'}
             </p>
             <Button onClick={handleCreate} variant="outline">
               <Plus className="w-4 h-4 mr-2" />
@@ -265,33 +279,51 @@ export function Disponibilidades() {
                   {/* Header do Card */}
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center space-x-3">
-                      <div className={`p-2 rounded-lg ${
-                        disponibilidade.tipo === 'GRADE' ? 'bg-blue-100' :
-                        disponibilidade.tipo === 'LIBERADO' ? 'bg-green-100' : 'bg-red-100'
-                      }`}>
-                        <TipoIcon className={`w-5 h-5 ${
-                          disponibilidade.tipo === 'GRADE' ? 'text-blue-600' :
-                          disponibilidade.tipo === 'LIBERADO' ? 'text-green-600' : 'text-red-600'
-                        }`} />
+                      <div
+                        className={`p-2 rounded-lg ${
+                          disponibilidade.tipo === 'GRADE'
+                            ? 'bg-blue-100'
+                            : disponibilidade.tipo === 'LIBERADO'
+                              ? 'bg-green-100'
+                              : 'bg-red-100'
+                        }`}
+                      >
+                        <TipoIcon
+                          className={`w-5 h-5 ${
+                            disponibilidade.tipo === 'GRADE'
+                              ? 'text-blue-600'
+                              : disponibilidade.tipo === 'LIBERADO'
+                                ? 'text-green-600'
+                                : 'text-red-600'
+                          }`}
+                        />
                       </div>
                       <div>
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${tipoBadge.color}`}>
+                        <span
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${tipoBadge.color}`}
+                        >
                           {tipoBadge.label}
                         </span>
                       </div>
                     </div>
                     <div className="flex space-x-1">
-                      <Button variant="ghost" size="sm" onClick={() => handleEdit(disponibilidade)}>
-                        <Edit2 className="w-4 h-4" />
-                      </Button>
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleDelete(disponibilidade)}
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        onClick={() => handleEdit(disponibilidade)}
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Edit2 className="w-4 h-4" />
                       </Button>
+                      {permissions.canDelete && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDelete(disponibilidade)}
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      )}
                     </div>
                   </div>
 
@@ -321,13 +353,15 @@ export function Disponibilidades() {
                         <div className="flex items-center space-x-2">
                           <Clock className="w-4 h-4 text-gray-400" />
                           <span className="text-sm text-gray-600">
-                            {formatTime(disponibilidade.horaInicio)} às {formatTime(disponibilidade.horaFim)}
+                            {formatTime(disponibilidade.horaInicio)} às{' '}
+                            {formatTime(disponibilidade.horaFim)}
                           </span>
                         </div>
                       </>
                     )}
 
-                    {(disponibilidade.tipo === 'LIBERADO' || disponibilidade.tipo === 'BLOQUEIO') && (
+                    {(disponibilidade.tipo === 'LIBERADO' ||
+                      disponibilidade.tipo === 'BLOQUEIO') && (
                       <div className="space-y-2">
                         <div className="flex items-center space-x-2">
                           <Calendar className="w-4 h-4 text-gray-400" />
@@ -381,7 +415,9 @@ export function Disponibilidades() {
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title={selectedDisponibilidade ? 'Editar Disponibilidade' : 'Nova Disponibilidade'}
+        title={
+          selectedDisponibilidade ? 'Editar Disponibilidade' : 'Nova Disponibilidade'
+        }
         size="lg"
       >
         <DisponibilidadeForm
@@ -407,17 +443,20 @@ export function Disponibilidades() {
                 Tem certeza que deseja excluir esta disponibilidade?
               </p>
               <p className="text-sm text-gray-600 mt-1">
-                <strong>Profissional:</strong> {disponibilidadeToDelete?.profissional.nome}
+                <strong>Profissional:</strong>{' '}
+                {disponibilidadeToDelete?.profissional.nome}
               </p>
               <p className="text-sm text-gray-600">
-                <strong>Tipo:</strong> {getTipoBadge(disponibilidadeToDelete?.tipo || 'GRADE').label}
+                <strong>Tipo:</strong>{' '}
+                {getTipoBadge(disponibilidadeToDelete?.tipo || 'GRADE').label}
               </p>
             </div>
           </div>
 
           <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
             <p className="text-sm text-amber-800">
-              <strong>Atenção:</strong> Esta ação não pode ser desfeita e pode afetar agendamentos futuros.
+              <strong>Atenção:</strong> Esta ação não pode ser desfeita e pode afetar
+              agendamentos futuros.
             </p>
           </div>
 
@@ -429,13 +468,15 @@ export function Disponibilidades() {
             >
               Cancelar
             </Button>
-            <Button
-              variant="destructive"
-              onClick={confirmDelete}
-              loading={deleteMutation.isPending}
-            >
-              Excluir Disponibilidade
-            </Button>
+            {permissions.canDelete && (
+              <Button
+                variant="destructive"
+                onClick={confirmDelete}
+                loading={deleteMutation.isPending}
+              >
+                Excluir Disponibilidade
+              </Button>
+            )}
           </div>
         </div>
       </Modal>

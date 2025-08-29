@@ -31,15 +31,21 @@ interface ServicoFormProps {
   empresaId: number;
 }
 
-export function ServicoForm({ servico, onSubmit, isLoading, empresaId }: ServicoFormProps) {
+export function ServicoForm({
+  servico,
+  onSubmit,
+  isLoading,
+  empresaId,
+}: ServicoFormProps) {
   const isEditing = !!servico;
   const [selectedProfissionais, setSelectedProfissionais] = useState<number[]>([]);
   const [submitError, setSubmitError] = useState('');
 
-    const permissions = useServicosPermissions(); // ÚNICA ADIÇÃO NOVA
-  
-  const { data: profissionais, isLoading: isLoadingProfissionais } = useProfissionais(empresaId);
-  
+  const permissions = useServicosPermissions(); // ÚNICA ADIÇÃO NOVA
+
+  const { data: profissionais, isLoading: isLoadingProfissionais } =
+    useProfissionais(empresaId);
+
   const {
     register,
     handleSubmit,
@@ -58,57 +64,59 @@ export function ServicoForm({ servico, onSubmit, isLoading, empresaId }: Servico
 
   useEffect(() => {
     if (servico?.profissionais) {
-      setSelectedProfissionais(servico.profissionais.map(p => p.id));
+      setSelectedProfissionais(servico.profissionais.map((p) => p.id));
     }
   }, [servico]);
 
-const onFormSubmit = async (data: FormData) => {
-  setSubmitError('');
-  console.log('Iniciando submissão do formulário...');
-  
-  try {
-    if (isEditing) {
-      const updateData: any = {
-        titulo: data.titulo,
-        descricao: data.descricao,
-        preco: Number(data.preco),
-        duracao: Number(data.duracao),
-        ativo: data.ativo,
-      };
-      
-      if (selectedProfissionais.length > 0) {
-        updateData.profissionais = selectedProfissionais.map(id => ({ id }));
+  const onFormSubmit = async (data: FormData) => {
+    setSubmitError('');
+    console.log('Iniciando submissão do formulário...');
+
+    try {
+      if (isEditing) {
+        const updateData: any = {
+          titulo: data.titulo,
+          descricao: data.descricao,
+          preco: Number(data.preco),
+          duracao: Number(data.duracao),
+          ativo: data.ativo,
+        };
+
+        if (selectedProfissionais.length > 0) {
+          updateData.profissionais = selectedProfissionais.map((id) => ({ id }));
+        }
+
+        console.log('Dados para update:', updateData);
+        console.log('ID do serviço:', servico?.id);
+
+        await onSubmit(updateData);
+      } else {
+        const createData = {
+          titulo: data.titulo,
+          descricao: data.descricao,
+          preco: Number(data.preco),
+          duracao: Number(data.duracao),
+          ativo: data.ativo,
+          empresaId,
+          profissionais: selectedProfissionais.map((id) => ({ id })),
+        };
+
+        console.log('Dados para criação:', createData);
+
+        await onSubmit(createData);
       }
-      
-      console.log('Dados para update:', updateData);
-      console.log('ID do serviço:', servico?.id);
-      
-      await onSubmit(updateData);
-    } else {
-      const createData = {
-        titulo: data.titulo,
-        descricao: data.descricao,
-        preco: Number(data.preco),
-        duracao: Number(data.duracao),
-        ativo: data.ativo,
-        empresaId,
-        profissionais: selectedProfissionais.map(id => ({ id })),
-      };
-      
-      console.log('Dados para criação:', createData);
-      
-      await onSubmit(createData);
+    } catch (error: any) {
+      console.error('Erro detalhado ao submeter:', error);
+      setSubmitError(
+        error.response?.data?.message || error.message || 'Erro ao salvar serviço'
+      );
     }
-  } catch (error: any) {
-    console.error('Erro detalhado ao submeter:', error);
-    setSubmitError(error.response?.data?.message || error.message || 'Erro ao salvar serviço');
-  }
-};
+  };
 
   const toggleProfissional = (profissionalId: number) => {
-    setSelectedProfissionais(prev =>
+    setSelectedProfissionais((prev) =>
       prev.includes(profissionalId)
-        ? prev.filter(id => id !== profissionalId)
+        ? prev.filter((id) => id !== profissionalId)
         : [...prev, profissionalId]
     );
   };
@@ -136,7 +144,10 @@ const onFormSubmit = async (data: FormData) => {
       </div>
 
       <div>
-        <label htmlFor="descricao" className="block text-sm font-medium text-gray-700 mb-1">
+        <label
+          htmlFor="descricao"
+          className="block text-sm font-medium text-gray-700 mb-1"
+        >
           Descrição
         </label>
         <div className="relative">
@@ -170,7 +181,10 @@ const onFormSubmit = async (data: FormData) => {
         </div>
 
         <div>
-          <label htmlFor="duracao" className="block text-sm font-medium text-gray-700 mb-1">
+          <label
+            htmlFor="duracao"
+            className="block text-sm font-medium text-gray-700 mb-1"
+          >
             Duração (minutos)
           </label>
           <Input
@@ -231,12 +245,12 @@ const onFormSubmit = async (data: FormData) => {
             className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
             {...register('ativo')}
           />
-          <span className="text-sm font-medium text-gray-700">
-            Serviço ativo
-          </span>
+          <span className="text-sm font-medium text-gray-700">Serviço ativo</span>
         </label>
         <p className="mt-1 text-xs text-gray-500">
-          {ativoValue ? 'O serviço está disponível para agendamento' : 'O serviço não aparecerá para os clientes'}
+          {ativoValue
+            ? 'O serviço está disponível para agendamento'
+            : 'O serviço não aparecerá para os clientes'}
         </p>
       </div>
 
@@ -248,14 +262,14 @@ const onFormSubmit = async (data: FormData) => {
 
       <div className="flex justify-end space-x-4 pt-4">
         {/* CONTROLE DE PERMISSÃO: só mostra botão de editar se pode editar */}
-                  {permissions.canUpdate && (
-        <Button
-          type="submit"
-          loading={isLoading}
-          disabled={selectedProfissionais.length === 0}
-        >
-          {isEditing ? 'Atualizar' : 'Criar'} Serviço
-        </Button>
+        {permissions.canUpdate && (
+          <Button
+            type="submit"
+            loading={isLoading}
+            disabled={selectedProfissionais.length === 0}
+          >
+            {isEditing ? 'Atualizar' : 'Criar'} Serviço
+          </Button>
         )}
       </div>
     </form>

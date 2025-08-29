@@ -2,21 +2,22 @@ import { useEffect, useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { 
-  Calendar, 
-  Clock, 
-  CalendarDays, 
-  User, 
-  FileText, 
+import {
+  Calendar,
+  Clock,
+  CalendarDays,
+  User,
+  FileText,
   Shield,
   Timer,
-  Ban
+  Ban,
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Loading } from '@/components/ui/Loading';
 import { useProfissionais } from '@/hooks/useProfissionais';
 import { Disponibilidade, TipoDisponibilidade } from '@/types/disponibilidade';
+import { useServicosPermissions } from '@/hooks/usePermissions';
 
 const baseSchema = z.object({
   tipo: z.enum(['GRADE', 'LIBERADO', 'BLOQUEIO'] as const),
@@ -54,19 +55,22 @@ const diasSemanaOptions = [
   { value: 0, label: 'Domingo' },
 ];
 
-export function DisponibilidadeForm({ 
-  disponibilidade, 
-  onSubmit, 
-  isLoading, 
-  empresaId 
+export function DisponibilidadeForm({
+  disponibilidade,
+  onSubmit,
+  isLoading,
+  empresaId,
 }: DisponibilidadeFormProps) {
+  const permissions = useServicosPermissions(); // ÚNICA ADIÇÃO NOVA
+  
   const isEditing = !!disponibilidade;
   const [selectedTipo, setSelectedTipo] = useState<TipoDisponibilidade>(
     disponibilidade?.tipo || 'GRADE'
   );
   const [submitError, setSubmitError] = useState('');
 
-  const { data: profissionais, isLoading: isLoadingProfissionais } = useProfissionais(empresaId);
+  const { data: profissionais, isLoading: isLoadingProfissionais } =
+    useProfissionais(empresaId);
 
   const getSchema = () => {
     if (selectedTipo === 'GRADE') {
@@ -90,7 +94,9 @@ export function DisponibilidadeForm({
       profissionalId: disponibilidade?.profissional?.id || 0,
       observacao: disponibilidade?.observacao || '',
       diasSemana: disponibilidade?.diasSemana || [],
-      horaInicio: disponibilidade?.horaInicio ? disponibilidade.horaInicio.slice(0, 5) : '',
+      horaInicio: disponibilidade?.horaInicio
+        ? disponibilidade.horaInicio.slice(0, 5)
+        : '',
       horaFim: disponibilidade?.horaFim ? disponibilidade.horaFim.slice(0, 5) : '',
     },
   });
@@ -128,7 +134,7 @@ export function DisponibilidadeForm({
 
   const onFormSubmit = async (data: FormData) => {
     setSubmitError('');
-    
+
     try {
       const submitData: any = {
         tipo: data.tipo,
@@ -139,8 +145,12 @@ export function DisponibilidadeForm({
 
       if (data.tipo === 'GRADE') {
         submitData.diasSemana = data.diasSemana;
-        submitData.horaInicio = data.horaInicio.includes(':') ? data.horaInicio + ':00' : data.horaInicio;
-        submitData.horaFim = data.horaFim.includes(':') ? data.horaFim + ':00' : data.horaFim;
+        submitData.horaInicio = data.horaInicio.includes(':')
+          ? data.horaInicio + ':00'
+          : data.horaInicio;
+        submitData.horaFim = data.horaFim.includes(':')
+          ? data.horaFim + ':00'
+          : data.horaFim;
       } else {
         // Para LIBERADO e BLOQUEIO
         submitData.dataHoraInicio = formatDateTimeForAPI((data as any).dataHoraInicio);
@@ -151,7 +161,9 @@ export function DisponibilidadeForm({
       await onSubmit(submitData);
     } catch (error: any) {
       console.error('Erro ao submeter:', error);
-      setSubmitError(error.response?.data?.message || error.message || 'Erro ao salvar disponibilidade');
+      setSubmitError(
+        error.response?.data?.message || error.message || 'Erro ao salvar disponibilidade'
+      );
     }
   };
 
@@ -224,9 +236,7 @@ export function DisponibilidadeForm({
                     {tipo === 'LIBERADO' && 'Horário Liberado'}
                     {tipo === 'BLOQUEIO' && 'Bloqueio'}
                   </div>
-                  <p className="text-sm opacity-75 mt-1">
-                    {getTipoDescription(tipo)}
-                  </p>
+                  <p className="text-sm opacity-75 mt-1">{getTipoDescription(tipo)}</p>
                 </div>
                 {selectedTipo === tipo && (
                   <div className="w-5 h-5 bg-current rounded-full flex items-center justify-center">
@@ -244,7 +254,10 @@ export function DisponibilidadeForm({
 
       {/* Profissional */}
       <div>
-        <label htmlFor="profissionalId" className="block text-sm font-medium text-gray-700 mb-1">
+        <label
+          htmlFor="profissionalId"
+          className="block text-sm font-medium text-gray-700 mb-1"
+        >
           Profissional
         </label>
         <div className="relative">
@@ -295,7 +308,7 @@ export function DisponibilidadeForm({
                           if (checked) {
                             field.onChange([...newValue, dia.value]);
                           } else {
-                            field.onChange(newValue.filter(v => v !== dia.value));
+                            field.onChange(newValue.filter((v) => v !== dia.value));
                           }
                         }}
                         className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
@@ -316,7 +329,10 @@ export function DisponibilidadeForm({
           {/* Horários */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label htmlFor="horaInicio" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="horaInicio"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Hora de Início
               </label>
               <Input
@@ -328,7 +344,10 @@ export function DisponibilidadeForm({
               />
             </div>
             <div>
-              <label htmlFor="horaFim" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="horaFim"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Hora de Fim
               </label>
               <Input
@@ -346,7 +365,10 @@ export function DisponibilidadeForm({
       {(selectedTipo === 'LIBERADO' || selectedTipo === 'BLOQUEIO') && (
         <div className="grid grid-cols-1 gap-4">
           <div>
-            <label htmlFor="dataHoraInicio" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="dataHoraInicio"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Data e Hora de Início
             </label>
             <Input
@@ -359,7 +381,10 @@ export function DisponibilidadeForm({
             />
           </div>
           <div>
-            <label htmlFor="dataHoraFim" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="dataHoraFim"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Data e Hora de Fim
             </label>
             <Input
@@ -376,7 +401,10 @@ export function DisponibilidadeForm({
 
       {/* Observação */}
       <div>
-        <label htmlFor="observacao" className="block text-sm font-medium text-gray-700 mb-1">
+        <label
+          htmlFor="observacao"
+          className="block text-sm font-medium text-gray-700 mb-1"
+        >
           Observação
         </label>
         <div className="relative">
@@ -400,12 +428,11 @@ export function DisponibilidadeForm({
       )}
 
       <div className="flex justify-end space-x-4 pt-4">
-        <Button
-          type="submit"
-          loading={isLoading}
-        >
-          {isEditing ? 'Atualizar' : 'Criar'} Disponibilidade
-        </Button>
+        {permissions.canUpdate && (
+          <Button type="submit" loading={isLoading}>
+            {isEditing ? 'Atualizar' : 'Criar'} Disponibilidade
+          </Button>
+        )}
       </div>
     </form>
   );
