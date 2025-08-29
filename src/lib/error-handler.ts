@@ -62,6 +62,20 @@ export function handleApiError(error: any): never {
 }
 
 export function getErrorMessage(error: any): string {
+  // Novo formato do backend: { success: false, error: { message: "..." } }
+  if (error.response?.data?.error?.message) {
+    return error.response.data.error.message;
+  }
+  
+  // Formato antigo - manter compatibilidade
+  if (error.response?.data?.errors?.[0]?.message) {
+    return error.response.data.errors[0].message;
+  }
+  
+  if (error.response?.data?.message) {
+    return error.response.data.message;
+  }
+
   if (error instanceof AppError) {
     return error.message;
   }
