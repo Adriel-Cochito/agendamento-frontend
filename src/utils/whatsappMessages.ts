@@ -1,5 +1,6 @@
 // src/utils/whatsappMessages.ts
 import { StatusAgendamento } from '@/types/agendamento';
+import { dateUtils } from './dateUtils';
 
 export interface WhatsAppMessageData {
   clienteName: string;
@@ -61,7 +62,8 @@ Seu agendamento foi CONFIRMADO com sucesso:
 
 ✨ Agradecemos sua confiança e estaremos à disposição!
 
----`
+---
+Esta é uma mensagem automática de confirmação.`
   },
 
   REALIZADO: {
@@ -149,16 +151,9 @@ export const formatMessageData = (
   profissional: any,
   dataHora: string
 ): WhatsAppMessageData => {
-  const date = new Date(dataHora);
-  const formattedDate = date.toLocaleDateString('pt-BR', {
-    day: '2-digit',
-    month: '2-digit', 
-    year: 'numeric'
-  });
-  const formattedTime = date.toLocaleTimeString('pt-BR', {
-    hour: '2-digit',
-    minute: '2-digit'
-  });
+  // Usar as funções do dateUtils que já tratam o fuso horário corretamente
+  const formattedDateTime = dateUtils.formatLocal(dataHora);
+  const [formattedDate, formattedTime] = formattedDateTime.split(' ');
 
   return {
     clienteName: agendamento?.nomeCliente || 'Cliente',
