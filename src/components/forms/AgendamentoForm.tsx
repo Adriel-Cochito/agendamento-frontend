@@ -282,20 +282,7 @@ export function AgendamentoForm({
             <ExternalLink className="w-4 h-4 ml-2" />
           </Button>
 
-          {/* Botão alternativo sem emojis */}
-          <Button
-            type="button"
-            onClick={() => handleWhatsAppSend(false)}
-            disabled={!canSendWhatsApp}
-            variant="outline"
-            className={`border-green-300 text-green-700 hover:bg-green-50 flex items-center justify-center ${
-              !canSendWhatsApp ? 'opacity-50 cursor-not-allowed' : ''
-            }`}
-          >
-            <MessageSquare className="w-4 h-4 mr-2" />
-            Enviar (Sem Emojis)
-            <ExternalLink className="w-4 h-4 ml-2" />
-          </Button>
+
 
           {/* Botão para copiar mensagem */}
           <Button

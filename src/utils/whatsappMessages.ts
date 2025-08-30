@@ -94,7 +94,7 @@ Esperamos que tenha ficado satisfeito(a) com o nosso atendimento:
 
 Olá ${data.clienteName}!
 
-Confirmamos o cancelamento do seu agendamento:
+Seu agendamento foi cancelado:
 
 📅 Era para: ${data.date} às ${data.time}
 💼 Serviço: ${data.serviceName}
