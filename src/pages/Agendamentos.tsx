@@ -117,7 +117,7 @@ export function Agendamentos() {
       </div>
 
       {/* Indicador Visual da Visualização Ativa */}
-      <div className="bg-white rounded-lg border border-gray-200 p-3">
+      {/* <div className="bg-white rounded-lg border border-gray-200 p-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             {tipoVisualizacao === 'calendario' ? (
@@ -153,7 +153,7 @@ export function Agendamentos() {
             </div>
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* Renderizar visualização selecionada */}
       <div role="main" aria-label={`Agendamentos em formato de ${tipoVisualizacao}`}>
