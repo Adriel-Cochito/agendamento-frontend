@@ -787,7 +787,6 @@ export default function AgendamentoPublico({ empresaId: propEmpresaId }: Agendam
                     <div className="text-sm text-blue-800 space-y-1">
                       <p>• Chegue com 10 minutos de antecedência</p>
                       <p>• Em caso de imprevistos, entre em contato conosco</p>
-                      <p>• Traga um documento de identificação</p>
                       <p>• Seu agendamento foi registrado com sucesso</p>
                       {empresaDisplay.telefone && (
                         <p>• Contato direto via WhatsApp disponível</p>
