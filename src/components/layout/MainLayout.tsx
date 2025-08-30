@@ -177,6 +177,9 @@ export function MainLayout({ children }: MainLayoutProps) {
               {empresa.email && (
                 <p className="text-xs text-primary-600 mt-1">{empresa.email}</p>
               )}
+              {empresa.telefone && (
+                <p className="text-xs text-primary-600 mt-1">{empresa.telefone}</p>
+              )}
               {isOwner && (
                 <p className="text-xs text-primary-500 mt-1 italic">
                   Clique no ⚙️ para configurar
