@@ -16,6 +16,7 @@ import {
   getWhatsAppMessageConfig, 
   formatMessageData, 
   createWhatsAppUrl, 
+  createWhatsAppUrlNoEmojis,
   copyMessageToClipboard 
 } from '../../utils/whatsappMessages';
 
@@ -103,7 +104,7 @@ export function AgendamentoForm({
   };
 
   // Função para lidar com o envio do WhatsApp
-  const handleWhatsAppSend = async () => {
+  const handleWhatsAppSend = async (withEmojis: boolean = true) => {
     const messageConfig = getWhatsAppMessageConfig(watchedStatus);
     const messageData = formatMessageData(
       { nomeCliente: watchedNome },
@@ -113,7 +114,9 @@ export function AgendamentoForm({
     );
 
     const message = messageConfig.generateMessage(messageData);
-    const whatsappUrl = createWhatsAppUrl(watchedTelefone, message);
+    const whatsappUrl = withEmojis 
+      ? createWhatsAppUrl(watchedTelefone, message)
+      : createWhatsAppUrlNoEmojis(watchedTelefone, message);
     
     window.open(whatsappUrl, '_blank');
   };
@@ -265,10 +268,10 @@ export function AgendamentoForm({
         </div>
 
         <div className="flex flex-col sm:flex-row gap-3">
-          {/* Botão principal do WhatsApp */}
+          {/* Botão principal do WhatsApp com emojis */}
           <Button
             type="button"
-            onClick={handleWhatsAppSend}
+            onClick={() => handleWhatsAppSend(true)}
             disabled={!canSendWhatsApp}
             className={`${messageConfig.buttonColor} text-white flex items-center justify-center ${
               !canSendWhatsApp ? 'opacity-50 cursor-not-allowed' : ''
@@ -276,6 +279,21 @@ export function AgendamentoForm({
           >
             <MessageSquare className="w-4 h-4 mr-2" />
             {messageConfig.buttonText}
+            <ExternalLink className="w-4 h-4 ml-2" />
+          </Button>
+
+          {/* Botão alternativo sem emojis */}
+          <Button
+            type="button"
+            onClick={() => handleWhatsAppSend(false)}
+            disabled={!canSendWhatsApp}
+            variant="outline"
+            className={`border-green-300 text-green-700 hover:bg-green-50 flex items-center justify-center ${
+              !canSendWhatsApp ? 'opacity-50 cursor-not-allowed' : ''
+            }`}
+          >
+            <MessageSquare className="w-4 h-4 mr-2" />
+            Enviar (Sem Emojis)
             <ExternalLink className="w-4 h-4 ml-2" />
           </Button>
 

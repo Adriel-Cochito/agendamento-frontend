@@ -62,8 +62,7 @@ Seu agendamento foi CONFIRMADO com sucesso:
 
 ✨ Agradecemos sua confiança e estaremos à disposição!
 
----
-Esta é uma mensagem automática de confirmação.`
+---`
   },
 
   REALIZADO: {
@@ -124,8 +123,26 @@ export const formatPhoneForWhatsApp = (phone: string): string => {
 // Função utilitária para criar URL do WhatsApp
 export const createWhatsAppUrl = (phone: string, message: string): string => {
   const formattedPhone = formatPhoneForWhatsApp(phone);
+  
+  // Para WhatsApp, é melhor usar api.whatsapp.com que tende a funcionar melhor com emojis
+  // do que wa.me em alguns casos
   const encodedMessage = encodeURIComponent(message);
-  return `https://wa.me/${formattedPhone}?text=${encodedMessage}`;
+  
+  // Tentar usar a API do WhatsApp que funciona melhor com emojis
+  return `https://api.whatsapp.com/send?phone=${formattedPhone}&text=${encodedMessage}`;
+};
+
+// Função alternativa para criar URL sem emojis (fallback)
+export const createWhatsAppUrlNoEmojis = (phone: string, message: string): string => {
+  const formattedPhone = formatPhoneForWhatsApp(phone);
+  
+  // Remover emojis da mensagem
+  const messageWithoutEmojis = message.replace(/[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]|[\u{E000}-\u{F8FF}]|[\u{FE00}-\u{FE0F}]|[\u{1F900}-\u{1F9FF}]/gu, '')
+    .replace(/\s+/g, ' ') // Remover espaços extras
+    .trim();
+  
+  const encodedMessage = encodeURIComponent(messageWithoutEmojis);
+  return `https://api.whatsapp.com/send?phone=${formattedPhone}&text=${encodedMessage}`;
 };
 
 // Função utilitária para copiar mensagem
