@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Clock, AlertCircle, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Loading } from '@/components/ui/Loading';
@@ -17,7 +17,7 @@ interface HorarioSelectorCompactProps {
   profissionais: Profissional[];
   data: string;
   onHorarioSelect: (dataHora: string, profissionalId?: number) => void;
-  showProfissionalSelection?: boolean; // Nova prop para controlar se mostra seleção de profissional
+  showProfissionalSelection?: boolean;
 }
 
 interface HorarioComProfissionais {
@@ -54,67 +54,141 @@ export function HorarioSelectorCompact({
     })
   );
 
-  useEffect(() => {
-    // Verificar se todas as queries carregaram
-    const allLoaded =
-      disponibilidadeQueries.every((q) => !q.isLoading) &&
-      agendamentoQueries.every((q) => !q.isLoading);
+  // Memoizar os dados das queries para evitar re-renders desnecessários
+  const queriesData = useMemo(() => {
+    const disponibilidadesData = disponibilidadeQueries.map(q => q.data || []);
+    const agendamentosData = agendamentoQueries.map(q => q.data || []);
+    const isLoading = disponibilidadeQueries.some(q => q.isLoading) || 
+                     agendamentoQueries.some(q => q.isLoading);
+    
+    return {
+      disponibilidades: disponibilidadesData,
+      agendamentos: agendamentosData,
+      isLoading,
+      hasError: disponibilidadeQueries.some(q => q.error) || 
+               agendamentoQueries.some(q => q.error)
+    };
+  }, [
+    // Dependências específicas dos dados das queries, não das queries em si
+    ...disponibilidadeQueries.map(q => q.data),
+    ...disponibilidadeQueries.map(q => q.isLoading),
+    ...disponibilidadeQueries.map(q => q.error),
+    ...agendamentoQueries.map(q => q.data),
+    ...agendamentoQueries.map(q => q.isLoading),
+    ...agendamentoQueries.map(q => q.error),
+  ]);
 
-    if (!allLoaded) return;
+  // Memoizar os IDs dos profissionais para comparação
+  const profissionaisIds = useMemo(() => 
+    profissionais.map(p => p.id).sort().join(','),
+    [profissionais]
+  );
+
+  useEffect(() => {
+    // Se ainda está carregando, não fazer nada
+    if (queriesData.isLoading) {
+      console.log('⏳ Aguardando carregamento das queries...');
+      return;
+    }
+
+    // Se há erro, limpar horários
+    if (queriesData.hasError) {
+      console.log('❌ Erro nas queries, limpando horários');
+      setHorariosComProfissionais([]);
+      return;
+    }
+
+    console.log('🔄 Recalculando horários disponíveis', {
+      data,
+      servicoId: servico.id,
+      servicoDuracao: servico.duracao,
+      profissionaisCount: profissionais.length,
+      profissionais: profissionais.map(p => p.nome)
+    });
 
     // Calcular horários disponíveis para cada profissional
     const horariosPorProfissional = profissionais.map((prof, index) => {
-      const disponibilidades = disponibilidadeQueries[index].data || [];
-      const agendamentos = agendamentoQueries[index].data || [];
+      const disponibilidades = queriesData.disponibilidades[index] || [];
+      const agendamentos = queriesData.agendamentos[index] || [];
+
+      console.log(`👤 Calculando horários para ${prof.nome}:`, {
+        disponibilidades: disponibilidades.length,
+        agendamentos: agendamentos.length
+      });
+
+      const horarios = calcularHorariosDisponiveisPorProfissional(
+        disponibilidades,
+        agendamentos,
+        data,
+        servico.duracao
+      );
+
+      console.log(`✅ ${prof.nome}: ${horarios.length} slots calculados`, 
+        horarios.filter(h => h.disponivel).length, 'disponíveis');
 
       return {
         profissional: prof,
-        horarios: calcularHorariosDisponiveisPorProfissional(
-          disponibilidades,
-          agendamentos,
-          data,
-          servico.duracao
-        ),
+        horarios,
       };
     });
 
-    // Criar conjunto único de horários
+    // Criar conjunto único de horários de TODOS os horários calculados (incluindo bloqueados)
     const todosHorarios = new Set<string>();
     horariosPorProfissional.forEach(({ horarios }) => {
-      horarios.forEach((h) => todosHorarios.add(h.hora));
+      horarios.forEach(h => todosHorarios.add(h.hora));
     });
 
     // Ordenar horários
     const horariosOrdenados = Array.from(todosHorarios).sort();
 
-    // Mapear cada horário com os profissionais disponíveis
-    const horariosFinais: HorarioComProfissionais[] = horariosOrdenados.map((hora) => {
-      const profissionaisDisponiveis = profissionais.map((prof) => {
-        const dadosProfissional = horariosPorProfissional.find(
-          (p) => p.profissional.id === prof.id
-        );
-        const horarioInfo = dadosProfissional?.horarios.find((h) => h.hora === hora);
+    console.log(`📊 Total de horários únicos encontrados: ${horariosOrdenados.length}`);
 
+    // Mapear cada horário com os profissionais disponíveis
+    const horariosFinais: HorarioComProfissionais[] = horariosOrdenados.map(hora => {
+      const profissionaisDisponiveis = profissionais.map(prof => {
+        const dadosProfissional = horariosPorProfissional.find(p => p.profissional.id === prof.id);
+        const horarioInfo = dadosProfissional?.horarios.find(h => h.hora === hora);
+        
         return {
           profissional: prof,
           disponivel: horarioInfo?.disponivel || false,
-          motivo: horarioInfo?.motivo,
+          motivo: horarioInfo?.motivo
         };
       });
 
       return {
         hora,
-        profissionaisDisponiveis,
+        profissionaisDisponiveis
       };
     });
 
-    // Filtrar apenas horários que tenham pelo menos um profissional disponível
-    const horariosComDisponibilidade = horariosFinais.filter((h) =>
-      h.profissionaisDisponiveis.some((p) => p.disponivel)
-    );
+    // CORREÇÃO: Filtrar apenas horários que tenham pelo menos um profissional disponível
+    // Isso remove os horários bloqueados da listagem
+    const horariosComDisponibilidade = horariosFinais.filter(h => {
+      const temAlguemDisponivel = h.profissionaisDisponiveis.some(p => p.disponivel);
+      
+      if (!temAlguemDisponivel) {
+        console.log(`🚫 Removendo horário ${h.hora} - nenhum profissional disponível`);
+      }
+      
+      return temAlguemDisponivel;
+    });
+
+    console.log(`✅ Horários finais com disponibilidade: ${horariosComDisponibilidade.length}`);
+    console.log('📋 Horários disponíveis:', horariosComDisponibilidade.map(h => h.hora).join(', '));
 
     setHorariosComProfissionais(horariosComDisponibilidade);
-  }, [disponibilidadeQueries, agendamentoQueries, profissionais, data, servico.duracao]);
+  }, [
+    // CORREÇÃO: Usar dependências mais específicas para evitar loops infinitos
+    queriesData.isLoading,
+    queriesData.hasError,
+    JSON.stringify(queriesData.disponibilidades), // Serializar arrays para comparação
+    JSON.stringify(queriesData.agendamentos),
+    profissionaisIds, // IDs serializados dos profissionais
+    data,
+    servico.id,
+    servico.duracao
+  ]);
 
   const handleProfissionalSelect = (horario: string, profissionalId: number) => {
     const dataHora = criarDataHora(data, horario);
@@ -123,139 +197,114 @@ export function HorarioSelectorCompact({
 
   const handleHorarioDirectSelect = (horario: string) => {
     const dataHora = criarDataHora(data, horario);
-    // Se não deve mostrar seleção de profissional, usar o primeiro profissional disponível
-    const profissionaisDisponiveis =
-      horariosComProfissionais
-        .find((h) => h.hora === horario)
-        ?.profissionaisDisponiveis.filter((p) => p.disponivel) || [];
-
-    const profissionalId = profissionaisDisponiveis[0]?.profissional.id;
-    onHorarioSelect(dataHora, profissionalId);
+    // Se não precisa escolher profissional específico, passa sem profissionalId
+    onHorarioSelect(dataHora);
   };
 
-  const isLoading =
-    disponibilidadeQueries.some((q) => q.isLoading) ||
-    agendamentoQueries.some((q) => q.isLoading);
+  const isLoading = queriesData.isLoading;
+  const hasError = queriesData.hasError;
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center p-4">
+      <div className="flex items-center justify-center py-8">
         <Loading size="sm" />
+        <span className="ml-2 text-sm text-gray-600">
+          Carregando horários disponíveis...
+        </span>
       </div>
     );
   }
 
-  const formatDate = (dateString: string) => {
-    const [year, month, day] = dateString.split('-');
-    const localDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+  if (hasError) {
+    return (
+      <div className="flex items-center justify-center py-8 text-red-600">
+        <AlertCircle className="w-5 h-5 mr-2" />
+        <span className="text-sm">Erro ao carregar horários</span>
+      </div>
+    );
+  }
 
-    return new Intl.DateTimeFormat('pt-BR', {
-      weekday: 'long',
-      day: '2-digit',
-      month: 'long',
-    }).format(localDate);
-  };
+  if (horariosComProfissionais.length === 0) {
+    return (
+      <div className="flex items-center justify-center py-8 text-gray-500">
+        <Calendar className="w-5 h-5 mr-2" />
+        <span className="text-sm">Nenhum horário disponível para esta data</span>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
-      {/* Header compacto */}
-      <div className="pb-3 border-b">
-        <div className="flex items-center space-x-2 mb-1">
-          <Calendar className="w-4 h-4 text-primary-600" />
-          <h3 className="text-base font-medium text-gray-900">Escolha o Horário</h3>
-        </div>
-        <p className="text-xs text-gray-600">
-          {formatDate(data)} • {servico.titulo} ({servico.duracao} min)
-        </p>
+      <h3 className="text-lg font-medium flex items-center">
+        <Clock className="w-5 h-5 mr-2" />
+        Horários Disponíveis
+      </h3>
+
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+        {horariosComProfissionais.map((horarioData) => {
+          const profissionaisDisponiveis = horarioData.profissionaisDisponiveis.filter(
+            (p) => p.disponivel
+          );
+
+          return (
+            <div key={horarioData.hora} className="relative">
+              {!showProfissionalSelection ? (
+                // Modo simples: clique direto no horário
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className={`w-full text-sm ${
+                    selectedHorario === horarioData.hora
+                      ? 'border-blue-500 bg-blue-50'
+                      : 'hover:border-gray-400'
+                  }`}
+                  onClick={() => {
+                    setSelectedHorario(
+                      selectedHorario === horarioData.hora ? null : horarioData.hora
+                    );
+                    handleHorarioDirectSelect(horarioData.hora);
+                  }}
+                >
+                  {horarioData.hora}
+                </Button>
+              ) : (
+                // Modo com seleção de profissional
+                <div className="space-y-1">
+                  <div className="text-sm font-medium text-center p-1 bg-gray-100 rounded">
+                    {horarioData.hora}
+                  </div>
+                  <div className="space-y-1">
+                    {profissionaisDisponiveis.map((profData) => (
+                      <Button
+                        key={profData.profissional.id}
+                        variant="outline"
+                        size="sm"
+                        className="w-full text-xs px-2 py-1 hover:border-blue-400"
+                        onClick={() =>
+                          handleProfissionalSelect(
+                            horarioData.hora,
+                            profData.profissional.id
+                          )
+                        }
+                      >
+                        {profData.profissional.nome}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
 
-      {/* Horários em formato compacto */}
-      {horariosComProfissionais.length === 0 ? (
-        <div className="text-center py-6">
-          <AlertCircle className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-          <h4 className="text-sm font-medium text-gray-900 mb-1">
-            Nenhum horário disponível
-          </h4>
-          <p className="text-xs text-gray-500">Não há horários livres para esta data.</p>
+      {/* Informações adicionais */}
+      <div className="text-xs text-gray-500 border-t pt-3">
+        <div className="flex items-center justify-between">
+          <span>{horariosComProfissionais.length} horários disponíveis</span>
+          <span>Duração: {servico.duracao} min</span>
         </div>
-      ) : (
-        <>
-          <p className="text-xs text-gray-600 mb-3">
-            {horariosComProfissionais.length} horário(s) disponível(is):
-          </p>
-
-          {/* Grid compacto de horários */}
-          <div className="grid grid-cols-3 gap-2 max-h-48 overflow-y-auto">
-            {horariosComProfissionais.map((horarioData) => {
-              const profissionaisDisponiveis =
-                horarioData.profissionaisDisponiveis.filter((p) => p.disponivel);
-              const isSelected = selectedHorario === horarioData.hora;
-
-              return (
-                <div key={horarioData.hora} className="space-y-1">
-                  {/* Botão do horário compacto */}
-                  <button
-                    onClick={() => {
-                      if (showProfissionalSelection) {
-                        // Modo calendário: mostrar profissionais para seleção
-                        setSelectedHorario(isSelected ? null : horarioData.hora);
-                      } else {
-                        // Modo botão normal: selecionar diretamente
-                        handleHorarioDirectSelect(horarioData.hora);
-                      }
-                    }}
-                    className={`w-full p-2 text-xs border rounded transition-colors ${
-                      isSelected
-                        ? 'bg-primary-100 border-primary-300 text-primary-700'
-                        : 'bg-white border-gray-200 hover:bg-gray-50'
-                    }`}
-                  >
-                    <div className="flex items-center justify-center space-x-1">
-                      <Clock className="w-3 h-3" />
-                      <span className="font-medium">{horarioData.hora}</span>
-                    </div>
-                    <div className="text-xs text-gray-500 mt-1">
-                      {profissionaisDisponiveis.length} disponível
-                      {profissionaisDisponiveis.length !== 1 ? 'eis' : ''}
-                    </div>
-                  </button>
-
-                  {/* Lista compacta de profissionais (apenas quando showProfissionalSelection = true e selecionado) */}
-                  {showProfissionalSelection && isSelected && (
-                    <div className="bg-gray-50 border border-gray-200 rounded p-2 space-y-1">
-                      {profissionaisDisponiveis.map(({ profissional }) => (
-                        <button
-                          key={profissional.id}
-                          onClick={() =>
-                            handleProfissionalSelect(horarioData.hora, profissional.id)
-                          }
-                          className="w-full text-left p-1.5 text-xs bg-white border border-gray-200 rounded hover:bg-primary-50 hover:border-primary-300 transition-colors"
-                        >
-                          <div className="flex items-center space-x-2">
-                            <div className="w-5 h-5 bg-primary-100 rounded-full flex items-center justify-center text-xs font-medium text-primary-700">
-                              {profissional.nome.charAt(0).toUpperCase()}
-                            </div>
-                            <span className="truncate">{profissional.nome}</span>
-                          </div>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Legenda */}
-          <div className="mt-3 pt-3 border-t">
-            <p className="text-xs text-gray-500">
-              {showProfissionalSelection
-                ? '💡 Clique em um horário para ver os profissionais disponíveis'
-                : '💡 Clique em um horário para selecioná-lo'}
-            </p>
-          </div>
-        </>
-      )}
+      </div>
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Clock, AlertCircle, Calendar, User, Users } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Loading } from '@/components/ui/Loading';
@@ -47,30 +47,85 @@ export function HorarioSelector({
     })
   );
 
-  useEffect(() => {
-    // Verificar se todas as queries carregaram
-    const allLoaded = disponibilidadeQueries.every(q => !q.isLoading) && 
-                     agendamentoQueries.every(q => !q.isLoading);
+  // Memoizar os dados das queries para evitar re-renders desnecessários
+  const queriesData = useMemo(() => {
+    const disponibilidadesData = disponibilidadeQueries.map(q => q.data || []);
+    const agendamentosData = agendamentoQueries.map(q => q.data || []);
+    const isLoading = disponibilidadeQueries.some(q => q.isLoading) || 
+                     agendamentoQueries.some(q => q.isLoading);
     
-    if (!allLoaded) return;
+    return {
+      disponibilidades: disponibilidadesData,
+      agendamentos: agendamentosData,
+      isLoading,
+      hasError: disponibilidadeQueries.some(q => q.error) || 
+               agendamentoQueries.some(q => q.error)
+    };
+  }, [
+    // Dependências específicas dos dados das queries, não das queries em si
+    ...disponibilidadeQueries.map(q => q.data),
+    ...disponibilidadeQueries.map(q => q.isLoading),
+    ...disponibilidadeQueries.map(q => q.error),
+    ...agendamentoQueries.map(q => q.data),
+    ...agendamentoQueries.map(q => q.isLoading),
+    ...agendamentoQueries.map(q => q.error),
+  ]);
+
+  // Memoizar os IDs dos profissionais para comparação
+  const profissionaisIds = useMemo(() => 
+    profissionais.map(p => p.id).sort().join(','),
+    [profissionais]
+  );
+
+  useEffect(() => {
+    // Se ainda está carregando, não fazer nada
+    if (queriesData.isLoading) {
+      console.log('⏳ HorarioSelector: Aguardando carregamento das queries...');
+      return;
+    }
+
+    // Se há erro, limpar horários
+    if (queriesData.hasError) {
+      console.log('❌ HorarioSelector: Erro nas queries, limpando horários');
+      setHorariosComProfissionais([]);
+      return;
+    }
+
+    console.log('🔄 HorarioSelector: Recalculando horários disponíveis', {
+      data,
+      servicoId: servico.id,
+      servicoDuracao: servico.duracao,
+      profissionaisCount: profissionais.length,
+      profissionais: profissionais.map(p => p.nome)
+    });
 
     // Calcular horários disponíveis para cada profissional
     const horariosPorProfissional = profissionais.map((prof, index) => {
-      const disponibilidades = disponibilidadeQueries[index].data || [];
-      const agendamentos = agendamentoQueries[index].data || [];
-      
+      const disponibilidades = queriesData.disponibilidades[index] || [];
+      const agendamentos = queriesData.agendamentos[index] || [];
+
+      console.log(`👤 HorarioSelector: Calculando horários para ${prof.nome}:`, {
+        disponibilidades: disponibilidades.length,
+        agendamentos: agendamentos.length
+      });
+
+      const horarios = calcularHorariosDisponiveisPorProfissional(
+        disponibilidades,
+        agendamentos,
+        data,
+        servico.duracao
+      );
+
+      console.log(`✅ HorarioSelector: ${prof.nome}: ${horarios.length} slots calculados`, 
+        horarios.filter(h => h.disponivel).length, 'disponíveis');
+
       return {
         profissional: prof,
-        horarios: calcularHorariosDisponiveisPorProfissional(
-          disponibilidades,
-          agendamentos,
-          data,
-          servico.duracao
-        )
+        horarios,
       };
     });
 
-    // Criar conjunto único de horários
+    // Criar conjunto único de horários de TODOS os horários calculados (incluindo bloqueados)
     const todosHorarios = new Set<string>();
     horariosPorProfissional.forEach(({ horarios }) => {
       horarios.forEach(h => todosHorarios.add(h.hora));
@@ -78,6 +133,8 @@ export function HorarioSelector({
 
     // Ordenar horários
     const horariosOrdenados = Array.from(todosHorarios).sort();
+
+    console.log(`📊 HorarioSelector: Total de horários únicos encontrados: ${horariosOrdenados.length}`);
 
     // Mapear cada horário com os profissionais disponíveis
     const horariosFinais: HorarioComProfissionais[] = horariosOrdenados.map(hora => {
@@ -98,13 +155,33 @@ export function HorarioSelector({
       };
     });
 
-    // Filtrar apenas horários que tenham pelo menos um profissional disponível
-    const horariosComDisponibilidade = horariosFinais.filter(h => 
-      h.profissionaisDisponiveis.some(p => p.disponivel)
-    );
+    // CORREÇÃO: Filtrar apenas horários que tenham pelo menos um profissional disponível
+    // Isso remove os horários bloqueados da listagem
+    const horariosComDisponibilidade = horariosFinais.filter(h => {
+      const temAlguemDisponivel = h.profissionaisDisponiveis.some(p => p.disponivel);
+      
+      if (!temAlguemDisponivel) {
+        console.log(`🚫 HorarioSelector: Removendo horário ${h.hora} - nenhum profissional disponível`);
+      }
+      
+      return temAlguemDisponivel;
+    });
+
+    console.log(`✅ HorarioSelector: Horários finais com disponibilidade: ${horariosComDisponibilidade.length}`);
+    console.log('📋 HorarioSelector: Horários disponíveis:', horariosComDisponibilidade.map(h => h.hora).join(', '));
 
     setHorariosComProfissionais(horariosComDisponibilidade);
-  }, [disponibilidadeQueries, agendamentoQueries, profissionais, data, servico.duracao]);
+  }, [
+    // CORREÇÃO: Usar dependências mais específicas para evitar loops infinitos
+    queriesData.isLoading,
+    queriesData.hasError,
+    JSON.stringify(queriesData.disponibilidades), // Serializar arrays para comparação
+    JSON.stringify(queriesData.agendamentos),
+    profissionaisIds, // IDs serializados dos profissionais
+    data,
+    servico.id,
+    servico.duracao
+  ]);
 
   const handleHorarioClick = (horario: string) => {
     setSelectedHorario(horario === selectedHorario ? null : horario);
@@ -115,168 +192,115 @@ export function HorarioSelector({
     onHorarioSelect(dataHora, profissionalId);
   };
 
-  const isLoading = disponibilidadeQueries.some(q => q.isLoading) || 
-                   agendamentoQueries.some(q => q.isLoading);
+  const isLoading = queriesData.isLoading;
+  const hasError = queriesData.hasError;
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center p-8">
-        <Loading size="md" />
+      <div className="flex items-center justify-center py-8">
+        <Loading size="sm" />
+        <span className="ml-2 text-sm text-gray-600">
+          Carregando horários disponíveis...
+        </span>
       </div>
     );
   }
 
-  const formatDate = (dateString: string) => {
-    return new Intl.DateTimeFormat('pt-BR', {
-      weekday: 'long',
-      day: '2-digit',
-      month: 'long',
-      year: 'numeric',
-    }).format(new Date(dateString));
-  };
+  if (hasError) {
+    return (
+      <div className="flex items-center justify-center py-8 text-red-600">
+        <AlertCircle className="w-5 h-5 mr-2" />
+        <span className="text-sm">Erro ao carregar horários disponíveis</span>
+      </div>
+    );
+  }
+
+  if (horariosComProfissionais.length === 0) {
+    return (
+      <div className="flex items-center justify-center py-8 text-gray-500">
+        <Calendar className="w-5 h-5 mr-2" />
+        <span className="text-sm">Nenhum horário disponível para esta data</span>
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-4">
-      {/* Header */}
-      <div className="border-b pb-4">
-        <div className="flex items-center space-x-2 mb-2">
-          <Calendar className="w-5 h-5 text-primary-600" />
-          <h3 className="text-lg font-semibold text-gray-900">
-            Horários Disponíveis
-          </h3>
-        </div>
-        <p className="text-sm text-gray-600">
-          {formatDate(data)}
-        </p>
-        <p className="text-sm text-gray-500">
-          Serviço: {servico.titulo} ({servico.duracao} min)
-        </p>
-        <p className="text-sm text-gray-500">
-          {profissionais.length} profissional(is) selecionado(s)
-        </p>
+    <div className="space-y-6">
+      <h3 className="text-lg font-medium flex items-center">
+        <Clock className="w-5 h-5 mr-2" />
+        Selecione um Horário
+      </h3>
+
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+        {horariosComProfissionais.map((horarioData) => {
+          const profissionaisDisponiveis = horarioData.profissionaisDisponiveis.filter(
+            p => p.disponivel
+          );
+          const isSelected = selectedHorario === horarioData.hora;
+
+          return (
+            <div key={horarioData.hora} className="space-y-2">
+              {/* Botão do horário */}
+              <Button
+                variant={isSelected ? "default" : "outline"}
+                size="sm"
+                className={`w-full text-sm ${
+                  isSelected 
+                    ? 'bg-blue-600 hover:bg-blue-700 text-white' 
+                    : 'hover:border-blue-400 hover:bg-blue-50'
+                }`}
+                onClick={() => handleHorarioClick(horarioData.hora)}
+              >
+                <Clock className="w-4 h-4 mr-1" />
+                {horarioData.hora}
+              </Button>
+
+              {/* Lista de profissionais disponíveis (expandida quando selecionado) */}
+              {isSelected && (
+                <div className="space-y-1 bg-gray-50 p-2 rounded-lg border">
+                  <div className="text-xs text-gray-600 font-medium mb-1 flex items-center">
+                    <Users className="w-3 h-3 mr-1" />
+                    Profissionais ({profissionaisDisponiveis.length})
+                  </div>
+                  {profissionaisDisponiveis.map((profData) => (
+                    <Button
+                      key={profData.profissional.id}
+                      variant="ghost"
+                      size="sm"
+                      className="w-full text-xs justify-start px-2 py-1 h-auto hover:bg-blue-100"
+                      onClick={() => handleProfissionalSelect(
+                        horarioData.hora, 
+                        profData.profissional.id
+                      )}
+                    >
+                      <User className="w-3 h-3 mr-1" />
+                      {profData.profissional.nome}
+                    </Button>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
 
-      {/* Horários */}
-      {horariosComProfissionais.length === 0 ? (
-        <div className="text-center py-8">
-          <AlertCircle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">
-            Nenhum horário disponível
-          </h3>
-          <p className="text-gray-500">
-            Não há horários livres para os profissionais selecionados na data escolhida.
-            Tente escolher outra data.
-          </p>
-        </div>
-      ) : (
-        <>
-          <p className="text-sm text-gray-600 mb-4">
-            {horariosComProfissionais.length} horário(s) disponível(is). 
-            Clique em um horário para ver os profissionais disponíveis:
-          </p>
-          
-          <div className="space-y-3">
-            {horariosComProfissionais.map((horarioData) => {
-              const profissionaisDisponiveis = horarioData.profissionaisDisponiveis.filter(p => p.disponivel);
-              const isSelected = selectedHorario === horarioData.hora;
-              
-              return (
-                <div key={horarioData.hora} className="border border-gray-200 rounded-lg overflow-hidden">
-                  {/* Botão do horário */}
-                  <button
-                    onClick={() => handleHorarioClick(horarioData.hora)}
-                    className={`w-full p-4 text-left transition-colors ${
-                      isSelected 
-                        ? 'bg-primary-50 border-primary-300' 
-                        : 'hover:bg-gray-50'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3">
-                        <Clock className="w-5 h-5 text-gray-400" />
-                        <span className="font-medium text-gray-900">
-                          {horarioData.hora}
-                        </span>
-                        <span className="text-sm text-gray-500">
-                          ({profissionaisDisponiveis.length} disponível{profissionaisDisponiveis.length !== 1 ? 'eis' : ''})
-                        </span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        {profissionaisDisponiveis.slice(0, 3).map(p => (
-                          <div
-                            key={p.profissional.id}
-                            className="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center text-xs font-medium text-primary-700"
-                            title={p.profissional.nome}
-                          >
-                            {p.profissional.nome.charAt(0).toUpperCase()}
-                          </div>
-                        ))}
-                        {profissionaisDisponiveis.length > 3 && (
-                          <span className="text-xs text-gray-500">
-                            +{profissionaisDisponiveis.length - 3}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </button>
-
-                  {/* Lista de profissionais (expandida) */}
-                  {isSelected && (
-                    <div className="border-t bg-gray-50 p-4">
-                      <h4 className="text-sm font-medium text-gray-900 mb-3 flex items-center">
-                        <Users className="w-4 h-4 mr-2" />
-                        Selecione um profissional:
-                      </h4>
-                      <div className="grid grid-cols-1 gap-2">
-                        {profissionaisDisponiveis.map(({ profissional }) => (
-                          <Button
-                            key={profissional.id}
-                            variant="outline"
-                            className="justify-start h-auto p-3 hover:bg-primary-50 hover:border-primary-300"
-                            onClick={() => handleProfissionalSelect(horarioData.hora, profissional.id)}
-                          >
-                            <div className="flex items-center space-x-3">
-                              <div className="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center text-sm font-medium text-primary-700">
-                                {profissional.nome.charAt(0).toUpperCase()}
-                              </div>
-                              <div className="text-left">
-                                <p className="font-medium text-gray-900">{profissional.nome}</p>
-                                <p className="text-xs text-gray-500">{profissional.email}</p>
-                              </div>
-                            </div>
-                          </Button>
-                        ))}
-                      </div>
-                      
-                      {/* Profissionais indisponíveis */}
-                      {horarioData.profissionaisDisponiveis.some(p => !p.disponivel) && (
-                        <div className="mt-4 pt-3 border-t">
-                          <h5 className="text-xs font-medium text-gray-500 mb-2">
-                            Indisponíveis neste horário:
-                          </h5>
-                          <div className="flex flex-wrap gap-2">
-                            {horarioData.profissionaisDisponiveis
-                              .filter(p => !p.disponivel)
-                              .map(({ profissional, motivo }) => (
-                                <span
-                                  key={profissional.id}
-                                  className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-600"
-                                  title={`${profissional.nome} - ${motivo || 'Indisponível'}`}
-                                >
-                                  {profissional.nome}
-                                </span>
-                              ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+      {/* Informações do rodapé */}
+      <div className="border-t pt-4">
+        <div className="flex items-center justify-between text-sm text-gray-600">
+          <div className="flex items-center">
+            <Calendar className="w-4 h-4 mr-1" />
+            {horariosComProfissionais.length} horários disponíveis
           </div>
-        </>
-      )}
+          <div className="flex items-center">
+            <Clock className="w-4 h-4 mr-1" />
+            Duração: {servico.duracao} minutos
+          </div>
+        </div>
+        
+        <div className="mt-2 text-xs text-gray-500">
+          💡 Clique em um horário para ver os profissionais disponíveis
+        </div>
+      </div>
     </div>
   );
 }
