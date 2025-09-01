@@ -14,21 +14,33 @@ interface CalendarioViewProps {
   onNovoAgendamento: (data?: Date) => void;
   onAgendamentoClick: (agendamento: Agendamento) => void;
   onDayClick?: (data: Date) => void;
+  initialViewType?: 'diaria' | 'semanal' | 'mensal'; // Nova prop
 }
 
 export function CalendarioView({
   agendamentos,
   onNovoAgendamento,
   onAgendamentoClick,
-  onDayClick
+  onDayClick,
+  initialViewType
 }: CalendarioViewProps) {
-  const [tipoVisualizacao, setTipoVisualizacao] = useState<TipoVisualizacao>('mensal');
+  // Usar visualização inicial se fornecida, senão usar padrão
+  const [tipoVisualizacao, setTipoVisualizacao] = useState<TipoVisualizacao>(
+    initialViewType || 'mensal'
+  );
   const [dataAtual, setDataAtual] = useState(new Date());
   const [profissionalFiltro, setProfissionalFiltro] = useState<number | 'TODOS'>('TODOS');
 
   const user = useAuthStore((state) => state.user);
   const empresaId = user?.empresaId || 1;
   const { data: profissionais } = useProfissionais(empresaId);
+
+  // Efeito para definir visualização inicial quando a prop mudar
+  useEffect(() => {
+    if (initialViewType) {
+      setTipoVisualizacao(initialViewType);
+    }
+  }, [initialViewType]);
 
   // Filtrar agendamentos por profissional se necessário
   const agendamentosFiltrados = profissionalFiltro === 'TODOS' 
@@ -105,99 +117,78 @@ export function CalendarioView({
                 onChange={(e) => setProfissionalFiltro(
                   e.target.value === 'TODOS' ? 'TODOS' : Number(e.target.value)
                 )}
-                className="flex h-10 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm transition-all hover:border-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
+                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
               >
                 <option value="TODOS">Todos os profissionais</option>
-                {profissionais?.map((prof) => (
-                  <option key={prof.id} value={prof.id}>
-                    {prof.nome}
+                {profissionais?.map((profissional) => (
+                  <option key={profissional.id} value={profissional.id}>
+                    {profissional.nome}
                   </option>
                 ))}
               </select>
             </div>
 
-            {/* Seletor de Visualização */}
-            <div className="flex items-center space-x-1 bg-gray-100 rounded-lg p-1">
-              {visualizacoes.map(({ tipo, label, icon: Icon }) => (
-                <Button
-                  key={tipo}
-                  variant={tipoVisualizacao === tipo ? 'default' : 'ghost'}
-                  size="sm"
-                  onClick={() => setTipoVisualizacao(tipo)}
-                  className={`transition-all duration-200 ${
-                    tipoVisualizacao === tipo 
-                      ? 'bg-primary-600 text-white shadow-md hover:bg-primary-700' 
-                      : 'text-gray-600 hover:bg-gray-200 hover:text-gray-700'
-                  }`}
-                >
-                  <Icon className="w-4 h-4 mr-2" />
-                  {label}
-                </Button>
-              ))}
+            {/* Botões de Visualização */}
+            <div className="flex bg-gray-100 rounded-lg p-1">
+              {visualizacoes.map((vis) => {
+                const Icon = vis.icon;
+                return (
+                  <button
+                    key={vis.tipo}
+                    onClick={() => setTipoVisualizacao(vis.tipo)}
+                    className={`
+                      flex items-center space-x-1 px-3 py-2 text-sm font-medium rounded-md transition-colors
+                      ${tipoVisualizacao === vis.tipo
+                        ? 'bg-white text-primary-600 shadow-sm'
+                        : 'text-gray-500 hover:text-gray-700'
+                      }
+                    `}
+                    title={vis.descricao}
+                  >
+                    <Icon className="w-4 h-4" />
+                    <span>{vis.label}</span>
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>
-
-        {/* Estatísticas rápidas quando há filtro */}
-        {profissionalFiltro !== 'TODOS' && (
-          <div className="mt-4 pt-4 border-t border-gray-100">
-            <div className="flex items-center space-x-6 text-sm text-gray-600">
-              <div className="flex items-center space-x-2">
-                <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                <span>
-                  {agendamentosFiltrados.filter(a => a.status === 'CONFIRMADO').length} Confirmados
-                </span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <div className="w-3 h-3 bg-gray-500 rounded-full"></div>
-                <span>
-                  {agendamentosFiltrados.filter(a => a.status === 'REALIZADO').length} Realizados
-                </span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                <span>
-                  {agendamentosFiltrados.filter(a => a.status === 'CANCELADO').length} Cancelados
-                </span>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
 
-      {/* Renderizar visualização selecionada */}
-      {tipoVisualizacao === 'mensal' && (
-        <CalendarioMensal
-          agendamentos={agendamentosFiltrados}
-          onDayClick={handleDayClick}
-          onNovoAgendamento={handleNovoAgendamentoComFiltro}
-          onAgendamentoClick={onAgendamentoClick}
-          dataAtual={dataAtual}
-          onDataAtualChange={setDataAtual}
-        />
-      )}
+      {/* Renderizar calendário baseado no tipo selecionado */}
+      <div>
+        {tipoVisualizacao === 'mensal' && (
+          <CalendarioMensal
+            agendamentos={agendamentosFiltrados}
+            dataAtual={dataAtual}
+            onDataAtualChange={setDataAtual}
+            onNovoAgendamento={handleNovoAgendamentoComFiltro}
+            onAgendamentoClick={onAgendamentoClick}
+            onDayClick={handleDayClick}
+          />
+        )}
 
-      {tipoVisualizacao === 'semanal' && (
-        <CalendarioSemanal
-          agendamentos={agendamentosFiltrados}
-          onDayClick={handleDayClick}
-          onNovoAgendamento={handleNovoAgendamentoComFiltro}
-          onAgendamentoClick={onAgendamentoClick}
-          dataAtual={dataAtual}
-          onDataAtualChange={setDataAtual}
-        />
-      )}
+        {tipoVisualizacao === 'semanal' && (
+          <CalendarioSemanal
+            agendamentos={agendamentosFiltrados}
+            dataAtual={dataAtual}
+            onDataAtualChange={setDataAtual}
+            onNovoAgendamento={handleNovoAgendamentoComFiltro}
+            onAgendamentoClick={onAgendamentoClick}
+          />
+        )}
 
-      {tipoVisualizacao === 'diaria' && (
-        <CalendarioDiario
-          agendamentos={agendamentosFiltrados}
-          onNovoAgendamento={handleNovoAgendamentoComFiltro}
-          onAgendamentoClick={onAgendamentoClick}
-          dataAtual={dataAtual}
-          onDataAtualChange={setDataAtual}
-          profissionalFiltro={profissionalFiltro}
-        />
-      )}
+        {tipoVisualizacao === 'diaria' && (
+          <CalendarioDiario
+            agendamentos={agendamentosFiltrados}
+            dataAtual={dataAtual}
+            onDataAtualChange={setDataAtual}
+            onNovoAgendamento={handleNovoAgendamentoComFiltro}
+            onAgendamentoClick={onAgendamentoClick}
+            profissionalFiltro={profissionalFiltro}
+          />
+        )}
+      </div>
     </div>
   );
 }

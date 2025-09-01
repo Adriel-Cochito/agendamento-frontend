@@ -23,8 +23,8 @@ export function Home() {
         </p>
       </div>
 
-      {/* Quick Actions */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      {/* Quick Actions - 5 botões em uma linha */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
         <motion.div
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
@@ -80,6 +80,7 @@ export function Home() {
         <motion.div
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
+          onClick={() => navigate('/agendamentos?view=calendario&tipo=diaria')}
           className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition-shadow"
         >
           <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">

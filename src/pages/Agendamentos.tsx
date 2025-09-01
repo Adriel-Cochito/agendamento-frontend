@@ -1,5 +1,6 @@
 // src/pages/Agendamentos.tsx - Versão atualizada
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Plus, List, CalendarDays, Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { CalendarioView } from '@/components/calendario/CalendarioView';
@@ -12,8 +13,20 @@ import { useAgendamentosLogic } from '@/hooks/useAgendamentosLogic';
 type TipoVisualizacao = 'lista' | 'calendario';
 
 export function Agendamentos() {
-  // Alterado: Calendário como visualização padrão
-  const [tipoVisualizacao, setTipoVisualizacao] = useState<TipoVisualizacao>('calendario');
+  const [searchParams] = useSearchParams();
+  
+  // Ler parâmetros da URL para definir visualização inicial
+  const viewFromUrl = searchParams.get('view');
+  const tipoFromUrl = searchParams.get('tipo');
+  
+  // Definir visualização inicial baseada na URL
+  const getInitialVisualizacao = (): TipoVisualizacao => {
+    if (viewFromUrl === 'calendario') return 'calendario';
+    if (viewFromUrl === 'lista') return 'lista';
+    return 'calendario'; // padrão
+  };
+
+  const [tipoVisualizacao, setTipoVisualizacao] = useState<TipoVisualizacao>(getInitialVisualizacao);
   const user = useAuthStore((state) => state.user);
   const empresaId = user?.empresaId || 1;
 
@@ -116,45 +129,6 @@ export function Agendamentos() {
         </div>
       </div>
 
-      {/* Indicador Visual da Visualização Ativa */}
-      {/* <div className="bg-white rounded-lg border border-gray-200 p-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            {tipoVisualizacao === 'calendario' ? (
-              <>
-                <div className="w-3 h-3 bg-primary-600 rounded-full animate-pulse"></div>
-                <span className="text-sm font-medium text-gray-900">
-                  Visualização em Calendário Ativa
-                </span>
-                <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
-                  Navegue entre mês, semana e dia
-                </span>
-              </>
-            ) : (
-              <>
-                <div className="w-3 h-3 bg-primary-600 rounded-full animate-pulse"></div>
-                <span className="text-sm font-medium text-gray-900">
-                  Visualização em Lista Ativa
-                </span>
-                <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
-                  Use os filtros para encontrar agendamentos
-                </span>
-              </>
-            )}
-          </div>
-          
-          <div className="flex items-center space-x-4">
-            <div className="text-xs text-gray-400">
-              {agendamentos?.length || 0} agendamento(s) total
-            </div>
-            <div className="flex items-center space-x-1 text-xs text-blue-600">
-              <Share2 className="w-3 h-3" />
-              <span>Link público disponível</span>
-            </div>
-          </div>
-        </div>
-      </div> */}
-
       {/* Renderizar visualização selecionada */}
       <div role="main" aria-label={`Agendamentos em formato de ${tipoVisualizacao}`}>
         {tipoVisualizacao === 'calendario' ? (
@@ -165,6 +139,7 @@ export function Agendamentos() {
             onDayClick={(data) => {
               console.log('Dia clicado:', data);
             }}
+            initialViewType={tipoFromUrl === 'diaria' ? 'diaria' : undefined}
           />
         ) : (
           <AgendamentosLista
