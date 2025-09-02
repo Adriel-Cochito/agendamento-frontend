@@ -1,7 +1,8 @@
 import { motion } from 'framer-motion';
-import { Calendar, Plus, Users, Clock, Tag } from 'lucide-react';
+import { Calendar, Plus, Users, Clock, Tag, BarChart3 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { useNavigate } from 'react-router-dom';
+import { DashboardSection } from '@/components/dashboard/DashboardSection';
 
 export function Home() {
   const navigate = useNavigate();
@@ -12,6 +13,7 @@ export function Home() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
+      className="space-y-8"
     >
       {/* Welcome Section */}
       <div className="mb-8">
@@ -24,7 +26,7 @@ export function Home() {
       </div>
 
       {/* Quick Actions - 5 botões em uma linha */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-4">
         <motion.div
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
@@ -91,21 +93,20 @@ export function Home() {
         </motion.div>
       </div>
 
-      {/* Main Content Area */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 min-h-[400px] flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Calendar className="w-12 h-12 text-gray-400" />
+      {/* Divisor Visual */}
+      <div className="flex items-center my-8">
+        <div className="flex-1 border-t border-gray-300"></div>
+        <div className="px-6">
+          <div className="flex items-center space-x-2 text-slate-600">
+            <BarChart3 className="w-5 h-5" />
+            <span className="font-semibold">Analytics Dashboard</span>
           </div>
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">
-            Sistema de Agendamentos
-          </h3>
-          <p className="text-gray-500 max-w-md mx-auto">
-            Agora você pode gerenciar profissionais, serviços e disponibilidades. 
-            Use o menu lateral para navegar entre as seções e configurar seu sistema de agendamentos!
-          </p>
         </div>
+        <div className="flex-1 border-t border-gray-300"></div>
       </div>
+
+      {/* Dashboard Content */}
+      <DashboardSection />
     </motion.div>
   );
 }
