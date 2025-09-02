@@ -49,7 +49,7 @@ export function DashboardSection() {
         {/* Header do Dashboard */}
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-2xl font-bold text-gray-900 mb-1">Analytics Overview</h3>
+            <h3 className="text-2xl font-bold text-gray-900 mb-1">Visão geral</h3>
             <p className="text-gray-600 text-sm">Métricas em tempo real da sua empresa</p>
           </div>
           <div className="flex items-center space-x-4">
@@ -77,11 +77,11 @@ export function DashboardSection() {
             className="bg-white rounded-2xl p-6 border border-gray-200 shadow-lg hover:shadow-xl transition-all duration-300"
           >
             <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-cyan-400 rounded-xl flex items-center justify-center shadow-lg">
-                <Calendar className="w-6 h-6 text-white" />
+              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                <Calendar className="w-6 h-6 text-blue-600" />
               </div>
-              <span className="text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-full border border-blue-200">
-                TODAY
+              <span className="text-xs font-bold text-blue-600 bg-blue-30 px-3 py-1 rounded-full border border-blue-200">
+                Hoje
               </span>
             </div>
             <div className="space-y-2">
@@ -111,11 +111,11 @@ export function DashboardSection() {
             className="bg-white rounded-2xl p-6 border border-gray-200 shadow-lg hover:shadow-xl transition-all duration-300"
           >
             <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 bg-gradient-to-r from-emerald-500 to-teal-400 rounded-xl flex items-center justify-center shadow-lg">
-                <Clock className="w-6 h-6 text-white" />
+              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                <Clock className="w-6 h-6 text-blue-600" />
               </div>
-              <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
-                WEEK
+              <span className="text-xs font-bold text-blue-600 bg-blue-30 px-3 py-1 rounded-full border border-blue-200">
+                Semana
               </span>
             </div>
             <div className="space-y-2">
@@ -131,27 +131,65 @@ export function DashboardSection() {
             </div>
           </motion.div>
 
-          {/* Card 3 - Taxa de Ocupação */}
+
+          {/* Card 3 - Recursos */}
           <motion.div
             whileHover={{ scale: 1.02, y: -2 }}
             className="bg-white rounded-2xl p-6 border border-gray-200 shadow-lg hover:shadow-xl transition-all duration-300"
           >
             <div className="flex items-center justify-between mb-4">
-              <div className={`w-12 h-12 rounded-xl flex items-center justify-center shadow-lg ${
+              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                <Users className="w-6 h-6 text-blue-600" />
+              </div>
+              <span className="text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-full border border-purple-200">
+                RECURSOS
+              </span>
+            </div>
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <p className="text-gray-600 font-medium">Profissionais</p>
+                <p className="text-2xl font-black text-gray-900">
+                  {dashboard.indicadores.profissionaisAtivos}
+                </p>
+              </div>
+              <div className="w-full h-px bg-gray-200"></div>
+              <div className="flex justify-between items-center">
+                <p className="text-gray-600 font-medium">Serviços</p>
+                <p className="text-2xl font-black text-gray-900">
+                  {dashboard.indicadores.servicosOferecidos}
+                </p>
+              </div>
+            </div>
+          </motion.div>
+
+          
+          {/* Card 4 - Taxa de Ocupação */}
+          <motion.div
+            whileHover={{ scale: 1.02, y: -2 }}
+            className="bg-white rounded-2xl p-6 border border-gray-200 shadow-lg hover:shadow-xl transition-all duration-300"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${
                 dashboard.metricas.taxaOcupacaoHoje > 70 
-                  ? 'bg-gradient-to-r from-emerald-500 to-green-400' 
+                  ? 'bg-emerald-100' 
                   : dashboard.metricas.taxaOcupacaoHoje > 40 
-                  ? 'bg-gradient-to-r from-amber-500 to-orange-400' 
-                  : 'bg-gradient-to-r from-red-500 to-pink-400'
+                  ? 'bg-amber-100' 
+                  : 'bg-red-100'
               }`}>
-                <TrendingUp className="w-6 h-6 text-white" />
+                <TrendingUp className={`w-6 h-6 ${
+                  dashboard.metricas.taxaOcupacaoHoje > 70 
+                    ? 'text-emerald-600' 
+                    : dashboard.metricas.taxaOcupacaoHoje > 40 
+                    ? 'text-amber-600' 
+                    : 'text-red-600'
+                }`} />
               </div>
               <span className={`text-xs font-bold px-3 py-1 rounded-full border ${
                 dashboard.metricas.taxaOcupacaoHoje > 70 
                   ? 'text-emerald-600 bg-emerald-50 border-emerald-200' 
                   : dashboard.metricas.taxaOcupacaoHoje > 40 
                   ? 'text-amber-600 bg-amber-50 border-amber-200' 
-                  : 'text-red-600 bg-red-50 border-red-200'
+                  : 'text-red-600 bg-red-30 border-red-200'
               }`}>
                 OCUPAÇÃO
               </span>
@@ -177,36 +215,6 @@ export function DashboardSection() {
                 />
               </div>
               <p className="text-xs text-gray-500">Capacidade utilizada</p>
-            </div>
-          </motion.div>
-
-          {/* Card 4 - Recursos */}
-          <motion.div
-            whileHover={{ scale: 1.02, y: -2 }}
-            className="bg-white rounded-2xl p-6 border border-gray-200 shadow-lg hover:shadow-xl transition-all duration-300"
-          >
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-violet-400 rounded-xl flex items-center justify-center shadow-lg">
-                <Users className="w-6 h-6 text-white" />
-              </div>
-              <span className="text-xs font-bold text-purple-600 bg-purple-50 px-3 py-1 rounded-full border border-purple-200">
-                RECURSOS
-              </span>
-            </div>
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <p className="text-gray-600 font-medium">Profissionais</p>
-                <p className="text-2xl font-black text-gray-900">
-                  {dashboard.indicadores.profissionaisAtivos}
-                </p>
-              </div>
-              <div className="w-full h-px bg-gray-200"></div>
-              <div className="flex justify-between items-center">
-                <p className="text-gray-600 font-medium">Serviços</p>
-                <p className="text-2xl font-black text-gray-900">
-                  {dashboard.indicadores.servicosOferecidos}
-                </p>
-              </div>
             </div>
           </motion.div>
         </div>

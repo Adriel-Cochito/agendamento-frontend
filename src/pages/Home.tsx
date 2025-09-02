@@ -72,8 +72,8 @@ export function Home() {
           onClick={() => navigate('/disponibilidades')}
           className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition-shadow"
         >
-          <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
-            <Clock className="w-6 h-6 text-purple-600" />
+          <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mb-4">
+            <Clock className="w-6 h-6 text-yellow-600" />
           </div>
           <h3 className="font-semibold text-gray-900 mb-1">Disponibilidades</h3>
           <p className="text-sm text-gray-500">Configure horários disponíveis</p>
@@ -99,7 +99,7 @@ export function Home() {
         <div className="px-6">
           <div className="flex items-center space-x-2 text-slate-600">
             <BarChart3 className="w-5 h-5" />
-            <span className="font-semibold">Analytics Dashboard</span>
+            <span className="font-semibold">Dados estatísticos</span>
           </div>
         </div>
         <div className="flex-1 border-t border-gray-300"></div>
