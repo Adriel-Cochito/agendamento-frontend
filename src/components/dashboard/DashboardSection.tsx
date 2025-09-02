@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/Button';
 
 // NOVO: componentes de gráfico/visual
 import { SimpleBarChart } from '@/components/dashboard/SimpleChart';
-import { StatusBreakdown } from '@/components/dashboard/StatusBreakdown';
 
 export function DashboardSection() {
   const navigate = useNavigate();
@@ -135,7 +134,6 @@ export function DashboardSection() {
             </div>
           </motion.div>
 
-
           {/* Card 3 - Recursos */}
           <motion.div
             whileHover={{ scale: 1.02, y: -2 }}
@@ -166,7 +164,6 @@ export function DashboardSection() {
             </div>
           </motion.div>
 
-          
           {/* Card 4 - Taxa de Ocupação */}
           <motion.div
             whileHover={{ scale: 1.02, y: -2 }}
@@ -294,12 +291,12 @@ export function DashboardSection() {
         )}
 
         {/* ===================== */}
-        {/* NOVA SEÇÃO: Gráficos */}
+        {/* SEÇÃO: Gráficos */}
         {/* ===================== */}
         <div>
           <h4 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
             <BarChart3 className="w-5 h-5 mr-2 text-gray-700" />
-            Dados estatísticos
+            Gráficos
           </h4>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -309,25 +306,146 @@ export function DashboardSection() {
               className="bg-white rounded-2xl p-6 border border-gray-200 shadow-lg hover:shadow-xl transition-all duration-300"
             >
               <h5 className="font-semibold text-gray-800 mb-4">Agendamentos por Dia</h5>
-              {(dashboard.graficos.agendamentosPorDia ?? []).length > 0 ? (
+              {dashboard.graficos?.agendamentosPorDia && dashboard.graficos.agendamentosPorDia.length > 0 ? (
                 <SimpleBarChart
-                  data={(dashboard.graficos.agendamentosPorDia ?? []).map((d: any) => ({
-                    name: d.dia ?? d.name ?? '',
+                  data={dashboard.graficos.agendamentosPorDia.map((d: any) => ({
+                    name: d.data ?? d.dia ?? d.name ?? '',
                     value: d.quantidade ?? d.value ?? 0,
                   }))}
                 />
               ) : (
-                <p className="text-sm text-gray-500">Sem dados para o período.</p>
+                <div className="flex flex-col items-center justify-center py-8 text-center">
+                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3">
+                    <BarChart3 className="w-8 h-8 text-gray-400" />
+                  </div>
+                  <p className="text-sm text-gray-500 font-medium">Nenhum agendamento encontrado</p>
+                  <p className="text-xs text-gray-400 mt-1">Os dados aparecerão quando houver agendamentos registrados</p>
+                </div>
               )}
             </motion.div>
 
-            {/* Status dos Agendamentos */}
+            {/* Status dos Agendamentos - NOVO GRÁFICO VISUAL */}
             <motion.div
               whileHover={{ scale: 1.01, y: -1 }}
               className="bg-white rounded-2xl p-6 border border-gray-200 shadow-lg hover:shadow-xl transition-all duration-300"
             >
               <h5 className="font-semibold text-gray-800 mb-4">Status dos Agendamentos</h5>
-              <StatusBreakdown data={dashboard.graficos.statusAgendamentos ?? {}} />
+              {dashboard.graficos?.statusAgendamentos && Object.keys(dashboard.graficos.statusAgendamentos).length > 0 ? (
+                <div className="space-y-4">
+                  {/* Lista com barras de progresso */}
+                  <div className="space-y-3">
+                    {Object.entries(dashboard.graficos.statusAgendamentos).map(([status, count]) => {
+                      const total = Object.values(dashboard.graficos.statusAgendamentos).reduce((a: number, b: any) => a + Number(b), 0);
+                      const percentage = total > 0 ? ((Number(count) / total) * 100).toFixed(0) : 0;
+                      const statusColors: {[key: string]: string} = {
+                        'AGENDADO': 'bg-blue-500',
+                        'CONFIRMADO': 'bg-emerald-500', 
+                        'REALIZADO': 'bg-gray-500',
+                        'CANCELADO': 'bg-red-500'
+                      };
+                      const statusLabels: {[key: string]: string} = {
+                        'AGENDADO': 'Agendados',
+                        'CONFIRMADO': 'Confirmados',
+                        'REALIZADO': 'Realizados', 
+                        'CANCELADO': 'Cancelados'
+                      };
+                      
+                      return (
+                        <div key={status} className="flex items-center space-x-3">
+                          <div className={`w-3 h-3 rounded-full ${statusColors[status] || 'bg-gray-400'}`}></div>
+                          <div className="flex-1">
+                            <div className="flex justify-between items-center mb-1">
+                              <span className="text-sm font-medium text-gray-700">
+                                {statusLabels[status] || status}
+                              </span>
+                              <span className="text-xs text-gray-500">
+                                {count} ({percentage}%)
+                              </span>
+                            </div>
+                            <div className="w-full bg-gray-200 rounded-full h-2">
+                              <div
+                                className={`h-2 rounded-full transition-all duration-500 ${statusColors[status] || 'bg-gray-400'}`}
+                                style={{ width: `${percentage}%` }}
+                              ></div>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  
+                  {/* Gráfico de rosca no centro */}
+                  <div className="mt-6 flex justify-center">
+                    <div className="relative w-24 h-24">
+                      <svg className="w-24 h-24 transform -rotate-90" viewBox="0 0 100 100">
+                        <circle
+                          cx="50"
+                          cy="50"
+                          r="40"
+                          stroke="#f3f4f6"
+                          strokeWidth="8"
+                          fill="transparent"
+                        />
+                        {(() => {
+                          const data = dashboard.graficos.statusAgendamentos;
+                          const total = Object.values(data).reduce((a: number, b: any) => a + Number(b), 0);
+                          const circumference = 2 * Math.PI * 40; // r=40
+                          let cumulativePercentage = 0;
+                          
+                          return Object.entries(data).map(([status, count]) => {
+                            const percentage = total > 0 ? (Number(count) / total) * 100 : 0;
+                            const strokeLength = (percentage / 100) * circumference;
+                            const strokeOffset = cumulativePercentage * circumference / 100;
+                            
+                            const statusColors: {[key: string]: string} = {
+                              'AGENDADO': '#3b82f6',
+                              'CONFIRMADO': '#10b981',
+                              'REALIZADO': '#6b7280',
+                              'CANCELADO': '#ef4444'
+                            };
+                            
+                            cumulativePercentage += percentage;
+                            
+                            return (
+                              <circle
+                                key={status}
+                                cx="50"
+                                cy="50"
+                                r="40"
+                                stroke={statusColors[status] || '#6b7280'}
+                                strokeWidth="8"
+                                fill="transparent"
+                                strokeDasharray={`${strokeLength} ${circumference - strokeLength}`}
+                                strokeDashoffset={-strokeOffset}
+                                className="transition-all duration-500"
+                                style={{
+                                  filter: 'drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1))'
+                                }}
+                              />
+                            );
+                          });
+                        })()}
+                      </svg>
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="text-center">
+                          <div className="text-lg font-bold text-gray-900">
+                            {Object.values(dashboard.graficos.statusAgendamentos).reduce((a: number, b: any) => a + Number(b), 0)}
+                          </div>
+                          <div className="text-xs text-gray-500">Total</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-8 text-center">
+                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3">
+                    <BarChart3 className="w-8 h-8 text-gray-400" />
+                  </div>
+                  <p className="text-sm text-gray-500 font-medium">Nenhum dado de status</p>
+                  <p className="text-xs text-gray-400 mt-1">Os gráficos aparecerão quando houver agendamentos</p>
+                </div>
+              )}
             </motion.div>
 
             {/* Serviços Mais Procurados */}
@@ -367,7 +485,7 @@ export function DashboardSection() {
             </motion.div>
           </div>
         </div>
-        {/* FIM NOVA SEÇÃO */}
+        {/* FIM SEÇÃO GRÁFICOS */}
       </div>
     </div>
   );
