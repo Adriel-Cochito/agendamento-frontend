@@ -5,6 +5,10 @@ import { useDashboard } from '@/hooks/useDashboard';
 import { Loading } from '@/components/ui/Loading';
 import { Button } from '@/components/ui/Button';
 
+// NOVO: componentes de gráfico/visual
+import { SimpleBarChart } from '@/components/dashboard/SimpleChart';
+import { StatusBreakdown } from '@/components/dashboard/StatusBreakdown';
+
 export function DashboardSection() {
   const navigate = useNavigate();
   const { data: dashboard, isLoading, refetch, isFetching } = useDashboard();
@@ -288,6 +292,82 @@ export function DashboardSection() {
             </div>
           </div>
         )}
+
+        {/* ===================== */}
+        {/* NOVA SEÇÃO: Gráficos */}
+        {/* ===================== */}
+        <div>
+          <h4 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
+            <BarChart3 className="w-5 h-5 mr-2 text-gray-700" />
+            Dados estatísticos
+          </h4>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Agendamentos por Dia */}
+            <motion.div
+              whileHover={{ scale: 1.01, y: -1 }}
+              className="bg-white rounded-2xl p-6 border border-gray-200 shadow-lg hover:shadow-xl transition-all duration-300"
+            >
+              <h5 className="font-semibold text-gray-800 mb-4">Agendamentos por Dia</h5>
+              {(dashboard.graficos.agendamentosPorDia ?? []).length > 0 ? (
+                <SimpleBarChart
+                  data={(dashboard.graficos.agendamentosPorDia ?? []).map((d: any) => ({
+                    name: d.dia ?? d.name ?? '',
+                    value: d.quantidade ?? d.value ?? 0,
+                  }))}
+                />
+              ) : (
+                <p className="text-sm text-gray-500">Sem dados para o período.</p>
+              )}
+            </motion.div>
+
+            {/* Status dos Agendamentos */}
+            <motion.div
+              whileHover={{ scale: 1.01, y: -1 }}
+              className="bg-white rounded-2xl p-6 border border-gray-200 shadow-lg hover:shadow-xl transition-all duration-300"
+            >
+              <h5 className="font-semibold text-gray-800 mb-4">Status dos Agendamentos</h5>
+              <StatusBreakdown data={dashboard.graficos.statusAgendamentos ?? {}} />
+            </motion.div>
+
+            {/* Serviços Mais Procurados */}
+            <motion.div
+              whileHover={{ scale: 1.01, y: -1 }}
+              className="bg-white rounded-2xl p-6 border border-gray-200 shadow-lg hover:shadow-xl transition-all duration-300"
+            >
+              <h5 className="font-semibold text-gray-800 mb-4">Serviços Mais Procurados</h5>
+              {(dashboard.graficos.servicosMaisProcurados ?? []).length > 0 ? (
+                <SimpleBarChart
+                  data={(dashboard.graficos.servicosMaisProcurados ?? []).map((s: any) => ({
+                    name: s.servicoTitulo ?? s.name ?? '',
+                    value: s.quantidade ?? s.value ?? 0,
+                  }))}
+                />
+              ) : (
+                <p className="text-sm text-gray-500">Sem dados de serviços.</p>
+              )}
+            </motion.div>
+
+            {/* Profissionais Mais Ocupados */}
+            <motion.div
+              whileHover={{ scale: 1.01, y: -1 }}
+              className="bg-white rounded-2xl p-6 border border-gray-200 shadow-lg hover:shadow-xl transition-all duration-300"
+            >
+              <h5 className="font-semibold text-gray-800 mb-4">Profissionais Mais Ocupados</h5>
+              {(dashboard.graficos.profissionaisMaisOcupados ?? []).length > 0 ? (
+                <SimpleBarChart
+                  data={(dashboard.graficos.profissionaisMaisOcupados ?? []).map((p: any) => ({
+                    name: p.profissionalNome ?? p.name ?? '',
+                    value: p.quantidade ?? p.value ?? 0,
+                  }))}
+                />
+              ) : (
+                <p className="text-sm text-gray-500">Sem dados de profissionais.</p>
+              )}
+            </motion.div>
+          </div>
+        </div>
+        {/* FIM NOVA SEÇÃO */}
       </div>
     </div>
   );
