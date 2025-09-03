@@ -4,12 +4,15 @@ import { handleApiError } from '@/lib/error-handler';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
+console.log('API Base URL:', API_BASE_URL); // Ajuda a verificar no console se a variável está carregando
+
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
 });
+
 
 // Interceptor para adicionar token
 apiClient.interceptors.request.use(
