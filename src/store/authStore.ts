@@ -5,7 +5,7 @@ import { authApi } from '@/api/auth';
 
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       user: null,
       token: null,
       isAuthenticated: false,
@@ -19,9 +19,9 @@ export const useAuthStore = create<AuthState>()(
           // Agora que a API retorna o user, não precisamos decodificar o JWT
           const user: User = {
             id: response.user?.id?.toString() || '1',
-            name: response.user?.nome || response.user?.name || credentials.email.split('@')[0],
+            name: response.user?.nome || credentials.email.split('@')[0],
             email: response.user?.email || credentials.email,
-            role: response.user?.perfil || response.user?.role || 'OWNER',
+            role: response.user?.perfil || 'OWNER',
             empresaId: response.user?.empresaId || 1,
           };
           

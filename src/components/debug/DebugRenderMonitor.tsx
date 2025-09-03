@@ -7,9 +7,9 @@ interface DebugRenderMonitorProps {
   enabled?: boolean;
 }
 
-export function DebugRenderMonitor({ name, props, enabled = process.env.NODE_ENV === 'development' }: DebugRenderMonitorProps) {
+export function DebugRenderMonitor({ name, props, enabled = import.meta.env.DEV }: DebugRenderMonitorProps) {
   const renderCount = useRef(0);
-  const prevProps = useRef<Record<string, any>>();
+  const prevProps = useRef<Record<string, any>>({});
 
   useEffect(() => {
     if (!enabled) return;
@@ -31,7 +31,9 @@ export function DebugRenderMonitor({ name, props, enabled = process.env.NODE_ENV
       props: props || 'no props tracked'
     });
 
-    prevProps.current = props;
+    if (props) {
+      prevProps.current = { ...props };
+    }
   });
 
   // Este componente não renderiza nada
@@ -39,7 +41,7 @@ export function DebugRenderMonitor({ name, props, enabled = process.env.NODE_ENV
 }
 
 // Hook para monitorar mudanças de estado
-export function useDebugStateChanges(name: string, state: any, enabled = process.env.NODE_ENV === 'development') {
+export function useDebugStateChanges(name: string, state: any, enabled = import.meta.env.DEV) {
   const prevState = useRef(state);
 
   useEffect(() => {
@@ -57,15 +59,15 @@ export function useDebugStateChanges(name: string, state: any, enabled = process
 }
 
 // Hook para monitorar efeitos
-export function useDebugEffect(name: string, deps: React.DependencyList, enabled = process.env.NODE_ENV === 'development') {
-  const prevDeps = useRef<React.DependencyList>();
+export function useDebugEffect(name: string, deps: React.DependencyList, enabled = import.meta.env.DEV) {
+  const prevDeps = useRef<React.DependencyList>([]);
 
   useEffect(() => {
     if (!enabled) return;
 
     if (prevDeps.current) {
       const changedDeps = deps.map((dep, index) => {
-        if (dep !== prevDeps.current![index]) {
+        if (index < prevDeps.current!.length && dep !== prevDeps.current![index]) {
           return { index, from: prevDeps.current![index], to: dep };
         }
         return null;
@@ -81,7 +83,7 @@ export function useDebugEffect(name: string, deps: React.DependencyList, enabled
       console.log(`⚡ [${name}] Effect first run:`, { deps });
     }
 
-    prevDeps.current = deps;
+    prevDeps.current = [...deps];
   }, deps);
 }
 

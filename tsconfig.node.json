@@ -5,6 +5,7 @@
     "module": "ESNext",
     "skipLibCheck": true,
     "composite": true,
+    "types": ["node"], // Adicionando tipos de Node.js
 
     /* Bundler mode */
     "moduleResolution": "bundler",

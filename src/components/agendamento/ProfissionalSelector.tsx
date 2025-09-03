@@ -1,6 +1,6 @@
 // src/components/agendamento/ProfissionalSelector.tsx - Versão otimizada
 import { useState, useCallback, useMemo, memo } from 'react';
-import { User, Users, Check, AlertCircle } from 'lucide-react';
+import { Users, Check, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Profissional } from '@/types/profissional';
 import { Servico } from '@/types/servico';
@@ -88,7 +88,7 @@ export const ProfissionalSelector = memo(({
   const profissionaisParaEscolha = useMemo(() => {
     const lista = profissionaisDisponiveis || servico.profissionais || [];
     
-    if (process.env.NODE_ENV === 'development') {
+    if (import.meta.env.DEV) {
       console.log('🎯 ProfissionalSelector profissionais:', {
         servicoProfissionais: servico.profissionais?.length || 0,
         profissionaisDisponiveis: profissionaisDisponiveis?.length || 0,
