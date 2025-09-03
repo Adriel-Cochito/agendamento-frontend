@@ -1,7 +1,8 @@
 [build]
+  command = "npm run netlify-build"
   publish = "dist"
-  command = "npm run build"
 
+# Redireciona todas as requisições para o index.html (SPA)
 [[redirects]]
   from = "/*"
   to = "/index.html"

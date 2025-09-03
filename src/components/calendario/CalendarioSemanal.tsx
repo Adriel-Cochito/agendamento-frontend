@@ -1,225 +1,217 @@
-import { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
+// src/components/calendario/CalendarioSemanal.tsx - Corrigido o problema de tipo 'any[]'
+import { useState, useMemo } from 'react';
+import { format, isToday, parseISO, isSameDay } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import { CalendarDays, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
 import { Agendamento } from '@/types/agendamento';
 import { dateUtils } from '@/utils/dateUtils';
-import {
-  gerarDiasDaSemana,
-  agruparAgendamentosPorData,
-  formatarDataParaChave,
-  formatarDiaSemana,
-  formatarDiaMes,
-  obterCorPorStatus,
-  CalendarioData
-} from '@/utils/calendario';
+import { agruparAgendamentosPorData, HorarioAgrupado } from '@/utils/calendario';
 
-interface CalendarioSemanalProps {
+export interface CalendarioSemanalProps {
   agendamentos: Agendamento[];
-  onDayClick: (data: Date) => void;
-  onNovoAgendamento: (data?: Date) => void;
-  onAgendamentoClick: (agendamento: Agendamento) => void;
   dataAtual: Date;
   onDataAtualChange: (data: Date) => void;
+  onNovoAgendamento: (data?: Date) => void;
+  onAgendamentoClick: (agendamento: Agendamento) => void;
+  onDayClick: (data: Date) => void;
 }
 
 export function CalendarioSemanal({
   agendamentos,
-  onDayClick,
+  dataAtual,
+  onDataAtualChange,
   onNovoAgendamento,
   onAgendamentoClick,
-  dataAtual,
-  onDataAtualChange
+  onDayClick
 }: CalendarioSemanalProps) {
-  const [diasSemana, setDiasSemana] = useState<CalendarioData[]>([]);
+  const [horaExpandida, setHoraExpandida] = useState<string | null>(null);
 
-  useEffect(() => {
-    const dias = gerarDiasDaSemana(dataAtual);
-    
-    // Agrupar agendamentos por data (sem conversão de timezone)
-    const agendamentosPorData = agruparAgendamentosPorDataNaive(agendamentos);
-    
-    // Associar agendamentos aos dias
-    const diasComAgendamentos = dias.map(dia => ({
-      ...dia,
-      agendamentos: agendamentosPorData.get(formatarDataParaChave(dia.date)) || []
-    }));
-    
-    setDiasSemana(diasComAgendamentos);
-  }, [dataAtual, agendamentos]);
+  // Dias da semana
+  const diasSemana = useMemo(() => {
+    const dataInicial = dateUtils.inicioSemana(dataAtual);
+    return [0, 1, 2, 3, 4, 5, 6].map(offset => dateUtils.adicionarDias(dataInicial, offset));
+  }, [dataAtual]);
 
-  // Função simplificada para agrupar por data usando strings
-  const agruparAgendamentosPorDataNaive = (agendamentos: Agendamento[]): Map<string, Agendamento[]> => {
-    const grupos = new Map<string, Agendamento[]>();
+  // Agrupar agendamentos por dia e hora
+  const agendamentosPorDia = useMemo(() => {
+    const resultado: Record<string, Agendamento[]> = {};
     
+    // Inicializar arrays vazios para cada dia da semana
+    diasSemana.forEach(dia => {
+      resultado[format(dia, 'yyyy-MM-dd')] = [];
+    });
+
+    // Adicionar agendamentos
     agendamentos.forEach(agendamento => {
-      const chaveData = dateUtils.extractDateString(agendamento.dataHora);
+      const dataFormatada = format(parseISO(agendamento.dataHoraInicio), 'yyyy-MM-dd');
       
-      if (!grupos.has(chaveData)) {
-        grupos.set(chaveData, []);
+      // Verificar se é um dia desta semana
+      if (resultado[dataFormatada]) {
+        resultado[dataFormatada].push(agendamento);
       }
-      grupos.get(chaveData)!.push(agendamento);
+    });
+
+    return resultado;
+  }, [agendamentos, diasSemana]);
+
+  // Agendamentos agrupados por hora (para a visualização detalhada)
+  const horariosPorDia = useMemo(() => {
+    const resultado: Record<string, HorarioAgrupado[]> = {};
+    
+    Object.keys(agendamentosPorDia).forEach(data => {
+      const agendamentosDodia = agendamentosPorDia[data];
+      // Correção: Definir explicitamente o tipo para evitar o erro TS7034
+      const horarios: HorarioAgrupado[] = [];
+
+      // Criar horários agrupados
+      if (agendamentosDodia.length > 0) {
+        // Agrupar agendamentos por hora
+        const horariosAgrupados = dateUtils.agruparPorHora(agendamentosDodia);
+        
+        Object.keys(horariosAgrupados).forEach(hora => {
+          horarios.push({
+            hora,
+            agendamentos: horariosAgrupados[hora]
+          });
+        });
+      }
+      
+      resultado[data] = horarios.sort((a, b) => {
+        // Ordenar por hora (09:00, 10:00, etc.)
+        return a.hora.localeCompare(b.hora);
+      });
     });
     
-    return grupos;
-  };
+    return resultado;
+  }, [agendamentosPorDia]);
 
-  const navegarSemana = (direcao: 'anterior' | 'proximo') => {
-    const nova = new Date(dataAtual);
-    const dias = direcao === 'anterior' ? -7 : 7;
-    nova.setDate(nova.getDate() + dias);
-    onDataAtualChange(nova);
-  };
-
-  const irParaHoje = () => {
-    onDataAtualChange(new Date());
-  };
-
-  const formatarPeriodoSemana = () => {
-    if (diasSemana.length === 0) return '';
-    
-    const primeiro = diasSemana[0].date;
-    const ultimo = diasSemana[6].date;
-    
-    if (primeiro.getMonth() === ultimo.getMonth()) {
-      return `${primeiro.getDate()} - ${ultimo.getDate()} de ${new Intl.DateTimeFormat('pt-BR', {
-        month: 'long',
-        year: 'numeric'
-      }).format(primeiro)}`;
+  const toggleHoraExpandida = (hora: string) => {
+    if (hora === horaExpandida) {
+      setHoraExpandida(null);
     } else {
-      return `${formatarDiaMes(primeiro)} - ${formatarDiaMes(ultimo)}`;
+      setHoraExpandida(hora);
     }
   };
 
-  // Gerar horários do dia (6h às 22h, intervalos de 30min)
-  const horarios = [];
-  for (let hora = 6; hora <= 22; hora++) {
-    for (let minuto = 0; minuto < 60; minuto += 30) {
-      horarios.push(`${hora.toString().padStart(2, '0')}:${minuto.toString().padStart(2, '0')}`);
-    }
-  }
+  const renderDiaHeader = (dia: Date) => {
+    const diaSemana = format(dia, 'EEEE', { locale: ptBR });
+    const diaDoMes = format(dia, 'd');
+    
+    const ehHoje = isToday(dia);
+    
+    return (
+      <div 
+        className={`py-2 px-3 border-b ${
+          ehHoje ? 'bg-primary-50 border-primary-200' : 'border-gray-200'
+        }`}
+      >
+        <p className={`font-semibold ${ehHoje ? 'text-primary-800' : 'text-gray-800'}`}>
+          {diaSemana.charAt(0).toUpperCase() + diaSemana.slice(1)}
+        </p>
+        <p className={`text-lg font-bold ${ehHoje ? 'text-primary-700' : 'text-gray-600'}`}>
+          {diaDoMes}
+        </p>
+        <button
+          onClick={() => onDayClick(dia)}
+          className="mt-1 text-xs text-gray-500 hover:text-primary-500 hover:underline"
+        >
+          Ver detalhes
+        </button>
+      </div>
+    );
+  };
 
-  const obterAgendamentosNoHorario = (dia: CalendarioData, horario: string) => {
-    return dia.agendamentos.filter(agendamento => {
-      const horaAgendamento = dateUtils.formatTimeLocal(agendamento.dataHora);
-      return horaAgendamento === horario;
+  const renderHorarios = (dia: string) => {
+    // Correção: Definir explicitamente o tipo para evitar o erro TS7005
+    const horarios: HorarioAgrupado[] = horariosPorDia[dia] || [];
+
+    if (horarios.length === 0) {
+      return (
+        <div className="p-3 text-center text-gray-500 text-sm">
+          Nenhum agendamento
+        </div>
+      );
+    }
+
+    return horarios.map((horario) => {
+      const expanded = horaExpandida === horario.hora;
+      
+      return (
+        <div
+          key={`${dia}-${horario.hora}`}
+          className={`p-2 border-b border-gray-100 hover:bg-gray-50 transition-colors ${
+            expanded ? 'bg-gray-50' : ''
+          }`}
+        >
+          <div 
+            className="flex justify-between items-center cursor-pointer"
+            onClick={() => toggleHoraExpandida(horario.hora)}
+          >
+            <div className="flex items-center text-gray-800">
+              <Clock className="w-4 h-4 mr-2 text-primary-500" />
+              <span className="font-medium">{horario.hora}</span>
+            </div>
+            <span className="text-sm text-gray-600">
+              {horario.agendamentos.length} {horario.agendamentos.length === 1 ? 'agendamento' : 'agendamentos'}
+            </span>
+          </div>
+          
+          {expanded && (
+            <div className="mt-2 pl-6 space-y-2">
+              {horario.agendamentos.map((agendamento) => (
+                <div
+                  key={agendamento.id}
+                  className="text-sm p-2 border border-gray-200 rounded bg-white shadow-sm hover:border-primary-300 cursor-pointer"
+                  onClick={() => onAgendamentoClick(agendamento)}
+                >
+                  <p className="font-medium text-gray-800">
+                    {agendamento.cliente?.nome || "Cliente não informado"}
+                  </p>
+                  <p className="text-gray-500 text-xs">
+                    {agendamento.servico?.titulo || "Serviço não informado"}
+                  </p>
+                  <p className="text-gray-400 text-xs mt-1">
+                    Prof.: {agendamento.profissional?.nome || "Não informado"}
+                  </p>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      );
     });
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-      {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b">
-        <div className="flex items-center space-x-4">
-          <h2 className="text-xl font-semibold text-gray-900">
-            {formatarPeriodoSemana()}
-          </h2>
-          <div className="flex items-center space-x-1">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navegarSemana('anterior')}
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navegarSemana('proximo')}
-            >
-              <ChevronRight className="w-4 h-4" />
-            </Button>
-          </div>
+    <div className="bg-white border border-gray-200 rounded-lg shadow-sm">
+      <div className="flex justify-between items-center p-4 border-b border-gray-200">
+        <div className="flex items-center space-x-2">
+          <CalendarDays className="w-5 h-5 text-primary-600" />
+          <h3 className="text-lg font-semibold text-gray-900">
+            Agenda Semanal
+          </h3>
         </div>
         
-        <div className="flex items-center space-x-2">
-          <Button variant="outline" onClick={irParaHoje}>
-            Hoje
-          </Button>
-          <Button onClick={() => onNovoAgendamento()}>
-            <Plus className="w-4 h-4 mr-2" />
-            Novo
-          </Button>
-        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => onNovoAgendamento()}
+        >
+          Novo Agendamento
+        </Button>
       </div>
-
-      {/* Grid Semanal */}
-      <div className="overflow-auto max-h-[600px]">
-        <div className="grid grid-cols-8 gap-0 min-w-[800px]">
-          {/* Coluna de horários */}
-          <div className="border-r border-gray-200">
-            <div className="h-16 border-b border-gray-200"></div>
-            {horarios.map(horario => (
-              <div
-                key={horario}
-                className="h-12 border-b border-gray-100 flex items-center justify-center text-xs text-gray-500"
-              >
-                {horario}
-              </div>
-            ))}
-          </div>
-
-          {/* Colunas dos dias */}
-          {diasSemana.map((dia, diaIndex) => (
-            <div key={diaIndex} className="border-r border-gray-200 last:border-r-0">
-              {/* Header do dia */}
-              <div
-                className={`
-                  h-16 border-b border-gray-200 flex flex-col items-center justify-center cursor-pointer
-                  hover:bg-gray-50 transition-colors
-                  ${dia.isToday ? 'bg-primary-50' : ''}
-                  ${dia.isWeekend ? 'bg-gray-25' : ''}
-                `}
-                onClick={() => onDayClick(dia.date)}
-              >
-                <div className={`text-sm font-medium ${dia.isToday ? 'text-primary-600' : 'text-gray-900'}`}>
-                  {formatarDiaSemana(dia.date)}
-                </div>
-                <div className={`text-lg font-bold ${dia.isToday ? 'text-primary-600' : 'text-gray-900'}`}>
-                  {dia.date.getDate()}
-                </div>
-              </div>
-
-              {/* Slots de horário */}
-              {horarios.map(horario => {
-                const agendamentosNoHorario = obterAgendamentosNoHorario(dia, horario);
-                
-                return (
-                  <div
-                    key={horario}
-                    className="h-12 border-b border-gray-100 relative hover:bg-gray-25 transition-colors"
-                  >
-                    {agendamentosNoHorario.map((agendamento, idx) => (
-                      <div
-                        key={agendamento.id}
-                        className={`
-                          absolute inset-x-1 top-1 bottom-1 text-xs text-white rounded p-1 cursor-pointer
-                          ${obterCorPorStatus(agendamento.status)}
-                          hover:opacity-80 transition-opacity z-10
-                        `}
-                        style={{ 
-                          left: `${idx * 2 + 4}px`,
-                          right: `${(agendamentosNoHorario.length - idx - 1) * 2 + 4}px`
-                        }}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onAgendamentoClick(agendamento);
-                        }}
-                        title={`${agendamento.nomeCliente} - ${agendamento.servicoTitulo} - ${agendamento.profissionalNome}`}
-                      >
-                        <div className="truncate font-medium">
-                          {agendamento.nomeCliente}
-                        </div>
-                        <div className="truncate text-xs opacity-90">
-                          {agendamento.servicoTitulo}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                );
-              })}
+      
+      <div className="grid grid-cols-1 md:grid-cols-7 divide-y md:divide-y-0 md:divide-x">
+        {diasSemana.map((dia) => (
+          <div key={format(dia, 'yyyy-MM-dd')} className="min-h-[150px]">
+            {renderDiaHeader(dia)}
+            <div className="max-h-[300px] overflow-y-auto">
+              {renderHorarios(format(dia, 'yyyy-MM-dd'))}
             </div>
-          ))}
-        </div>
+          </div>
+        ))}
       </div>
     </div>
   );
