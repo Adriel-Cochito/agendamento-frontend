@@ -238,7 +238,9 @@ export function calcularRangeHorarioGeral(
             horaMaxima = fimHora;
           }
           
-          console.log(`  🔓 ${disp.tipo} ${inicioHora.toTimeString().slice(0,5)}-${fimHora.toTimeString().slice(0,5)}: expandiu range`);
+          // CORREÇÃO AQUI - Garantir que inicioHora e fimHora são Dates válidas
+          const inicioFormatado = inicioHora ? inicioHora.toTimeString().slice(0,5) : '00:00';
+          const fimFormatado = fimHora ? fimHora.toTimeString().slice(0,5) : '00:00';          console.log(`  🔓 ${disp.tipo} ${inicioFormatado}-${fimFormatado}: expandiu range`);
         }
       }
     });
@@ -252,10 +254,10 @@ export function calcularRangeHorarioGeral(
     };
   }
 
+  // CORREÇÃO AQUI - Garantir que horaMinima e horaMaxima não são null
   const resultado = {
-    horaMinima: horaMinima.toTimeString().slice(0, 5),
-    horaMaxima: horaMaxima.toTimeString().slice(0, 5)
-  };
+    horaMinima: horaMinima ? (horaMinima as Date).toTimeString().slice(0, 5) : '09:00',
+    horaMaxima: horaMaxima ? (horaMaxima as Date).toTimeString().slice(0, 5) : '18:00'  };
 
   console.log('✨ Range final calculado:', resultado);
   return resultado;
