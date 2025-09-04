@@ -1,7 +1,7 @@
 // src/api/agendamentosPublicos.ts - Corrigido para reduzir logs
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://agendasim.onrender.com';
 const isDev = import.meta.env.DEV; // Usar import.meta.env ao invés de process.env
 
 // Cliente público sem autenticação
