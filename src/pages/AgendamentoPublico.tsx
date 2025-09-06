@@ -587,6 +587,7 @@ export default function AgendamentoPublico({ empresaId: propEmpresaId }: Agendam
                     data={modalStates.selectedDataAgendamento}
                     onHorarioSelect={handleHorarioSelect}
                     showProfissionalSelection={false}
+                    usePublicApi={true}
                   />
                 </motion.div>
               )}

@@ -18,6 +18,7 @@ interface HorarioSelectorCompactProps {
   data: string;
   onHorarioSelect: (dataHora: string, profissionalId?: number) => void;
   showProfissionalSelection?: boolean;
+  usePublicApi?: boolean; // Nova prop para indicar se deve usar API pública
 }
 
 interface HorarioComProfissionais {
@@ -35,6 +36,7 @@ export function HorarioSelectorCompact({
   data,
   onHorarioSelect,
   showProfissionalSelection = false,
+  usePublicApi = false,
 }: HorarioSelectorCompactProps) {
   const [horariosComProfissionais, setHorariosComProfissionais] = useState<
     HorarioComProfissionais[]
@@ -42,11 +44,12 @@ export function HorarioSelectorCompact({
   const [selectedHorario, setSelectedHorario] = useState<string | null>(null);
 
   // Buscar disponibilidades e agendamentos para cada profissional
-  const disponibilidadeQueries = profissionais.map((prof) =>
+  // Se usePublicApi for true, não usar os hooks autenticados
+  const disponibilidadeQueries = usePublicApi ? [] : profissionais.map((prof) =>
     useDisponibilidadesByProfissional(prof.id, data)
   );
 
-  const agendamentoQueries = profissionais.map((prof) =>
+  const agendamentoQueries = usePublicApi ? [] : profissionais.map((prof) =>
     useAgendamentosByData({
       servicoId: servico.id,
       profissionalId: prof.id,
@@ -56,6 +59,35 @@ export function HorarioSelectorCompact({
 
   // Memoizar os dados das queries para evitar re-renders desnecessários
   const queriesData = useMemo(() => {
+    if (usePublicApi) {
+      // Para API pública, usar dados mockados de disponibilidade
+      console.log('🌐 [HORARIO SELECTOR] Usando API pública - dados mockados');
+      const disponibilidadesData = profissionais.map((prof) => [{
+        id: 1,
+        tipo: 'GRADE',
+        diasSemana: [1, 2, 3, 4, 5], // Segunda a sexta
+        horaInicio: '09:00:00',
+        horaFim: '18:00:00',
+        dataHoraInicio: null,
+        dataHoraFim: null,
+        observacao: 'Disponibilidade padrão para agendamento público',
+        profissional: prof,
+        empresa: { id: servico.empresaId } as any,
+        createdAt: new Date().toISOString(),
+        updatedAt: null,
+        pontoValido: true,
+        gradeValida: true
+      }]);
+      const agendamentosData = profissionais.map(() => []);
+      
+      return {
+        disponibilidades: disponibilidadesData,
+        agendamentos: agendamentosData,
+        isLoading: false,
+        hasError: false
+      };
+    }
+    
     const disponibilidadesData = disponibilidadeQueries.map(q => q.data || []);
     const agendamentosData = agendamentoQueries.map(q => q.data || []);
     const isLoading = disponibilidadeQueries.some(q => q.isLoading) || 
@@ -69,6 +101,10 @@ export function HorarioSelectorCompact({
                agendamentoQueries.some(q => q.error)
     };
   }, [
+    usePublicApi,
+    profissionais,
+    data,
+    servico.empresaId,
     // Dependências específicas dos dados das queries, não das queries em si
     ...disponibilidadeQueries.map(q => q.data),
     ...disponibilidadeQueries.map(q => q.isLoading),
