@@ -1,8 +1,8 @@
-// src/api/agendamentosPublicos.ts - Corrigido para reduzir logs
+// src/api/agendamentosPublicos.ts - Corrigido para usar rotas exatas do backend
 import axios from 'axios';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://agendasim.onrender.com';
-const isDev = import.meta.env.DEV; // Usar import.meta.env ao invés de process.env
+const isDev = import.meta.env.DEV;
 
 // Cliente público sem autenticação
 export const publicApiClient = axios.create({
@@ -91,17 +91,17 @@ export interface AgendaPublica {
   }>;
 }
 
-// API pública para agendamentos
+// API pública para agendamentos - usando rotas exatas do AgendamentoController
 export const agendamentosPublicosApi = {
   // Buscar empresa pelo ID
   getEmpresa: async (empresaId: number): Promise<EmpresaPublica> => {
-    const response = await publicApiClient.get(`/empresas/${empresaId}/publico`);
+    const response = await publicApiClient.get(`/empresas/${empresaId}`);
     return response.data;
   },
 
-  // Buscar serviços disponíveis de uma empresa
+  // Buscar serviços - EXATO: /agendamentos/servicos?empresaId=1
   getServicos: async (empresaId: number): Promise<ServicoPublico[]> => {
-    const response = await publicApiClient.get(`/empresas/${empresaId}/servicos/publico`);
+    const response = await publicApiClient.get(`/agendamentos/servicos?empresaId=${empresaId}`);
     return response.data;
   },
 
@@ -112,24 +112,54 @@ export const agendamentosPublicosApi = {
     data: string, 
     profissionais?: number[]
   ): Promise<AgendaPublica> => {
-    const params: Record<string, any> = { data };
-    
-    if (profissionais && profissionais.length > 0) {
-      params.profissionais = profissionais.join(',');
+    // Se não tem profissionais especificados, buscar do serviço primeiro
+    if (!profissionais || profissionais.length === 0) {
+      const servicos = await agendamentosPublicosApi.getServicos(empresaId);
+      const servico = servicos.find(s => s.id === servicoId);
+      if (!servico?.profissionais?.length) {
+        return { data, horarios: [] };
+      }
+      profissionais = servico.profissionais.map(p => p.id);
     }
-    
-    const response = await publicApiClient.get(
-      `/empresas/${empresaId}/servicos/${servicoId}/agenda/publico`, 
-      { params }
+
+    // Usar o primeiro profissional para buscar agenda
+    const agenda = await agendamentosPublicosApi.getAgenda(
+      empresaId,
+      servicoId,
+      profissionais[0],
+      data
     );
-    
+
+    // Converter formato para compatibilidade
+    const horarios = agenda.map((item: any) => ({
+      hora: item.horario,
+      disponivel: item.disponivel,
+      profissionais: [{
+        id: item.profissional.id,
+        nome: item.profissional.nome
+      }]
+    }));
+
+    return { data, horarios };
+  },
+
+  // Buscar agenda - EXATO: /agendamentos/agenda?empresaId=1&servicoId=1&profissionalId=1&data=2025-06-23
+  getAgenda: async (
+    empresaId: number, 
+    servicoId: number, 
+    profissionalId: number, 
+    data: string
+  ) => {
+    const response = await publicApiClient.get(
+      `/agendamentos/agenda?empresaId=${empresaId}&servicoId=${servicoId}&profissionalId=${profissionalId}&data=${data}`
+    );
     return response.data;
   },
 
-  // Criar um agendamento público
+  // Criar agendamento - EXATO: /agendamentos?empresaId=1 (mas SEM Authorization)
   createAgendamento: async (empresaId: number, data: any) => {
     const response = await publicApiClient.post(
-      `/empresas/${empresaId}/agendamentos/publico`, 
+      `/agendamentos?empresaId=${empresaId}`, 
       data
     );
     return response.data;
