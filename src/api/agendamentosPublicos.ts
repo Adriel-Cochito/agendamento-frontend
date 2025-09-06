@@ -18,32 +18,44 @@ publicApiClient.interceptors.request.use(
     // IMPORTANTE: Remover qualquer header Authorization que possa existir
     delete config.headers.Authorization;
     
-    // Log apenas em desenvolvimento
-    if (isDev) {
-      console.log('Public Request:', config.method?.toUpperCase(), config.url);
-    }
+    // Log detalhado para debug
+    console.log('🌐 [PUBLIC API] Request:', {
+      method: config.method?.toUpperCase(),
+      url: config.url,
+      baseURL: config.baseURL,
+      headers: config.headers,
+      params: config.params,
+      data: config.data
+    });
     return config;
   },
   (error) => {
+    console.error('❌ [PUBLIC API] Request Error:', error);
     return Promise.reject(error);
   }
 );
 
 publicApiClient.interceptors.response.use(
   (response) => {
-    // Log apenas em desenvolvimento
-    if (isDev) {
-      console.log('Public Response:', response.status, response.config.url);
-    }
+    // Log detalhado para debug
+    console.log('✅ [PUBLIC API] Response:', {
+      status: response.status,
+      url: response.config.url,
+      data: response.data,
+      headers: response.headers
+    });
     return response;
   },
   async (error) => {
     // Log de erro sempre importante
-    console.error('Public API Error:', {
+    console.error('❌ [PUBLIC API] Error:', {
       url: error.config?.url,
       method: error.config?.method,
       status: error.response?.status,
+      statusText: error.response?.statusText,
       data: error.response?.data,
+      message: error.message,
+      code: error.code
     });
     return Promise.reject(error);
   }
@@ -95,13 +107,17 @@ export interface AgendaPublica {
 export const agendamentosPublicosApi = {
   // Buscar empresa pelo ID
   getEmpresa: async (empresaId: number): Promise<EmpresaPublica> => {
+    console.log('🏢 [PUBLIC API] Buscando empresa:', empresaId);
     const response = await publicApiClient.get(`/empresas/${empresaId}`);
+    console.log('✅ [PUBLIC API] Empresa encontrada:', response.data);
     return response.data;
   },
 
   // Buscar serviços - EXATO: /agendamentos/servicos?empresaId=1
   getServicos: async (empresaId: number): Promise<ServicoPublico[]> => {
+    console.log('🛍️ [PUBLIC API] Buscando serviços para empresa:', empresaId);
     const response = await publicApiClient.get(`/agendamentos/servicos?empresaId=${empresaId}`);
+    console.log('✅ [PUBLIC API] Serviços encontrados:', response.data?.length || 0, 'serviços');
     return response.data;
   },
 
@@ -150,9 +166,16 @@ export const agendamentosPublicosApi = {
     profissionalId: number, 
     data: string
   ) => {
+    console.log('📅 [PUBLIC API] Buscando agenda:', {
+      empresaId,
+      servicoId,
+      profissionalId,
+      data
+    });
     const response = await publicApiClient.get(
       `/agendamentos/agenda?empresaId=${empresaId}&servicoId=${servicoId}&profissionalId=${profissionalId}&data=${data}`
     );
+    console.log('✅ [PUBLIC API] Agenda encontrada:', response.data?.length || 0, 'horários');
     return response.data;
   },
 

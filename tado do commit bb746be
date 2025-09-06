@@ -1,0 +1,65 @@
+[33m3ae2679[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Update agendamentosPublicos.ts
+[33mbb746be[m Update .env.production
+[33m3c41566[m url api
+[33m31b3ba3[m correções
+[33m270322b[m Correções
+[33mb609de2[m Update horariosDisponiveis.ts
+[33md1fbf5d[m Preparação netlify
+[33m8d8b249[m Dashboard e estilos
+[33md85d082[m Update DashboardSection.tsx
+[33m1dee4bb[m Estilos
+[33mbe3017c[m Dashboard
+[33md87109e[m Home
+[33m17dd042[m Horarios disponiveis
+[33m46d54ee[m update
+[33m5bf9182[m Mensagem whatsapp
+[33m7fb1018[m Update whatsappMessages.ts
+[33m285db6e[m Mensagem Whatsapp
+[33mda4d0bf[m Update Agendamentos.tsx
+[33mb2c7b4a[m Update MainLayout.tsx
+[33m89d932c[m Bug data errada
+[33meca27c1[m Correção agendamento publico
+[33mf638e21[m Edit e View Empresa Owner
+[33mb03c654[m Permissoes Disponibilidade
+[33m2a2234e[m Gestão de Permissoes
+[33mfcbb56e[m Update error-handler.ts
+[33m3eb5ccf[m Update AgendamentoPublico.tsx
+[33m18c355e[m correções Estilos
+[33mc211b18[m Modal de link responsivo
+[33m8c04475[m correção agendamento publico
+[33mc222a3f[m erro agendamento publico
+[33m676a414[m agendamento publico
+[33m1f1d5d6[m AgendaSIM
+[33m05bf06f[m Agendamento publico
+[33mf7be937[m agendamento publico
+[33mc893a8a[m Estilos
+[33m821b066[m Update CalendarioDiario.tsx
+[33mbb3b876[m Agendamentos
+[33mcc0be1f[m Agendamento por botão corrigido
+[33m95c8d5f[m Agendamento por grade de Profissionais
+[33mb7e1a25[m Filtros calendario agendamento por profissional
+[33ma335a25[m Correções
+[33m29d751b[m Timezone de agendamento
+[33mc15263d[m ajustes
+[33mf6ec56f[m Correções Agendamentos
+[33md9b9295[m Visualização calendario
+[33m0a67af1[m Filtro Agendamentos por strings
+[33mbd929d7[m Update Agendamentos.tsx
+[33m3bc5284[m Agendamentos
+[33mb898474[m Criar Disponibilidade
+[33mc33ccba[m Disponibilidades
+[33m8b17a30[m Toast DELETE PUT
+[33meada394[m Toast Erro exclusão
+[33mae81d8b[m Update profissionais.ts
+[33m7f3752c[m Correção PUT DELETEProfissionais
+[33m3247bb5[m Correcao PUT DELETE Servicos
+[33m4807231[m update teste
+[33m6de9443[m update
+[33m65418fe[m Gestão serviços
+[33m0e1bf03[m Gestão de Profissionais
+[33m8d08fb5[m Valida Telefone CNPJ
+[33m63d11fb[m update
+[33m4efc000[m Update Home.tsx
+[33m83de4ff[m Login e Home funcionando
+[33m8732c3d[m Estrutura de pastas e arquivos iniciais
+[33mdd0e134[m Initial commit

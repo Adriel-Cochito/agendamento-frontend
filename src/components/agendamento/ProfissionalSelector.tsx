@@ -88,31 +88,42 @@ export const ProfissionalSelector = memo(({
   const profissionaisParaEscolha = useMemo(() => {
     const lista = profissionaisDisponiveis || servico.profissionais || [];
     
-    if (import.meta.env.DEV) {
-      console.log('🎯 ProfissionalSelector profissionais:', {
-        servicoProfissionais: servico.profissionais?.length || 0,
-        profissionaisDisponiveis: profissionaisDisponiveis?.length || 0,
-        profissionaisParaEscolha: lista.length,
-        nomes: lista.map(p => p.nome)
-      });
-    }
+    console.log('🎯 [PROF SELECTOR] Analisando profissionais:', {
+      servicoId: servico.id,
+      servicoTitulo: servico.titulo,
+      servicoProfissionais: servico.profissionais?.length || 0,
+      profissionaisDisponiveis: profissionaisDisponiveis?.length || 0,
+      profissionaisParaEscolha: lista.length,
+      nomes: lista.map(p => ({ id: p.id, nome: p.nome, ativo: p.ativo })),
+      singleSelect
+    });
     
     return lista;
-  }, [profissionaisDisponiveis, servico.profissionais]);
+  }, [profissionaisDisponiveis, servico.profissionais, servico.id, servico.titulo, singleSelect]);
 
   // Handler de toggle memoizado
   const handleProfissionalToggle = useCallback((profissional: Profissional) => {
+    console.log('👤 [PROF SELECTOR] Toggle profissional:', {
+      id: profissional.id,
+      nome: profissional.nome,
+      singleSelect,
+      currentSelectedIds: selectedIds
+    });
+    
     let newSelectedIds: number[];
     
     if (singleSelect) {
       // Modo seleção única
       newSelectedIds = [profissional.id];
+      console.log('✅ [PROF SELECTOR] Seleção única:', newSelectedIds);
     } else {
       // Modo seleção múltipla
       if (selectedIds.includes(profissional.id)) {
         newSelectedIds = selectedIds.filter(id => id !== profissional.id);
+        console.log('➖ [PROF SELECTOR] Removendo da seleção:', newSelectedIds);
       } else {
         newSelectedIds = [...selectedIds, profissional.id];
+        console.log('➕ [PROF SELECTOR] Adicionando à seleção:', newSelectedIds);
       }
     }
     
@@ -122,6 +133,11 @@ export const ProfissionalSelector = memo(({
     const profissionaisSelecionados = profissionaisParaEscolha.filter(p => 
       newSelectedIds.includes(p.id)
     );
+    
+    console.log('📤 [PROF SELECTOR] Enviando profissionais selecionados:', {
+      count: profissionaisSelecionados.length,
+      nomes: profissionaisSelecionados.map(p => p.nome)
+    });
     
     onProfissionaisSelect(profissionaisSelecionados);
   }, [selectedIds, singleSelect, profissionaisParaEscolha, onProfissionaisSelect]);
