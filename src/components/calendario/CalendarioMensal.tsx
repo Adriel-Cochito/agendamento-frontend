@@ -105,15 +105,7 @@ export function CalendarioMensal({
           </div>
         </div>
         
-        <div className="flex items-center space-x-2">
-          <Button variant="outline" onClick={irParaHoje}>
-            Hoje
-          </Button>
-          <Button onClick={() => onNovoAgendamento()}>
-            <Plus className="w-4 h-4 mr-2" />
-            Novo
-          </Button>
-        </div>
+
       </div>
 
       {/* Grid do Calendário */}
