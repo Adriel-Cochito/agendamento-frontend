@@ -1,4 +1,6 @@
 // src/utils/dateUtils.ts
+import { parseISO } from 'date-fns';
+
 export const dateUtils = {
   // Para backend WITHOUT TIME ZONE - apenas formata strings
   formatLocal: (isoString: string): string => {
@@ -105,5 +107,52 @@ export const dateUtils = {
       month: '2-digit',
       year: 'numeric'
     }).format(date);
+  },
+  
+  // ADICIONADO: Retorna a data de início da semana (segunda-feira) para uma data
+  inicioSemana: (data: Date): Date => {
+    const clone = new Date(data);
+    const diaSemana = clone.getDay(); // 0 = domingo, 1 = segunda, ...
+    
+    // Calcula a diferença para chegar na segunda-feira
+    // Se for domingo (0), volta 6 dias; se for segunda (1), volta 0 dias, etc.
+    const diff = diaSemana === 0 ? -6 : 1 - diaSemana;
+    
+    clone.setDate(clone.getDate() + diff);
+    // Zera as horas, minutos, segundos e milissegundos para ter o início do dia
+    clone.setHours(0, 0, 0, 0);
+    
+    return clone;
+  },
+
+  // ADICIONADO: Adiciona dias a uma data
+  adicionarDias: (data: Date, dias: number): Date => {
+    const nova = new Date(data);
+    nova.setDate(nova.getDate() + dias);
+    return nova;
+  },
+
+  // ADICIONADO: Agrupa agendamentos por hora
+  agruparPorHora: (agendamentos: any[]): Record<string, any[]> => {
+    const resultado: Record<string, any[]> = {};
+    
+    agendamentos.forEach(agendamento => {
+      if (!agendamento.dataHoraInicio) return;
+      
+      try {
+        const dataHora = new Date(agendamento.dataHoraInicio);
+        const hora = `${String(dataHora.getHours()).padStart(2, '0')}:${String(dataHora.getMinutes()).padStart(2, '0')}`;
+        
+        if (!resultado[hora]) {
+          resultado[hora] = [];
+        }
+        
+        resultado[hora].push(agendamento);
+      } catch (e) {
+        // Ignora silenciosamente agendamentos com data inválida
+      }
+    });
+    
+    return resultado;
   }
 };

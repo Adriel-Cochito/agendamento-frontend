@@ -45,11 +45,17 @@ export function CalendarioSemanal({
 
     // Adicionar agendamentos
     agendamentos.forEach(agendamento => {
-      const dataFormatada = format(parseISO(agendamento.dataHoraInicio), 'yyyy-MM-dd');
-      
-      // Verificar se é um dia desta semana
-      if (resultado[dataFormatada]) {
-        resultado[dataFormatada].push(agendamento);
+      if (agendamento.dataHoraInicio) { // Verifica se dataHoraInicio existe
+        try {
+          const dataFormatada = format(parseISO(agendamento.dataHoraInicio), 'yyyy-MM-dd');
+          
+          // Verificar se é um dia desta semana
+          if (resultado[dataFormatada]) {
+            resultado[dataFormatada].push(agendamento);
+          }
+        } catch (e) {
+          // Silenciosamente ignora agendamentos com data inválida
+        }
       }
     });
 
@@ -194,13 +200,7 @@ export function CalendarioSemanal({
           </h3>
         </div>
         
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => onNovoAgendamento()}
-        >
-          Novo Agendamento
-        </Button>
+
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-7 divide-y md:divide-y-0 md:divide-x">
