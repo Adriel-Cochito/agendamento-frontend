@@ -4,7 +4,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { motion } from 'framer-motion';
-import { User, Mail, Lock, Eye, EyeOff, Building2, Phone, FileText } from 'lucide-react';
+import { User, Mail, Lock, Eye, EyeOff, Building2, Phone, FileText, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { MaskedInput } from '@/components/ui/MaskedInput';
@@ -38,6 +38,91 @@ const signupSchema = z.object({
 
 type SignupFormData = z.infer<typeof signupSchema>;
 
+// Utilitário para tratar erros da API
+interface ErrorResult {
+  message: string;
+  type: 'email_exists' | 'validation' | 'server' | 'network' | 'unknown';
+  suggestion?: string;
+  traceId?: string;
+}
+
+function handleApiError(error: any): ErrorResult {
+  console.log('Tratando erro da API:', error);
+  
+  // Erro de rede ou sem resposta
+  if (!error.response) {
+    return {
+      message: 'Erro de conexão. Verifique sua internet e tente novamente.',
+      type: 'network'
+    };
+  }
+
+  const response = error.response;
+  
+  // Estrutura nova do GlobalExceptionHandler
+  if (response.data?.error) {
+    const errorData = response.data.error;
+    
+    switch (errorData.details?.code) {
+      case 'EMAIL_ALREADY_EXISTS':
+        return {
+          message: errorData.message,
+          type: 'email_exists',
+          suggestion: errorData.details.suggestion,
+          traceId: errorData.traceId
+        };
+        
+      case 'VALIDATION_ERROR':
+        return {
+          message: errorData.message,
+          type: 'validation',
+          suggestion: errorData.details.suggestion,
+          traceId: errorData.traceId
+        };
+        
+      default:
+        return {
+          message: errorData.message || 'Erro interno do servidor',
+          type: 'server',
+          suggestion: errorData.details?.suggestion,
+          traceId: errorData.traceId
+        };
+    }
+  }
+  
+  // Fallback para estrutura antiga ou outros formatos
+  if (response.data?.message) {
+    return {
+      message: response.data.message,
+      type: 'unknown'
+    };
+  }
+  
+  // Status específicos
+  switch (response.status) {
+    case 400:
+      return {
+        message: 'Dados inválidos. Verifique os campos e tente novamente.',
+        type: 'validation'
+      };
+    case 409:
+      return {
+        message: 'Conflito de dados. O email pode já estar em uso.',
+        type: 'email_exists'
+      };
+    case 500:
+      return {
+        message: 'Erro interno do servidor. Tente novamente em alguns instantes.',
+        type: 'server'
+      };
+    default:
+      return {
+        message: 'Erro inesperado. Tente novamente.',
+        type: 'unknown'
+      };
+  }
+}
+
 export function SignupForm() {
   const navigate = useNavigate();
   const login = useAuthStore((state) => state.login);
@@ -45,6 +130,8 @@ export function SignupForm() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [errorType, setErrorType] = useState<'email_exists' | 'validation' | 'server' | 'network' | 'unknown' | null>(null);
+  const [errorSuggestion, setErrorSuggestion] = useState('');
   const [success, setSuccess] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
 
@@ -77,6 +164,8 @@ export function SignupForm() {
   const onSubmit = async (data: SignupFormData) => {
     setIsLoading(true);
     setError('');
+    setErrorType(null);
+    setErrorSuggestion('');
 
     try {
       // Formatar CNPJ para o padrão esperado pela API
@@ -117,13 +206,78 @@ export function SignupForm() {
       }, 1500);
 
     } catch (err: any) {
-      setError(
-        err.response?.data?.message ||
-        'Erro ao criar conta. Tente novamente.'
-      );
+      // Usar o utilitário para tratar o erro
+      const errorResult = handleApiError(err);
+      
+      setError(errorResult.message);
+      setErrorType(errorResult.type);
+      setErrorSuggestion(errorResult.suggestion || '');
+      
+      // Log para debug (pode remover em produção)
+      if (errorResult.traceId) {
+        console.log(`Erro capturado - TraceId: ${errorResult.traceId}`);
+      }
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Componente para mostrar erro com estilo específico
+  const ErrorDisplay = () => {
+    if (!error) return null;
+
+    const getErrorIcon = () => {
+      switch (errorType) {
+        case 'email_exists':
+          return <Mail className="w-5 h-5 text-amber-500" />;
+        case 'validation':
+          return <AlertTriangle className="w-5 h-5 text-red-500" />;
+        case 'network':
+          return <AlertTriangle className="w-5 h-5 text-blue-500" />;
+        default:
+          return <AlertTriangle className="w-5 h-5 text-red-500" />;
+      }
+    };
+
+    const getErrorStyle = () => {
+      switch (errorType) {
+        case 'email_exists':
+          return 'bg-amber-50 border-amber-200 text-amber-800';
+        case 'validation':
+          return 'bg-red-50 border-red-200 text-red-800';
+        case 'network':
+          return 'bg-blue-50 border-blue-200 text-blue-800';
+        default:
+          return 'bg-red-50 border-red-200 text-red-800';
+      }
+    };
+
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className={`p-4 rounded-lg border flex items-start space-x-3 ${getErrorStyle()}`}
+      >
+        {getErrorIcon()}
+        <div className="flex-1">
+          <p className="text-sm">{error}</p>
+          {errorSuggestion && (
+            <p className="text-sm mt-2 font-medium">{errorSuggestion}</p>
+          )}
+          {errorType === 'email_exists' && (
+            <div className="mt-3">
+              <Link 
+                to="/login" 
+                className="text-sm font-medium hover:underline inline-flex items-center"
+              >
+                <Mail className="w-4 h-4 mr-1" />
+                Já tem conta? Faça login aqui
+              </Link>
+            </div>
+          )}
+        </div>
+      </motion.div>
+    );
   };
 
   if (success) {
@@ -343,15 +497,8 @@ export function SignupForm() {
             </div>
           </div>
 
-          {error && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm"
-            >
-              {error}
-            </motion.div>
-          )}
+          {/* Componente de erro melhorado */}
+          <ErrorDisplay />
 
           <div className="flex space-x-4">
             <Button
