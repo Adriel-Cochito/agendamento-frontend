@@ -1,8 +1,8 @@
-// src/components/calendario/CalendarioSemanal.tsx - Corrigido o problema de tipo 'any[]'
+// src/components/calendario/CalendarioSemanal.tsx - Com navegação e semana começando no dia atual
 import { useState, useMemo } from 'react';
-import { format, isToday, parseISO, isSameDay } from 'date-fns';
+import { format, isToday, parseISO, isSameDay, addDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { CalendarDays, Clock } from 'lucide-react';
+import { CalendarDays, Clock, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Agendamento } from '@/types/agendamento';
@@ -28,11 +28,23 @@ export function CalendarioSemanal({
 }: CalendarioSemanalProps) {
   const [horaExpandida, setHoraExpandida] = useState<string | null>(null);
 
-  // Dias da semana
+  // Dias da semana (começando no dia atual e mostrando os próximos 6 dias)
   const diasSemana = useMemo(() => {
-    const dataInicial = dateUtils.inicioSemana(dataAtual);
-    return [0, 1, 2, 3, 4, 5, 6].map(offset => dateUtils.adicionarDias(dataInicial, offset));
+    // Usamos o dia atual como ponto de partida
+    return [0, 1, 2, 3, 4, 5, 6].map(offset => dateUtils.adicionarDias(dataAtual, offset));
   }, [dataAtual]);
+
+  // Função para navegar entre semanas
+  const navegarSemana = (direcao: 'anterior' | 'proxima') => {
+    const dias = direcao === 'anterior' ? -7 : 7;
+    const novaData = dateUtils.adicionarDias(dataAtual, dias);
+    onDataAtualChange(novaData);
+  };
+
+  // Função para voltar para o dia atual
+  const irParaHoje = () => {
+    onDataAtualChange(new Date());
+  };
 
   // Agrupar agendamentos por dia e hora
   const agendamentosPorDia = useMemo(() => {
@@ -190,17 +202,52 @@ export function CalendarioSemanal({
     });
   };
 
+  // Formatação para exibir o intervalo de datas da semana atual
+  const periodoSemanaFormatado = useMemo(() => {
+    const primeiroDia = diasSemana[0];
+    const ultimoDia = diasSemana[6];
+    
+    const formatoPrimeiroDia = format(primeiroDia, "d 'de' MMMM", { locale: ptBR });
+    const formatoUltimoDia = format(ultimoDia, "d 'de' MMMM", { locale: ptBR });
+    
+    return `${formatoPrimeiroDia} - ${formatoUltimoDia}`;
+  }, [diasSemana]);
+
   return (
     <div className="bg-white border border-gray-200 rounded-lg shadow-sm">
-      <div className="flex justify-between items-center p-4 border-b border-gray-200">
-        <div className="flex items-center space-x-2">
+      <div className="flex flex-col sm:flex-row justify-between items-center p-4 border-b border-gray-200">
+        <div className="flex items-center space-x-2 mb-2 sm:mb-0">
           <CalendarDays className="w-5 h-5 text-primary-600" />
           <h3 className="text-lg font-semibold text-gray-900">
             Agenda Semanal
           </h3>
+          <span className="hidden sm:inline text-sm text-gray-500 ml-2">
+            {periodoSemanaFormatado}
+          </span>
         </div>
         
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navegarSemana('anterior')}
+          >
+            <ChevronLeft className="w-4 h-4 mr-1" />
+            <span className="hidden sm:inline">Anterior</span>
+          </Button>
+        
+          
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navegarSemana('proxima')}
+          >
+            <span className="hidden sm:inline">Próxima</span>
+            <ChevronRight className="w-4 h-4 ml-1" />
+          </Button>
+          
 
+        </div>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-7 divide-y md:divide-y-0 md:divide-x">
