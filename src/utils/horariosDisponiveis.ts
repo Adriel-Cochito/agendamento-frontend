@@ -32,6 +32,14 @@ export function calcularHorariosDisponiveisPorProfissional(
         periodosDisponiveis.push({ inicio, fim, tipo: 'GRADE' });
         console.log(`  ✅ GRADE adicionada: ${disp.horaInicio} - ${disp.horaFim}`);
       }
+    } else if (disp.tipo === 'BLOQUEIO_GRADE') {
+      // Verifica se o dia da semana está no bloqueio de grade
+      if (disp.diasSemana.includes(diaSemana) && disp.horaInicio && disp.horaFim) {
+        const inicio = new Date(`${dataConsulta}T${disp.horaInicio}`);
+        const fim = new Date(`${dataConsulta}T${disp.horaFim}`);
+        periodosBloqueados.push({ inicio, fim, motivo: 'bloqueio_grade' });
+        console.log(`  🚫 BLOQUEIO_GRADE adicionado: ${disp.horaInicio} - ${disp.horaFim}`);
+      }
     } else if (disp.tipo === 'LIBERADO' && disp.dataHoraInicio && disp.dataHoraFim) {
       const inicioDisp = dateUtils.fromISOString(disp.dataHoraInicio);
       const fimDisp = dateUtils.fromISOString(disp.dataHoraFim);
@@ -240,7 +248,8 @@ export function calcularRangeHorarioGeral(
           
           // CORREÇÃO AQUI - Garantir que inicioHora e fimHora são Dates válidas
           const inicioFormatado = inicioHora ? inicioHora.toTimeString().slice(0,5) : '00:00';
-          const fimFormatado = fimHora ? fimHora.toTimeString().slice(0,5) : '00:00';          console.log(`  🔓 ${disp.tipo} ${inicioFormatado}-${fimFormatado}: expandiu range`);
+          const fimFormatado = fimHora ? fimHora.toTimeString().slice(0,5) : '00:00';
+          console.log(`  🔓 ${disp.tipo} ${inicioFormatado}-${fimFormatado}: expandiu range`);
         }
       }
     });
@@ -257,7 +266,8 @@ export function calcularRangeHorarioGeral(
   // CORREÇÃO AQUI - Garantir que horaMinima e horaMaxima não são null
   const resultado = {
     horaMinima: horaMinima ? (horaMinima as Date).toTimeString().slice(0, 5) : '09:00',
-    horaMaxima: horaMaxima ? (horaMaxima as Date).toTimeString().slice(0, 5) : '18:00'  };
+    horaMaxima: horaMaxima ? (horaMaxima as Date).toTimeString().slice(0, 5) : '18:00'
+  };
 
   console.log('✨ Range final calculado:', resultado);
   return resultado;
