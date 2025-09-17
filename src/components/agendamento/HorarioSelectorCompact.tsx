@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/Button';
 import { Loading } from '@/components/ui/Loading';
 import { useDisponibilidadesByProfissional } from '@/hooks/useDisponibilidades';
 import { useAgendamentosByData } from '@/hooks/useAgendamentos';
+import { useAgendamentoPublicoHorarios } from '@/hooks/useAgendamentoPublicoHorarios';
 import { HorarioDisponivel } from '@/types/agendamento';
 import { Servico } from '@/types/servico';
 import { Profissional } from '@/types/profissional';
@@ -19,6 +20,7 @@ interface HorarioSelectorCompactProps {
   onHorarioSelect: (dataHora: string, profissionalId?: number) => void;
   showProfissionalSelection?: boolean;
   usePublicApi?: boolean; // Nova prop para indicar se deve usar API pública
+  empresaId?: number; // ID da empresa para API pública
 }
 
 interface HorarioComProfissionais {
@@ -37,11 +39,22 @@ export function HorarioSelectorCompact({
   onHorarioSelect,
   showProfissionalSelection = false,
   usePublicApi = false,
+  empresaId,
 }: HorarioSelectorCompactProps) {
   const [horariosComProfissionais, setHorariosComProfissionais] = useState<
     HorarioComProfissionais[]
   >([]);
   const [selectedHorario, setSelectedHorario] = useState<string | null>(null);
+
+  // Hook para API pública - usar apenas o primeiro profissional
+  const publicHorarios = usePublicApi && empresaId && profissionais.length > 0 ? 
+    useAgendamentoPublicoHorarios({
+      empresaId,
+      servicoId: servico.id,
+      profissionalId: profissionais[0].id,
+      data,
+      duracaoServico: servico.duracao
+    }) : null;
 
   // Buscar disponibilidades e agendamentos para cada profissional
   // Se usePublicApi for true, não usar os hooks autenticados
@@ -59,32 +72,15 @@ export function HorarioSelectorCompact({
 
   // Memoizar os dados das queries para evitar re-renders desnecessários
   const queriesData = useMemo(() => {
-    if (usePublicApi) {
-      // Para API pública, usar dados mockados de disponibilidade
-      console.log('🌐 [HORARIO SELECTOR] Usando API pública - dados mockados');
-      const disponibilidadesData = profissionais.map((prof) => [{
-        id: 1,
-        tipo: 'GRADE',
-        diasSemana: [1, 2, 3, 4, 5], // Segunda a sexta
-        horaInicio: '09:00:00',
-        horaFim: '18:00:00',
-        dataHoraInicio: null,
-        dataHoraFim: null,
-        observacao: 'Disponibilidade padrão para agendamento público',
-        profissional: prof,
-        empresa: { id: servico.empresaId } as any,
-        createdAt: new Date().toISOString(),
-        updatedAt: null,
-        pontoValido: true,
-        gradeValida: true
-      }]);
-      const agendamentosData = profissionais.map(() => []);
-      
+    if (usePublicApi && publicHorarios) {
+      // Para API pública, usar dados do hook público
+      console.log('🌐 [HORARIO SELECTOR] Usando API pública - dados reais');
       return {
-        disponibilidades: disponibilidadesData,
-        agendamentos: agendamentosData,
-        isLoading: false,
-        hasError: false
+        disponibilidades: [[]], // Não usado para API pública
+        agendamentos: [[]], // Não usado para API pública
+        isLoading: publicHorarios.loading,
+        hasError: !!publicHorarios.error,
+        publicHorarios: publicHorarios.horarios
       };
     }
     
@@ -98,10 +94,14 @@ export function HorarioSelectorCompact({
       agendamentos: agendamentosData,
       isLoading,
       hasError: disponibilidadeQueries.some(q => q.error) || 
-               agendamentoQueries.some(q => q.error)
+               agendamentoQueries.some(q => q.error),
+      publicHorarios: null
     };
   }, [
     usePublicApi,
+    publicHorarios?.loading,
+    publicHorarios?.error,
+    publicHorarios?.horarios,
     profissionais,
     data,
     servico.empresaId,
@@ -131,6 +131,26 @@ export function HorarioSelectorCompact({
     if (queriesData.hasError) {
       console.log('❌ Erro nas queries, limpando horários');
       setHorariosComProfissionais([]);
+      return;
+    }
+
+    // Se usando API pública, processar dados diretamente
+    if (usePublicApi && queriesData.publicHorarios) {
+      console.log('🌐 [HORARIO SELECTOR] Processando horários da API pública');
+      
+      const horariosFinais: HorarioComProfissionais[] = queriesData.publicHorarios
+        .filter(h => h.disponivel) // Apenas horários disponíveis
+        .map(horario => ({
+          hora: horario.hora,
+          profissionaisDisponiveis: profissionais.map(prof => ({
+            profissional: prof,
+            disponivel: true, // Todos os profissionais estão disponíveis para horários da API pública
+            motivo: undefined
+          }))
+        }));
+
+      console.log(`✅ [HORARIO SELECTOR] Horários da API pública: ${horariosFinais.length}`);
+      setHorariosComProfissionais(horariosFinais);
       return;
     }
 
@@ -218,6 +238,8 @@ export function HorarioSelectorCompact({
     // CORREÇÃO: Usar dependências mais específicas para evitar loops infinitos
     queriesData.isLoading,
     queriesData.hasError,
+    queriesData.publicHorarios,
+    usePublicApi,
     JSON.stringify(queriesData.disponibilidades), // Serializar arrays para comparação
     JSON.stringify(queriesData.agendamentos),
     profissionaisIds, // IDs serializados dos profissionais

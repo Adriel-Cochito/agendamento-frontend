@@ -121,6 +121,24 @@ export const agendamentosPublicosApi = {
     return response.data;
   },
 
+  // Buscar disponibilidades do profissional - EXATO: /agendamentos/disponibilidade/profissional/data?empresaId=1&profissionalId=1&data=2025-09-22
+  getDisponibilidadesProfissional: async (
+    empresaId: number,
+    profissionalId: number,
+    data: string
+  ) => {
+    console.log('📅 [PUBLIC API] Buscando disponibilidades do profissional:', {
+      empresaId,
+      profissionalId,
+      data
+    });
+    const response = await publicApiClient.get(
+      `/agendamentos/disponibilidade/profissional/data?empresaId=${empresaId}&profissionalId=${profissionalId}&data=${data}`
+    );
+    console.log('✅ [PUBLIC API] Disponibilidades encontradas:', response.data?.length || 0, 'disponibilidades');
+    return response.data;
+  },
+
   // Buscar disponibilidade por serviço e data
   getDisponibilidade: async (
     empresaId: number, 
