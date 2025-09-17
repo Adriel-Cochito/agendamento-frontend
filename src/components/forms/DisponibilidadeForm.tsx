@@ -20,7 +20,7 @@ import { Disponibilidade, TipoDisponibilidade } from '@/types/disponibilidade';
 import { useServicosPermissions } from '@/hooks/usePermissions';
 
 const baseSchema = z.object({
-  tipo: z.enum(['GRADE', 'LIBERADO', 'BLOQUEIO'] as const),
+  tipo: z.enum(['GRADE', 'LIBERADO', 'BLOQUEIO', 'BLOQUEIO_GRADE'] as const),
   profissionalId: z.number().min(1, 'Selecione um profissional'),
   observacao: z.string().min(3, 'Observação deve ter no mínimo 3 caracteres'),
 });
@@ -73,7 +73,7 @@ export function DisponibilidadeForm({
     useProfissionais(empresaId);
 
   const getSchema = () => {
-    if (selectedTipo === 'GRADE') {
+    if (selectedTipo === 'GRADE' || selectedTipo === 'BLOQUEIO_GRADE') {
       return gradeSchema;
     }
     return pontoSchema;
@@ -107,7 +107,7 @@ export function DisponibilidadeForm({
     if (tipoValue !== selectedTipo) {
       setSelectedTipo(tipoValue);
       // Reset campos específicos quando mudar o tipo
-      if (tipoValue === 'GRADE') {
+      if (tipoValue === 'GRADE' || tipoValue === 'BLOQUEIO_GRADE') {
         setValue('dataHoraInicio', undefined as any);
         setValue('dataHoraFim', undefined as any);
       } else {
@@ -143,7 +143,7 @@ export function DisponibilidadeForm({
         observacao: data.observacao,
       };
 
-      if (data.tipo === 'GRADE') {
+      if (data.tipo === 'GRADE' || data.tipo === 'BLOQUEIO_GRADE') {
         submitData.diasSemana = data.diasSemana;
         submitData.horaInicio = data.horaInicio.includes(':')
           ? data.horaInicio + ':00'
@@ -179,6 +179,8 @@ export function DisponibilidadeForm({
         return Timer;
       case 'BLOQUEIO':
         return Ban;
+      case 'BLOQUEIO_GRADE':
+        return Shield;
     }
   };
 
@@ -190,6 +192,8 @@ export function DisponibilidadeForm({
         return 'bg-green-50 border-green-200 text-green-700';
       case 'BLOQUEIO':
         return 'bg-red-50 border-red-200 text-red-700';
+      case 'BLOQUEIO_GRADE':
+        return 'bg-orange-50 border-orange-200 text-orange-700';
     }
   };
 
@@ -201,6 +205,8 @@ export function DisponibilidadeForm({
         return 'Horário específico liberado para agendamentos';
       case 'BLOQUEIO':
         return 'Período bloqueado onde não haverá atendimentos';
+      case 'BLOQUEIO_GRADE':
+        return 'Bloqueio semanal fixo que se repete nos dias selecionados';
     }
   };
 
@@ -212,7 +218,7 @@ export function DisponibilidadeForm({
           Tipo de Disponibilidade
         </label>
         <div className="space-y-3">
-          {(['GRADE', 'LIBERADO', 'BLOQUEIO'] as const).map((tipo) => {
+          {(['GRADE', 'LIBERADO', 'BLOQUEIO', 'BLOQUEIO_GRADE'] as const).map((tipo) => {
             const Icon = getTipoIcon(tipo);
             return (
               <label
@@ -235,6 +241,7 @@ export function DisponibilidadeForm({
                     {tipo === 'GRADE' && 'Grade Horária'}
                     {tipo === 'LIBERADO' && 'Horário Liberado'}
                     {tipo === 'BLOQUEIO' && 'Bloqueio'}
+                    {tipo === 'BLOQUEIO_GRADE' && 'Bloqueio Semanal'}
                   </div>
                   <p className="text-sm opacity-75 mt-1">{getTipoDescription(tipo)}</p>
                 </div>
@@ -281,7 +288,7 @@ export function DisponibilidadeForm({
       </div>
 
       {/* Campos específicos por tipo */}
-      {selectedTipo === 'GRADE' && (
+      {(selectedTipo === 'GRADE' || selectedTipo === 'BLOQUEIO_GRADE') && (
         <>
           {/* Dias da Semana */}
           <div>

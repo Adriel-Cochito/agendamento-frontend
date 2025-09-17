@@ -8,6 +8,7 @@ import {
   Calendar,
   Timer,
   Ban,
+  Shield,
   Clock,
   CalendarDays,
   User,
@@ -131,6 +132,8 @@ export function Disponibilidades() {
         return Timer;
       case 'BLOQUEIO':
         return Ban;
+      case 'BLOQUEIO_GRADE':
+        return Shield;
     }
   };
 
@@ -142,6 +145,8 @@ export function Disponibilidades() {
         return { color: 'bg-green-100 text-green-800', label: 'Liberado' };
       case 'BLOQUEIO':
         return { color: 'bg-red-100 text-red-800', label: 'Bloqueio' };
+      case 'BLOQUEIO_GRADE':
+        return { color: 'bg-orange-100 text-orange-800', label: 'Bloqueio Semanal' };
     }
   };
 
@@ -222,6 +227,7 @@ export function Disponibilidades() {
               <option value="GRADE">Grade Horária</option>
               <option value="LIBERADO">Liberado</option>
               <option value="BLOQUEIO">Bloqueio</option>
+              <option value="BLOQUEIO_GRADE">Bloqueio Semanal</option>
             </select>
           </div>
 
@@ -342,7 +348,7 @@ export function Disponibilidades() {
 
                   {/* Detalhes específicos por tipo */}
                   <div className="space-y-3 mb-4">
-                    {disponibilidade.tipo === 'GRADE' && (
+                    {(disponibilidade.tipo === 'GRADE' || disponibilidade.tipo === 'BLOQUEIO_GRADE') && (
                       <>
                         <div className="flex items-center space-x-2">
                           <CalendarDays className="w-4 h-4 text-gray-400" />

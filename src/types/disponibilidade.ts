@@ -1,7 +1,7 @@
 import { Profissional } from './profissional';
 import { Empresa } from './empresa';
 
-export type TipoDisponibilidade = 'GRADE' | 'LIBERADO' | 'BLOQUEIO';
+export type TipoDisponibilidade = 'GRADE' | 'LIBERADO' | 'BLOQUEIO' | 'BLOQUEIO_GRADE';
 
 export interface Disponibilidade {
   id: number;
