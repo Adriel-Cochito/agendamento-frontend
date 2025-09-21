@@ -26,7 +26,7 @@ export function Home() {
       </div>
 
       {/* Quick Actions - 5 botões em uma linha */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+      {/* <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-4">
         <motion.div
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
@@ -91,7 +91,7 @@ export function Home() {
           <h3 className="font-semibold text-gray-900 mb-1">Agenda do Dia</h3>
           <p className="text-sm text-gray-500">Veja os agendamentos de hoje</p>
         </motion.div>
-      </div>
+      </div> */}
 
       {/* Divisor Visual */}
       <div className="flex items-center my-8">
