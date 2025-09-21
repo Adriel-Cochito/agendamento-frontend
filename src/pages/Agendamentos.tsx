@@ -63,14 +63,16 @@ export function Agendamentos() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Agendamentos</h1>
-          <p className="text-gray-600 mt-1">Gerencie os agendamentos da sua empresa</p>
+      <div className="space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Agendamentos</h1>
+            <p className="text-gray-600 mt-1">Gerencie os agendamentos da sua empresa</p>
+          </div>
         </div>
 
-        <div className="flex items-center space-x-4">
-          {/* Seletor de Visualização Melhorado para Acessibilidade */}
+        {/* Seletor de Visualização */}
+        <div className="flex flex-col sm:flex-row gap-4">
           <div className="bg-white border-2 border-gray-200 rounded-xl p-2 shadow-sm">
             <div className="flex items-center space-x-2">
               <span className="text-sm font-medium text-gray-700 px-2">
@@ -80,7 +82,7 @@ export function Agendamentos() {
               <button
                 onClick={() => setTipoVisualizacao('calendario')}
                 className={`
-                  flex items-center px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 min-w-[120px] justify-center
+                  flex items-center px-3 sm:px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 min-w-[100px] sm:min-w-[120px] justify-center
                   focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2
                   ${tipoVisualizacao === 'calendario'
                     ? 'bg-primary-600 text-white shadow-md transform scale-105 border-2 border-primary-700'
@@ -91,14 +93,14 @@ export function Agendamentos() {
                 aria-label={`Visualizar em formato de calendário ${tipoVisualizacao === 'calendario' ? '(selecionado)' : ''}`}
                 title="Visualizar agendamentos em formato de calendário"
               >
-                <CalendarDays className="w-5 h-5 mr-2" />
-                <span className="font-semibold">Calendário</span>
+                <CalendarDays className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
+                <span className="font-semibold text-xs sm:text-sm">Calendário</span>
               </button>
               
               <button
                 onClick={() => setTipoVisualizacao('lista')}
                 className={`
-                  flex items-center px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 min-w-[120px] justify-center
+                  flex items-center px-3 sm:px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 min-w-[100px] sm:min-w-[120px] justify-center
                   focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2
                   ${tipoVisualizacao === 'lista'
                     ? 'bg-primary-600 text-white shadow-md transform scale-105 border-2 border-primary-700'
@@ -109,23 +111,28 @@ export function Agendamentos() {
                 aria-label={`Visualizar em formato de lista ${tipoVisualizacao === 'lista' ? '(selecionado)' : ''}`}
                 title="Visualizar agendamentos em formato de lista"
               >
-                <List className="w-5 h-5 mr-2" />
-                <span className="font-semibold">Lista</span>
+                <List className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
+                <span className="font-semibold text-xs sm:text-sm">Lista</span>
               </button>
             </div>
           </div>
 
-          {/* Botão de Compartilhar Link */}
-          <CompartilharLink />
+          {/* Botões de Ação - Nova linha em mobile */}
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 sm:ml-auto">
+            {/* Botão de Compartilhar Link */}
+            <div className="flex-shrink-0">
+              <CompartilharLink />
+            </div>
 
-          <Button 
-            onClick={() => handleNovoAgendamento()} 
-            className="sm:w-auto shadow-lg"
-            aria-label="Criar novo agendamento"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Novo Agendamento
-          </Button>
+            <Button 
+              onClick={() => handleNovoAgendamento()} 
+              className="w-full sm:w-auto shadow-lg"
+              aria-label="Criar novo agendamento"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              <span className="text-sm sm:text-base">Novo Agendamento</span>
+            </Button>
+          </div>
         </div>
       </div>
 

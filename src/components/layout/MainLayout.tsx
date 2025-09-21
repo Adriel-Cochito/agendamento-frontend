@@ -73,12 +73,12 @@ export function MainLayout({ children }: MainLayoutProps) {
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="bg-white shadow-sm border-b border-gray-200 fixed top-0 left-0 right-0 z-40">
-        <div className="px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-4">
+        <div className="px-2 sm:px-4 lg:px-8">
+          <div className="flex justify-between items-center h-16 min-w-0">
+            <div className="flex items-center space-x-2 sm:space-x-4 min-w-0 flex-1">
               <button
                 onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                className="p-2 rounded-lg hover:bg-gray-100 transition-colors lg:hidden"
+                className="p-2 rounded-lg hover:bg-gray-100 transition-colors lg:hidden flex-shrink-0"
               >
                 {isSidebarOpen ? (
                   <X className="w-5 h-5 text-gray-600" />
@@ -87,23 +87,23 @@ export function MainLayout({ children }: MainLayoutProps) {
                 )}
               </button>
               
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-600 rounded-xl shadow-md flex items-center justify-center">
-                  <Calendar className="w-6 h-6 text-white" />
+              <div className="flex items-center space-x-2 sm:space-x-3 min-w-0 flex-1">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-primary-500 to-primary-600 rounded-xl shadow-md flex items-center justify-center flex-shrink-0">
+                  <Calendar className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
                 </div>
-                <div className="flex flex-col">
-                  <h1 className="text-xl font-bold text-gray-900">
+                <div className="flex flex-col min-w-0 flex-1">
+                  <h1 className="text-sm sm:text-lg lg:text-xl font-bold text-gray-900 truncate">
                     {loadingEmpresa ? (
                       <div className="flex items-center space-x-2">
                         <span>AgendaSIM</span>
-                        <div className="w-4 h-4 border-2 border-primary-600 border-t-transparent rounded-full animate-spin"></div>
+                        <div className="w-3 h-3 sm:w-4 sm:h-4 border-2 border-primary-600 border-t-transparent rounded-full animate-spin"></div>
                       </div>
                     ) : (
-                      getTituloSistema()
+                      <span className="truncate">{getTituloSistema()}</span>
                     )}
                   </h1>
                   {empresa?.nome && !loadingEmpresa && (
-                    <span className="text-xs text-gray-500 font-medium">
+                    <span className="text-xs text-gray-500 font-medium truncate">
                       Sistema de Agendamentos
                     </span>
                   )}
@@ -111,13 +111,13 @@ export function MainLayout({ children }: MainLayoutProps) {
               </div>
             </div>
 
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2 sm:space-x-4 flex-shrink-0">
               <div className="hidden sm:flex items-center space-x-3">
                 <div className="text-right">
-                  <p className="text-sm font-medium text-gray-900">{user?.name || 'Usuário'}</p>
-                  <p className="text-xs text-gray-500">{user?.email}</p>
+                  <p className="text-sm font-medium text-gray-900 truncate max-w-32">{user?.name || 'Usuário'}</p>
+                  <p className="text-xs text-gray-500 truncate max-w-32">{user?.email}</p>
                 </div>
-                <div className="w-10 h-10 bg-gradient-to-br from-secondary-400 to-secondary-500 rounded-full flex items-center justify-center text-white font-semibold">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-secondary-400 to-secondary-500 rounded-full flex items-center justify-center text-white font-semibold text-sm sm:text-base">
                   {user?.name?.charAt(0).toUpperCase() || 'U'}
                 </div>
               </div>
@@ -126,7 +126,7 @@ export function MainLayout({ children }: MainLayoutProps) {
                 variant="ghost"
                 size="sm"
                 onClick={handleLogout}
-                className="text-gray-600"
+                className="text-gray-600 p-2"
               >
                 <LogOut className="w-4 h-4" />
               </Button>
