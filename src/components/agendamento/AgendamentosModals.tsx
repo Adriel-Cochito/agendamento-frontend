@@ -198,6 +198,7 @@ export function AgendamentosModals({
         onClose={() => setModalStates((prev: any) => ({ ...prev, isEditModalOpen: false }))}
         title="Editar Agendamento"
         size="lg"
+        maxHeight={true}
       >
         {modalStates.selectedAgendamento && modalStates.selectedServico && modalStates.selectedProfissionais.length > 0 && (
           <AgendamentoForm
