@@ -246,7 +246,21 @@ export function AgendamentoForm({
         </div>
       </div>
 
-      {/* Seção do WhatsApp - Sempre visível baseada no status atual */}
+
+
+      {/* Botões de Ação */}
+      <div className="flex space-x-4 pt-4 border-t">
+        <Button 
+          type="submit" 
+          disabled={isLoading}
+          loading={isLoading}
+          className="flex-1"
+        >
+          {isEditing ? 'Atualizar Agendamento' : 'Criar Agendamento'}
+        </Button>
+      </div>
+
+            {/* Seção do WhatsApp - Sempre visível baseada no status atual */}
       <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-6">
         <div className="flex items-center mb-4">
           <MessageSquare className="w-5 h-5 text-green-600 mr-2" />
@@ -314,18 +328,6 @@ export function AgendamentoForm({
             </p>
           </div>
         )}
-      </div>
-
-      {/* Botões de Ação */}
-      <div className="flex space-x-4 pt-4 border-t">
-        <Button 
-          type="submit" 
-          disabled={isLoading}
-          loading={isLoading}
-          className="flex-1"
-        >
-          {isEditing ? 'Atualizar Agendamento' : 'Criar Agendamento'}
-        </Button>
       </div>
     </form>
   );

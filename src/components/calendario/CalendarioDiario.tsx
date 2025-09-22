@@ -437,12 +437,12 @@ export function CalendarioDiario({
             <Button variant="outline" onClick={irParaHoje}>
               Hoje
             </Button>
-            {diaTemProfissionaisDisponiveis && (
+            {/* {diaTemProfissionaisDisponiveis && (
               <Button onClick={() => onNovoAgendamento(dataAtual)}>
                 <Plus className="w-4 h-4 mr-2" />
                 Novo Agendamento
               </Button>
-            )}
+            )} */}
           </div>
         </div>
 
