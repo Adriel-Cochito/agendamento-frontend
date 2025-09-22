@@ -155,6 +155,9 @@ export function AgendamentoForm({
   const canSendWhatsApp = watchedNome?.trim().length >= 3 && 
                          watchedTelefone?.length >= 17;
 
+  // Verificar se pode enviar WhatsApp (só para agendamentos existentes)
+  const canSendWhatsAppNow = isEditing && canSendWhatsApp;
+
   return (
     <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-6">
       {/* Informações do Agendamento */}
@@ -286,9 +289,9 @@ export function AgendamentoForm({
           <Button
             type="button"
             onClick={() => handleWhatsAppSend(true)}
-            disabled={!canSendWhatsApp}
+            disabled={!canSendWhatsAppNow}
             className={`${messageConfig.buttonColor} text-white flex items-center justify-center ${
-              !canSendWhatsApp ? 'opacity-50 cursor-not-allowed' : ''
+              !canSendWhatsAppNow ? 'opacity-50 cursor-not-allowed' : ''
             }`}
           >
             <MessageSquare className="w-4 h-4 mr-2" />
@@ -296,22 +299,33 @@ export function AgendamentoForm({
             <ExternalLink className="w-4 h-4 ml-2" />
           </Button>
 
-
-
           {/* Botão para copiar mensagem */}
           <Button
             type="button"
             variant="outline"
             onClick={handleCopyMessage}
-            className="border-green-300 text-green-700 hover:bg-green-50"
+            disabled={!canSendWhatsAppNow}
+            className={`border-green-300 text-green-700 hover:bg-green-50 ${
+              !canSendWhatsAppNow ? 'opacity-50 cursor-not-allowed' : ''
+            }`}
           >
             <Copy className="w-4 h-4 mr-2" />
             Copiar Mensagem
           </Button>
         </div>
 
-        {/* Informações de validação */}
-        {!canSendWhatsApp && (
+        {/* Mensagem para novos agendamentos */}
+        {!isEditing && (
+          <div className="mt-4 p-3 bg-amber-100 rounded-lg border border-amber-200">
+            <p className="text-xs text-amber-700">
+              ⚠️ <strong>Salve o agendamento primeiro:</strong> Para enviar mensagens via WhatsApp, você precisa salvar o agendamento antes. 
+              Após salvar, você poderá enviar lembretes, confirmações e outras mensagens personalizadas.
+            </p>
+          </div>
+        )}
+
+        {/* Informações de validação para agendamentos existentes */}
+        {isEditing && !canSendWhatsApp && (
           <div className="mt-4 p-3 bg-amber-100 rounded-lg border border-amber-200">
             <p className="text-xs text-amber-700">
               ⚠️ <strong>Para enviar via WhatsApp:</strong> Preencha o nome (mín. 3 caracteres) e telefone completo do cliente.
@@ -319,8 +333,8 @@ export function AgendamentoForm({
           </div>
         )}
 
-        {/* Dica contextual */}
-        {canSendWhatsApp && (
+        {/* Dica contextual para agendamentos existentes */}
+        {isEditing && canSendWhatsApp && (
           <div className="mt-4 p-3 bg-green-100 rounded-lg">
             <p className="text-xs text-green-700">
               💡 <strong>Dica:</strong> A mensagem será enviada para {watchedTelefone}. 
