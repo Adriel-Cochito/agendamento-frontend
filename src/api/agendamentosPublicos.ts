@@ -106,12 +106,12 @@ export interface AgendaPublica {
 // API pública para agendamentos - usando rotas exatas do AgendamentoController
 export const agendamentosPublicosApi = {
   // Buscar empresa pelo ID
-  getEmpresa: async (empresaId: number): Promise<EmpresaPublica> => {
-    console.log('🏢 [PUBLIC API] Buscando empresa:', empresaId);
-    const response = await publicApiClient.get(`/empresas/${empresaId}`);
-    console.log('✅ [PUBLIC API] Empresa encontrada:', response.data);
-    return response.data;
-  },
+  // getEmpresa: async (empresaId: number): Promise<EmpresaPublica> => {
+  //   console.log('🏢 [PUBLIC API] Buscando empresa:', empresaId);
+  //   const response = await publicApiClient.get(`/empresas/${empresaId}`);
+  //   console.log('✅ [PUBLIC API] Empresa encontrada:', response.data);
+  //   return response.data;
+  // },
 
   // Buscar serviços - EXATO: /agendamentos/servicos?empresaId=1
   getServicos: async (empresaId: number): Promise<ServicoPublico[]> => {

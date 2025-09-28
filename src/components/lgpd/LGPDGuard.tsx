@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useLGPD } from '@/hooks/useLGPD';
+import { useAuthStore } from '@/store/authStore';
 import { ForcedAcceptanceModal } from './ForcedAcceptanceModal';
 
 interface LGPDGuardProps {
@@ -7,19 +8,34 @@ interface LGPDGuardProps {
 }
 
 export function LGPDGuard({ children }: LGPDGuardProps) {
-  const { termoAtual, politicaAtual, aceitesTermos, aceitesPoliticas, loading } = useLGPD();
+  const { termoAtual, politicaAtual, aceitesTermos, aceitesPoliticas, loading, initialized, carregarDados } = useLGPD();
+  const { user } = useAuthStore();
   const [showModal, setShowModal] = useState(false);
-  const [isChecking, setIsChecking] = useState(true);
+  const [isChecking, setIsChecking] = useState(false);
   const hasChecked = useRef(false);
 
   useEffect(() => {
-    // Só verificar quando os dados estiverem carregados e não tiver verificado ainda
-    if (loading || hasChecked.current) return;
+    // Só verificar se o usuário estiver autenticado
+    if (!user) {
+      hasChecked.current = false;
+      return;
+    }
+
+    // Só verificar se não tiver verificado ainda e não estiver carregando
+    if (hasChecked.current || isChecking) return;
+    
+    // Se não temos dados e não foram inicializados, carregar primeiro
+    if (!initialized && !loading) {
+      setIsChecking(true);
+      carregarDados().finally(() => {
+        setIsChecking(false);
+      });
+      return;
+    }
     
     // Se temos todos os dados necessários, verificar localmente
     if (termoAtual && politicaAtual) {
       hasChecked.current = true;
-      setIsChecking(false);
       
       // Verificar aceite localmente
       const termoAceito = aceitesTermos.some(aceite => 
@@ -33,7 +49,7 @@ export function LGPDGuard({ children }: LGPDGuardProps) {
         setShowModal(true);
       }
     }
-  }, [loading, termoAtual, politicaAtual, aceitesTermos, aceitesPoliticas]);
+  }, [user, termoAtual, politicaAtual, aceitesTermos, aceitesPoliticas, initialized, loading, carregarDados, isChecking]);
 
   const handleComplete = () => {
     setShowModal(false);

@@ -285,17 +285,6 @@ export default function AgendamentoPublico({ empresaId: propEmpresaId }: Agendam
             </div>
           )}
 
-          {/* Botão LGPD */}
-          <div className="mt-4">
-            <Button
-              variant="outline"
-              onClick={() => setLgpdModalOpen(true)}
-              className="inline-flex items-center space-x-2 text-sm text-gray-600 hover:text-gray-800 border-gray-300 hover:border-gray-400"
-            >
-              <Shield className="w-4 h-4" />
-              <span>LGPD - Meus Dados</span>
-            </Button>
-          </div>
         </motion.div>
 
         {/* Breadcrumb Progress */}

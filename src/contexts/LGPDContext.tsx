@@ -10,6 +10,7 @@ interface LGPDContextType {
   aceitesPoliticas: AceitePolitica[];
   loading: boolean;
   error: string | null;
+  initialized: boolean;
 
   // Ações
   aceitarTermo: (request: { versao: string; aceito: boolean }) => Promise<void>;
@@ -31,12 +32,13 @@ export function LGPDProvider({ children }: LGPDProviderProps) {
   const [politicaAtual, setPoliticaAtual] = useState<PoliticaPrivacidade | null>(null);
   const [aceitesTermos, setAceitesTermos] = useState<AceiteTermo[]>([]);
   const [aceitesPoliticas, setAceitesPoliticas] = useState<AceitePolitica[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [initialized, setInitialized] = useState(false);
   const hasLoaded = useRef(false);
 
   const carregarDados = async () => {
-    if (hasLoaded.current) return;
+    if (hasLoaded.current || loading) return;
     
     try {
       setLoading(true);
@@ -53,6 +55,7 @@ export function LGPDProvider({ children }: LGPDProviderProps) {
       setPoliticaAtual(politica);
       setAceitesTermos(aceitesTermosData);
       setAceitesPoliticas(aceitesPoliticasData);
+      setInitialized(true);
       hasLoaded.current = true;
     } catch (err) {
       console.error('Erro ao carregar dados LGPD:', err);
@@ -130,10 +133,10 @@ export function LGPDProvider({ children }: LGPDProviderProps) {
     }
   };
 
-  // Carregar dados apenas uma vez
-  useEffect(() => {
-    carregarDados();
-  }, []);
+  // Remover carregamento automático - dados serão carregados apenas quando necessário
+  // useEffect(() => {
+  //   carregarDados();
+  // }, []);
 
   const value: LGPDContextType = {
     // Dados
@@ -143,6 +146,7 @@ export function LGPDProvider({ children }: LGPDProviderProps) {
     aceitesPoliticas,
     loading,
     error,
+    initialized,
 
     // Ações
     aceitarTermo,

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useLGPD } from '@/hooks/useLGPD';
+import { useAuthStore } from '@/store/authStore';
 import { Button } from '@/components/ui/Button';
 import { Shield, X, AlertTriangle } from 'lucide-react';
 
@@ -12,6 +13,7 @@ export function LGPDConsentBanner() {
     aceitarTermo, 
     aceitarPolitica
   } = useLGPD();
+  const { user } = useAuthStore();
   const [showBanner, setShowBanner] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [aceiteStatus, setAceiteStatus] = useState({
@@ -20,6 +22,12 @@ export function LGPDConsentBanner() {
   });
 
   useEffect(() => {
+    // Só verificar se o usuário estiver autenticado
+    if (!user) {
+      setShowBanner(false);
+      return;
+    }
+
     if (!termoAtual || !politicaAtual) return;
 
     // Verificar aceite localmente usando dados do contexto
@@ -39,7 +47,7 @@ export function LGPDConsentBanner() {
     if (!termoAceito || !politicaAceita) {
       setShowBanner(true);
     }
-  }, [termoAtual, politicaAtual, aceitesTermos, aceitesPoliticas]);
+  }, [user, termoAtual, politicaAtual, aceitesTermos, aceitesPoliticas]);
 
   const handleAceitarTodos = async () => {
     if (!termoAtual || !politicaAtual) return;

@@ -141,9 +141,9 @@ export const LgpdModal: React.FC<LgpdModalProps> = ({
       return;
     }
 
-    // Verificar se há dados para anonimizar
+    // Verificar se há dados para remover
     if (!dadosResumo || !dadosResumo.existe || dadosResumo.totalAgendamentos === 0) {
-      setError('Nenhum dado encontrado para anonimizar.');
+      setError('Nenhum dado encontrado para remover.');
       return;
     }
 
@@ -155,7 +155,7 @@ export const LgpdModal: React.FC<LgpdModalProps> = ({
       setSuccess(true);
       setStep('view');
       
-      // Atualizar resumo após anonimização
+      // Atualizar resumo após remoção
       setDadosResumo({
         existe: false,
         totalAgendamentos: 0,
@@ -174,8 +174,8 @@ export const LgpdModal: React.FC<LgpdModalProps> = ({
         }
       });
     } catch (err) {
-      setError('Erro ao anonimizar dados. Tente novamente.');
-      console.error('Erro ao anonimizar dados:', err);
+      setError('Erro ao remover dados. Tente novamente.');
+      console.error('Erro ao remover dados:', err);
     } finally {
       setLoading(false);
     }
@@ -201,13 +201,13 @@ export const LgpdModal: React.FC<LgpdModalProps> = ({
     }
   };
 
-  // Função para anonimizar dados usando API real
+  // Função para remover dados usando API real
   const anonimizarDadosCliente = async (telefone: string, nome: string): Promise<void> => {
     try {
       await agendamentosPublicosApi.anonimizarDadosCliente(telefone, nome);
     } catch (error) {
-      console.error('Erro ao anonimizar dados LGPD:', error);
-      throw new Error('Erro ao anonimizar dados. Tente novamente.');
+      console.error('Erro ao remover dados LGPD:', error);
+      throw new Error('Erro ao remover dados. Tente novamente.');
     }
   };
 
@@ -301,7 +301,7 @@ export const LgpdModal: React.FC<LgpdModalProps> = ({
                           <p className="font-medium mb-1">Aviso de Segurança:</p>
                           <p className="text-xs">
                             Por motivos de segurança, você verá apenas informações sobre a existência e tipos de dados, 
-                            sem acesso aos dados reais. Apenas você pode solicitar a anonimização dos seus dados.
+                            sem acesso aos dados reais. Apenas você pode solicitar a remoção dos seus dados.
                           </p>
                         </div>
                       </div>
@@ -384,7 +384,7 @@ export const LgpdModal: React.FC<LgpdModalProps> = ({
                         <div className="flex items-center space-x-2">
                           <CheckCircle className="w-5 h-5 text-green-600" />
                           <p className="text-green-700 text-sm">
-                            Seus dados foram anonimizados com sucesso!
+                            Seus dados foram removidos com sucesso!
                           </p>
                         </div>
                       </div>
@@ -481,7 +481,7 @@ export const LgpdModal: React.FC<LgpdModalProps> = ({
                         <div className="text-sm text-yellow-800">
                           <p className="font-medium mb-1">Importante sobre a exclusão de dados:</p>
                           <ul className="list-disc list-inside space-y-1 text-xs">
-                            <li>Seus dados serão anonimizados, não deletados</li>
+                            <li>Seus dados serão removidos, não deletados</li>
                             <li>Os agendamentos continuarão existindo, mas sem seus dados pessoais</li>
                             <li>Esta ação não pode ser desfeita</li>
                             <li>Você não receberá mais notificações sobre estes agendamentos</li>
@@ -503,7 +503,7 @@ export const LgpdModal: React.FC<LgpdModalProps> = ({
                         className="flex-1 bg-red-600 hover:bg-red-700"
                       >
                         <Trash2 className="w-4 h-4 mr-2" />
-                        Anonimizar Dados
+                        Remover Dados
                       </Button>
                     </div>
                   </motion.div>
@@ -523,15 +523,15 @@ export const LgpdModal: React.FC<LgpdModalProps> = ({
                         <AlertTriangle className="w-8 h-8 text-red-600" />
                       </div>
                       <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                        Confirmar Anonimização
+                        Confirmar Remoção
                       </h3>
                       <p className="text-gray-600 text-sm">
-                        Esta ação irá anonimizar todos os seus dados pessoais
+                        Esta ação irá remover todos os seus dados pessoais
                       </p>
                     </div>
 
                     <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                      <h4 className="font-medium text-red-900 mb-2">O que será anonimizado:</h4>
+                      <h4 className="font-medium text-red-900 mb-2">O que será removido:</h4>
                       <ul className="text-sm text-red-800 space-y-1">
                         <li>• Seus dados pessoais em {dadosResumo?.totalAgendamentos || 0} agendamento(s)</li>
                         <li>• Dados armazenados em {dadosResumo?.empresas.length || 0} empresa(s)</li>
@@ -576,7 +576,7 @@ export const LgpdModal: React.FC<LgpdModalProps> = ({
                         loading={loading}
                         className="flex-1 bg-red-600 hover:bg-red-700"
                       >
-                        {loading ? 'Anonimizando...' : 'Confirmar Anonimização'}
+                        {loading ? 'Removendo...' : 'Confirmar Remoção'}
                       </Button>
                     </div>
                   </motion.div>
