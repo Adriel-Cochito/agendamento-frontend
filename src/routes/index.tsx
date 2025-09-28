@@ -7,6 +7,7 @@ import { Profissionais } from '@/pages/Profissionais';
 import { Servicos } from '@/pages/Servicos';
 import { Disponibilidades } from '@/pages/Disponibilidades';
 import { Agendamentos } from '@/pages/Agendamentos';
+import { LGPD } from '@/pages/LGPD';
 import { ProtectedRoute } from './ProtectedRoute';
 import { MainLayout } from '@/components/layout/MainLayout';
 import AgendamentoPublico from '@/pages/AgendamentoPublico';
@@ -58,6 +59,10 @@ export const router = createBrowserRouter([
       {
         path: 'disponibilidades',
         element: <MainLayout><Disponibilidades /></MainLayout>,
+      },
+      {
+        path: 'lgpd',
+        element: <MainLayout><LGPD /></MainLayout>,
       },
     ],
   },

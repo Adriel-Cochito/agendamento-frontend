@@ -220,5 +220,27 @@ export const agendamentosPublicosApi = {
       `/agendamentos/publico/cancelar/${token}`
     );
     return response.data;
+  },
+
+  // LGPD - Buscar resumo de dados do cliente (apenas metadados)
+  buscarResumoDadosCliente: async (telefone: string, nome: string) => {
+    console.log('🔍 [LGPD] Buscando resumo de dados do cliente:', { telefone, nome });
+    const response = await publicApiClient.post('/agendamentos/lgpd/resumo', {
+      telefone,
+      nome
+    });
+    console.log('✅ [LGPD] Resumo encontrado:', response.data);
+    return response.data;
+  },
+
+  // LGPD - Anonimizar dados do cliente
+  anonimizarDadosCliente: async (telefone: string, nome: string) => {
+    console.log('🔒 [LGPD] Anonimizando dados do cliente:', { telefone, nome });
+    const response = await publicApiClient.post('/agendamentos/lgpd/anonimizar', {
+      telefone,
+      nome
+    });
+    console.log('✅ [LGPD] Dados anonimizados com sucesso');
+    return response.data;
   }
 };

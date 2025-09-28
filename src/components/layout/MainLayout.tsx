@@ -1,7 +1,7 @@
 // src/components/layout/MainLayout.tsx (atualizado)
 import { ReactNode, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Calendar, Users, LogOut, Menu, X, Home, Tag, Clock, Settings } from 'lucide-react';
+import { Calendar, Users, LogOut, Menu, X, Home, Tag, Clock, Settings, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { useAuthStore } from '@/store/authStore';
@@ -10,6 +10,8 @@ import { useEmpresaAtual, useUpdateEmpresa } from '@/hooks/useEmpresa';
 import { useToast } from '@/hooks/useToast';
 import { getErrorMessage } from '@/lib/error-handler';
 import { EmpresaForm } from '@/components/forms/EmpresaForm';
+import { LGPDGuard } from '@/components/lgpd/LGPDGuard';
+import { LGPDConsentBanner } from '@/components/lgpd/LGPDConsentBanner';
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -54,6 +56,7 @@ export function MainLayout({ children }: MainLayoutProps) {
     { path: '/profissionais', label: 'Profissionais', icon: Users },
     { path: '/servicos', label: 'Serviços', icon: Tag },
     { path: '/disponibilidades', label: 'Disponibilidades', icon: Clock },
+    { path: '/lgpd', label: 'LGPD', icon: Shield },
   ];
 
   const isActive = (path: string) => location.pathname === path;
@@ -70,7 +73,8 @@ export function MainLayout({ children }: MainLayoutProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <LGPDGuard>
+      <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="bg-white shadow-sm border-b border-gray-200 fixed top-0 left-0 right-0 z-40">
         <div className="px-2 sm:px-4 lg:px-8">
@@ -256,6 +260,8 @@ export function MainLayout({ children }: MainLayoutProps) {
           />
         </Modal>
       )}
-    </div>
+      <LGPDConsentBanner />
+      </div>
+    </LGPDGuard>
   );
 }

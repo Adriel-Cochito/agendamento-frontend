@@ -21,5 +21,8 @@ export default defineConfig({
     hmr: {
       timeout: 60000
     }
-  }
+  },
+  // Configuração para servir arquivos estáticos
+  publicDir: 'public',
+  assetsInclude: ['**/*.md']
 });

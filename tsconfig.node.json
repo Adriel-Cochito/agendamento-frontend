@@ -5,14 +5,14 @@
     "module": "ESNext",
     "skipLibCheck": true,
     "composite": true,
-    "types": ["node"], // Adicionando tipos de Node.js
+    "types": [],
 
     /* Bundler mode */
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
     "isolatedModules": true,
     "moduleDetection": "force",
-    "noEmit": false,
+    "noEmit": true,
     "declaration": true,
     "declarationMap": true,
 

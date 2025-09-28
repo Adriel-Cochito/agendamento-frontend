@@ -16,7 +16,8 @@ import {
   Users,
   ChevronLeft,
   MapPin,
-  Mail
+  Mail,
+  Shield
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -24,6 +25,7 @@ import { MaskedInput } from '@/components/ui/MaskedInput';
 import { Loading } from '@/components/ui/Loading';
 import { ProfissionalSelector } from '@/components/agendamento/ProfissionalSelector';
 import { HorarioSelectorCompact } from '@/components/agendamento/HorarioSelectorCompact';
+import { LgpdModal } from '@/components/agendamento/LgpdModal';
 import { maskPhone } from '@/lib/masks';
 import { dateUtils } from '@/utils/dateUtils';
 import { useAgendamentoPublicoLogic } from '@/hooks/useAgendamentoPublico';
@@ -169,6 +171,7 @@ export default function AgendamentoPublico({ empresaId: propEmpresaId }: Agendam
     telefoneEmpresa?: string; 
   }>();
   const [searchParams] = useSearchParams();
+  const [lgpdModalOpen, setLgpdModalOpen] = React.useState(false);
 
   // Função para decodificar parâmetros da URL (movida para dentro do componente)
   const decodeUrlParam = (param: string | undefined): string => {
@@ -281,6 +284,18 @@ export default function AgendamentoPublico({ empresaId: propEmpresaId }: Agendam
               Link personalizado para {empresaDisplay.nome}
             </div>
           )}
+
+          {/* Botão LGPD */}
+          <div className="mt-4">
+            <Button
+              variant="outline"
+              onClick={() => setLgpdModalOpen(true)}
+              className="inline-flex items-center space-x-2 text-sm text-gray-600 hover:text-gray-800 border-gray-300 hover:border-gray-400"
+            >
+              <Shield className="w-4 h-4" />
+              <span>LGPD - Meus Dados</span>
+            </Button>
+          </div>
         </motion.div>
 
         {/* Breadcrumb Progress */}
@@ -882,9 +897,25 @@ export default function AgendamentoPublico({ empresaId: propEmpresaId }: Agendam
               </div>
             </div>
             
+            {/* Informações LGPD */}
+            <div className="mt-4 pt-3 border-t border-gray-100">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2 text-xs text-gray-500">
+                  <Shield className="w-3 h-3" />
+                  <span>Seus dados estão protegidos pela LGPD</span>
+                </div>
+                <button
+                  onClick={() => setLgpdModalOpen(true)}
+                  className="text-xs text-blue-600 hover:text-blue-800 underline"
+                >
+                  Gerenciar meus dados
+                </button>
+              </div>
+            </div>
+
             {/* Indicador da fonte dos dados */}
             {empresaInfo.nomeFromUrl && (
-              <div className="mt-4 pt-3 border-t border-gray-100">
+              <div className="mt-2">
                 <p className="text-xs text-gray-400">
                   Link personalizado para {empresaDisplay.nome}
                   {empresaInfo.telefoneFromUrl && ` • ${empresaInfo.telefoneFromUrl}`}
@@ -893,6 +924,14 @@ export default function AgendamentoPublico({ empresaId: propEmpresaId }: Agendam
             )}
           </div>
         </motion.div>
+
+        {/* Modal LGPD */}
+        <LgpdModal
+          isOpen={lgpdModalOpen}
+          onClose={() => setLgpdModalOpen(false)}
+          telefoneCliente={modalStates.dadosCliente.telefoneCliente}
+          nomeCliente={modalStates.dadosCliente.nomeCliente}
+        />
       </div>
     </div>
   );
