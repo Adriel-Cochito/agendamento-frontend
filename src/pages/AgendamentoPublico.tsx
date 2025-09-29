@@ -25,7 +25,7 @@ import { MaskedInput } from '@/components/ui/MaskedInput';
 import { Loading } from '@/components/ui/Loading';
 import { ProfissionalSelector } from '@/components/agendamento/ProfissionalSelector';
 import { HorarioSelectorCompact } from '@/components/agendamento/HorarioSelectorCompact';
-import { LgpdModal } from '@/components/agendamento/LgpdModal';
+// import { LgpdModal } from '@/components/agendamento/LgpdModal';
 import { maskPhone } from '@/lib/masks';
 import { dateUtils } from '@/utils/dateUtils';
 import { useAgendamentoPublicoLogic } from '@/hooks/useAgendamentoPublico';
@@ -171,7 +171,7 @@ export default function AgendamentoPublico({ empresaId: propEmpresaId }: Agendam
     telefoneEmpresa?: string; 
   }>();
   const [searchParams] = useSearchParams();
-  const [lgpdModalOpen, setLgpdModalOpen] = React.useState(false);
+  // const [lgpdModalOpen, setLgpdModalOpen] = React.useState(false);
 
   // Função para decodificar parâmetros da URL (movida para dentro do componente)
   const decodeUrlParam = (param: string | undefined): string => {
@@ -893,12 +893,12 @@ export default function AgendamentoPublico({ empresaId: propEmpresaId }: Agendam
                   <Shield className="w-3 h-3" />
                   <span>Seus dados estão protegidos pela LGPD</span>
                 </div>
-                <button
+                {/* <button
                   onClick={() => setLgpdModalOpen(true)}
                   className="text-xs text-blue-600 hover:text-blue-800 underline"
                 >
                   Gerenciar meus dados
-                </button>
+                </button> */}
               </div>
             </div>
 
@@ -915,12 +915,12 @@ export default function AgendamentoPublico({ empresaId: propEmpresaId }: Agendam
         </motion.div>
 
         {/* Modal LGPD */}
-        <LgpdModal
+        {/* <LgpdModal
           isOpen={lgpdModalOpen}
           onClose={() => setLgpdModalOpen(false)}
           telefoneCliente={modalStates.dadosCliente.telefoneCliente}
           nomeCliente={modalStates.dadosCliente.nomeCliente}
-        />
+        /> */}
       </div>
     </div>
   );

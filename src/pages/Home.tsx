@@ -3,7 +3,7 @@ import { Calendar, Plus, Users, Clock, Tag, BarChart3 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { useNavigate } from 'react-router-dom';
 import { DashboardSection } from '@/components/dashboard/DashboardSection';
-import { LGPDTestButton } from '@/components/lgpd/LGPDTestButton';
+// import { LGPDTestButton } from '@/components/lgpd/LGPDTestButton';
 
 export function Home() {
   const navigate = useNavigate();
@@ -110,7 +110,7 @@ export function Home() {
       <DashboardSection />
       
       {/* Botão de teste LGPD - REMOVER EM PRODUÇÃO */}
-      <LGPDTestButton />
+      {/* <LGPDTestButton /> */}
     </motion.div>
   );
 }
