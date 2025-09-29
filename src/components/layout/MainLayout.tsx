@@ -1,7 +1,7 @@
 // src/components/layout/MainLayout.tsx (atualizado)
 import { ReactNode, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Calendar, Users, LogOut, Menu, X, Home, Tag, Clock, Settings, Shield, HelpCircle } from 'lucide-react';
+import { Calendar, Users, LogOut, Menu, X, Home, Tag, Clock, Settings, Shield, HelpCircle, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { useAuthStore } from '@/store/authStore';
@@ -56,6 +56,7 @@ export function MainLayout({ children }: MainLayoutProps) {
     { path: '/profissionais', label: 'Profissionais', icon: Users },
     { path: '/servicos', label: 'Serviços', icon: Tag },
     { path: '/disponibilidades', label: 'Disponibilidades', icon: Clock },
+    //{ path: '/meus-chamados', label: 'Meus Chamados', icon: MessageCircle },
     { path: '/lgpd', label: 'LGPD', icon: Shield },
     { path: '/ajuda', label: 'Ajuda', icon: HelpCircle },
   ];

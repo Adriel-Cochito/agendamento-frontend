@@ -1,7 +1,10 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Mail, Phone, MessageCircle, Clock, MapPin, Send } from 'lucide-react';
+import { Mail, Phone, MessageCircle, Clock, MapPin, Send, Plus, X } from 'lucide-react';
+import { FormularioSuporteComponent } from '@/components/forms/FormularioSuporte';
 
 export function ContatoHelp() {
+  const [showFormulario, setShowFormulario] = useState(false);
   const contactMethods = [
     {
       icon: Mail,
@@ -206,64 +209,90 @@ export function ContatoHelp() {
 
       {/* Contact Form */}
       <div className="bg-gradient-to-r from-primary-50 to-secondary-50 rounded-lg p-6 border border-primary-200">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-          <Send className="w-6 h-6 mr-2 text-primary-600" />
-          Envie sua Mensagem
-        </h2>
-        <form className="space-y-4">
-          <div className="grid md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Nome
-              </label>
-              <input
-                type="text"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                placeholder="Seu nome completo"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Email
-              </label>
-              <input
-                type="email"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                placeholder="seu@email.com"
-              />
-            </div>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Assunto
-            </label>
-            <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent">
-              <option>Selecione um assunto</option>
-              <option>Problema técnico</option>
-              <option>Dúvida sobre funcionalidade</option>
-              <option>Sugestão de melhoria</option>
-              <option>Problema com pagamento</option>
-              <option>Outro</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Mensagem
-            </label>
-            <textarea
-              rows={4}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-              placeholder="Descreva sua dúvida ou problema..."
-            ></textarea>
-          </div>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-semibold text-gray-900 flex items-center">
+            <Send className="w-6 h-6 mr-2 text-primary-600" />
+            Envie sua Mensagem
+          </h2>
           <button
-            type="submit"
-            className="w-full bg-primary-600 text-white py-2 px-4 rounded-lg hover:bg-primary-700 transition-colors flex items-center justify-center space-x-2"
+            onClick={() => setShowFormulario(!showFormulario)}
+            className="flex items-center space-x-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
           >
-            <Send className="w-4 h-4" />
-            <span>Enviar Mensagem</span>
+            {showFormulario ? (
+              <>
+                <X className="w-4 h-4" />
+                <span>Fechar Formulário</span>
+              </>
+            ) : (
+              <>
+                <Plus className="w-4 h-4" />
+                <span>Formulário Detalhado</span>
+              </>
+            )}
           </button>
-        </form>
+        </div>
+
+        {showFormulario ? (
+          <FormularioSuporteComponent
+            onSuccess={() => setShowFormulario(false)}
+            onCancel={() => setShowFormulario(false)}
+          />
+        ) : (
+          <form className="space-y-4">
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Nome
+                </label>
+                <input
+                  type="text"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  placeholder="Seu nome completo"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  placeholder="seu@email.com"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Assunto
+              </label>
+              <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                <option>Selecione um assunto</option>
+                <option>Problema técnico</option>
+                <option>Dúvida sobre funcionalidade</option>
+                <option>Sugestão de melhoria</option>
+                <option>Problema com pagamento</option>
+                <option>Outro</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Mensagem
+              </label>
+              <textarea
+                rows={4}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                placeholder="Descreva sua dúvida ou problema..."
+              ></textarea>
+            </div>
+            <button
+              type="submit"
+              className="w-full bg-primary-600 text-white py-2 px-4 rounded-lg hover:bg-primary-700 transition-colors flex items-center justify-center space-x-2"
+            >
+              <Send className="w-4 h-4" />
+              <span>Enviar Mensagem</span>
+            </button>
+          </form>
+        )}
       </div>
 
       {/* Additional Info */}

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { 
   BookOpen, 
   HelpCircle, 
@@ -83,6 +84,18 @@ const helpSections = [
 ];
 
 export function HelpNavigation({ activeSection, onSectionChange }: HelpNavigationProps) {
+  const navigate = useNavigate();
+
+  const handleSectionClick = (sectionId: string) => {
+    if (sectionId === 'contato') {
+      // Navegar para a página de Meus Chamados
+      navigate('/meus-chamados');
+    } else {
+      // Comportamento normal para outras seções
+      onSectionChange(sectionId);
+    }
+  };
+
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
       <h2 className="text-lg font-semibold text-gray-900 mb-4">Central de Ajuda</h2>
@@ -94,7 +107,7 @@ export function HelpNavigation({ activeSection, onSectionChange }: HelpNavigatio
           return (
             <motion.button
               key={section.id}
-              onClick={() => onSectionChange(section.id)}
+              onClick={() => handleSectionClick(section.id)}
               className={`w-full flex items-center justify-between p-3 rounded-lg transition-colors text-left ${
                 isActive
                   ? 'bg-primary-50 text-primary-700 border border-primary-200'
