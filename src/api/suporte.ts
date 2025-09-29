@@ -12,7 +12,6 @@ export const suporteApi = {
     formData.append('categoria', dados.categoria);
     formData.append('subcategoria', dados.subcategoria);
     formData.append('prioridade', dados.prioridade);
-    formData.append('nomeUsuario', dados.nomeUsuario);
     formData.append('emailUsuario', dados.emailUsuario);
     
     if (dados.paginaErro) {
@@ -23,14 +22,7 @@ export const suporteApi = {
       formData.append('empresaId', empresaId.toString());
     }
 
-    // Adicionar anexos se houver
-    if (dados.anexos && dados.anexos.length > 0) {
-      dados.anexos.forEach((arquivo, index) => {
-        formData.append(`anexos`, arquivo);
-      });
-    }
-
-    const response = await apiClient.post('/suporte/chamados', formData, {
+    const response = await apiClient.post('/api/suporte/chamados', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -62,35 +54,35 @@ export const suporteApi = {
       params.append('emailUsuario', filtros.emailUsuario);
     }
 
-    const response = await apiClient.get(`/suporte/chamados?${params.toString()}`);
+    const response = await apiClient.get(`/api/suporte/chamados?${params.toString()}`);
     return response.data;
   },
 
   // Buscar chamado por ID
   async buscarChamado(id: number): Promise<ChamadoSuporte> {
-    const response = await apiClient.get(`/suporte/chamados/${id}`);
+    const response = await apiClient.get(`/api/suporte/chamados/${id}`);
     return response.data;
   },
 
   // Atualizar chamado (apenas usuário pode atualizar descrição)
   async atualizarChamado(id: number, dados: Partial<FormularioSuporte>): Promise<ChamadoSuporte> {
-    const response = await apiClient.put(`/suporte/chamados/${id}`, dados);
+    const response = await apiClient.put(`/api/suporte/chamados/${id}`, dados);
     return response.data;
   },
 
   // Adicionar comentário ao chamado
   async adicionarComentario(id: number, comentario: string): Promise<void> {
-    await apiClient.post(`/suporte/chamados/${id}/comentarios`, { comentario });
+    await apiClient.post(`/api/suporte/chamados/${id}/comentarios`, { comentario });
   },
 
   // Fechar chamado (usuário)
   async fecharChamado(id: number): Promise<void> {
-    await apiClient.patch(`/suporte/chamados/${id}/fechar`);
+    await apiClient.patch(`/api/suporte/chamados/${id}/fechar`);
   },
 
   // Reabrir chamado (usuário)
   async reabrirChamado(id: number): Promise<void> {
-    await apiClient.patch(`/suporte/chamados/${id}/reabrir`);
+    await apiClient.patch(`/api/suporte/chamados/${id}/reabrir`);
   },
 
   // Avaliar atendimento
@@ -98,7 +90,7 @@ export const suporteApi = {
     nota: number;
     comentario?: string;
   }): Promise<void> {
-    await apiClient.post(`/suporte/chamados/${id}/avaliacao`, avaliacao);
+    await apiClient.post(`/api/suporte/chamados/${id}/avaliacao`, avaliacao);
   },
 
   // Upload de anexo adicional
@@ -106,7 +98,7 @@ export const suporteApi = {
     const formData = new FormData();
     formData.append('arquivo', arquivo);
 
-    const response = await apiClient.post(`/suporte/chamados/${id}/anexos`, formData, {
+    const response = await apiClient.post(`/api/suporte/chamados/${id}/anexos`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -117,7 +109,7 @@ export const suporteApi = {
 
   // Download de anexo
   async downloadAnexo(id: number, nomeArquivo: string): Promise<Blob> {
-    const response = await apiClient.get(`/suporte/chamados/${id}/anexos/${nomeArquivo}`, {
+    const response = await apiClient.get(`/api/suporte/chamados/${id}/anexos/${nomeArquivo}`, {
       responseType: 'blob',
     });
     return response.data;
@@ -131,7 +123,7 @@ export const suporteApi = {
     tempoMedioResolucao: number;
     avaliacaoMedia: number;
   }> {
-    const response = await apiClient.get('/suporte/estatisticas');
+    const response = await apiClient.get('/api/suporte/estatisticas');
     return response.data;
   }
 };

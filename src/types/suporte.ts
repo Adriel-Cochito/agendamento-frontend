@@ -30,7 +30,7 @@ export interface SubcategoriaSuporte {
   descricao?: string;
 }
 
-export type PrioridadeSuporte = 'baixa' | 'media' | 'alta' | 'critica';
+export type PrioridadeSuporte = 'BAIXA' | 'MEDIA' | 'ALTA' | 'CRITICA';
 
 export type StatusChamado = 'aberto' | 'em_andamento' | 'aguardando_usuario' | 'resolvido' | 'fechado';
 
@@ -40,10 +40,8 @@ export interface FormularioSuporte {
   categoria: string;
   subcategoria: string;
   prioridade: PrioridadeSuporte;
-  nomeUsuario: string;
   emailUsuario: string;
   paginaErro?: string;
-  anexos?: File[];
 }
 
 export interface FiltrosChamados {

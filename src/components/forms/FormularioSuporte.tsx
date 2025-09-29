@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Send, AlertCircle, CheckCircle, Upload, X, Info } from 'lucide-react';
+import { Send, AlertCircle, CheckCircle, Info } from 'lucide-react';
 import { FormularioSuporte, CATEGORIAS_SUPORTE, PAGINAS_ERRO, PrioridadeSuporte } from '@/types/suporte';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/useToast';
@@ -22,11 +22,9 @@ export function FormularioSuporteComponent({ onSuccess, onCancel, initialData }:
     descricao: '',
     categoria: '',
     subcategoria: '',
-    prioridade: 'media',
-    nomeUsuario: user?.nome || '',
+    prioridade: 'MEDIA',
     emailUsuario: user?.email || '',
-    paginaErro: '',
-    anexos: []
+    paginaErro: ''
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -85,10 +83,6 @@ export function FormularioSuporteComponent({ onSuccess, onCancel, initialData }:
       newErrors.emailUsuario = 'Email inválido';
     }
 
-    if (!formData.nomeUsuario.trim()) {
-      newErrors.nomeUsuario = 'Nome é obrigatório';
-    }
-
     // Validação específica para erros
     if (formData.categoria === 'erro' && !formData.paginaErro) {
       newErrors.paginaErro = 'Página do erro é obrigatória para reportar bugs';
@@ -107,35 +101,6 @@ export function FormularioSuporteComponent({ onSuccess, onCancel, initialData }:
     }
   };
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(event.target.files || []);
-    const maxSize = 5 * 1024 * 1024; // 5MB
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'application/pdf', 'text/plain'];
-
-    const validFiles = files.filter(file => {
-      if (file.size > maxSize) {
-        showToast('Arquivo muito grande: ' + file.name, 'error');
-        return false;
-      }
-      if (!allowedTypes.includes(file.type)) {
-        showToast('Tipo de arquivo não permitido: ' + file.name, 'error');
-        return false;
-      }
-      return true;
-    });
-
-    setFormData(prev => ({
-      ...prev,
-      anexos: [...(prev.anexos || []), ...validFiles]
-    }));
-  };
-
-  const removeFile = (index: number) => {
-    setFormData(prev => ({
-      ...prev,
-      anexos: prev.anexos?.filter((_, i) => i !== index) || []
-    }));
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -157,11 +122,9 @@ export function FormularioSuporteComponent({ onSuccess, onCancel, initialData }:
           descricao: '',
           categoria: '',
           subcategoria: '',
-          prioridade: 'media',
-          nomeUsuario: user?.nome || '',
+          prioridade: 'MEDIA',
           emailUsuario: user?.email || '',
-          paginaErro: '',
-          anexos: []
+          paginaErro: ''
         });
         onSuccess?.();
       }
@@ -172,25 +135,6 @@ export function FormularioSuporteComponent({ onSuccess, onCancel, initialData }:
     }
   };
 
-  const getPrioridadeColor = (prioridade: PrioridadeSuporte) => {
-    switch (prioridade) {
-      case 'baixa': return 'text-green-600 bg-green-100';
-      case 'media': return 'text-yellow-600 bg-yellow-100';
-      case 'alta': return 'text-orange-600 bg-orange-100';
-      case 'critica': return 'text-red-600 bg-red-100';
-      default: return 'text-gray-600 bg-gray-100';
-    }
-  };
-
-  const getPrioridadeLabel = (prioridade: PrioridadeSuporte) => {
-    switch (prioridade) {
-      case 'baixa': return 'Baixa';
-      case 'media': return 'Média';
-      case 'alta': return 'Alta';
-      case 'critica': return 'Crítica';
-      default: return prioridade;
-    }
-  };
 
   return (
     <motion.div
@@ -210,49 +154,26 @@ export function FormularioSuporteComponent({ onSuccess, onCancel, initialData }:
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Informações do Usuário */}
-          <div className="grid md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Nome Completo *
-              </label>
-              <input
-                type="text"
-                value={formData.nomeUsuario}
-                onChange={(e) => handleInputChange('nomeUsuario', e.target.value)}
-                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent ${
-                  errors.nomeUsuario ? 'border-red-300' : 'border-gray-300'
-                }`}
-                placeholder="Seu nome completo"
-              />
-              {errors.nomeUsuario && (
-                <p className="mt-1 text-sm text-red-600 flex items-center">
-                  <AlertCircle className="w-4 h-4 mr-1" />
-                  {errors.nomeUsuario}
-                </p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Email *
-              </label>
-              <input
-                type="email"
-                value={formData.emailUsuario}
-                onChange={(e) => handleInputChange('emailUsuario', e.target.value)}
-                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent ${
-                  errors.emailUsuario ? 'border-red-300' : 'border-gray-300'
-                }`}
-                placeholder="seu@email.com"
-              />
-              {errors.emailUsuario && (
-                <p className="mt-1 text-sm text-red-600 flex items-center">
-                  <AlertCircle className="w-4 h-4 mr-1" />
-                  {errors.emailUsuario}
-                </p>
-              )}
-            </div>
+          {/* Email do Usuário */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Email *
+            </label>
+            <input
+              type="email"
+              value={formData.emailUsuario}
+              onChange={(e) => handleInputChange('emailUsuario', e.target.value)}
+              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent ${
+                errors.emailUsuario ? 'border-red-300' : 'border-gray-300'
+              }`}
+              placeholder="seu@email.com"
+            />
+            {errors.emailUsuario && (
+              <p className="mt-1 text-sm text-red-600 flex items-center">
+                <AlertCircle className="w-4 h-4 mr-1" />
+                {errors.emailUsuario}
+              </p>
+            )}
           </div>
 
           {/* Título */}
@@ -339,36 +260,6 @@ export function FormularioSuporteComponent({ onSuccess, onCancel, initialData }:
             </div>
           </div>
 
-          {/* Prioridade */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Prioridade
-            </label>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-              {(['baixa', 'media', 'alta', 'critica'] as PrioridadeSuporte[]).map((prioridade) => (
-                <label
-                  key={prioridade}
-                  className={`flex items-center justify-center p-3 border rounded-lg cursor-pointer transition-colors ${
-                    formData.prioridade === prioridade
-                      ? 'border-primary-500 bg-primary-50'
-                      : 'border-gray-300 hover:bg-gray-50'
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="prioridade"
-                    value={prioridade}
-                    checked={formData.prioridade === prioridade}
-                    onChange={(e) => handleInputChange('prioridade', e.target.value as PrioridadeSuporte)}
-                    className="sr-only"
-                  />
-                  <span className={`text-sm font-medium px-2 py-1 rounded-full ${getPrioridadeColor(prioridade)}`}>
-                    {getPrioridadeLabel(prioridade)}
-                  </span>
-                </label>
-              ))}
-            </div>
-          </div>
 
           {/* Página do Erro (apenas para categoria erro) */}
           {formData.categoria === 'erro' && (
@@ -424,57 +315,6 @@ export function FormularioSuporteComponent({ onSuccess, onCancel, initialData }:
             </p>
           </div>
 
-          {/* Anexos */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Anexos (Opcional)
-            </label>
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-              <input
-                type="file"
-                multiple
-                onChange={handleFileUpload}
-                accept="image/*,.pdf,.txt"
-                className="hidden"
-                id="file-upload"
-              />
-              <label
-                htmlFor="file-upload"
-                className="cursor-pointer flex flex-col items-center space-y-2"
-              >
-                <Upload className="w-8 h-8 text-gray-400" />
-                <span className="text-sm text-gray-600">
-                  Clique para adicionar arquivos ou arraste aqui
-                </span>
-                <span className="text-xs text-gray-500">
-                  PNG, JPG, PDF, TXT (máx. 5MB cada)
-                </span>
-              </label>
-            </div>
-
-            {/* Lista de arquivos */}
-            {formData.anexos && formData.anexos.length > 0 && (
-              <div className="mt-4 space-y-2">
-                {formData.anexos.map((file, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center justify-between p-2 bg-gray-50 rounded-lg"
-                  >
-                    <span className="text-sm text-gray-700 truncate">
-                      {file.name} ({(file.size / 1024 / 1024).toFixed(2)} MB)
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => removeFile(index)}
-                      className="text-red-500 hover:text-red-700"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
 
           {/* Botões */}
           <div className="flex flex-col sm:flex-row gap-3 pt-4">

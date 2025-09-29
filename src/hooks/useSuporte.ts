@@ -8,7 +8,7 @@ export function useSuporte() {
   const [chamados, setChamados] = useState<ChamadoSuporte[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { showToast } = useToast();
+  const { addToast } = useToast();
   const { user } = useAuth();
 
   const carregarChamados = async (filtros?: FiltrosChamados) => {
@@ -16,12 +16,14 @@ export function useSuporte() {
     setError(null);
     
     try {
-      const dados = await suporteApi.listarChamados(filtros);
+      const response = await suporteApi.listarChamados(filtros);
+      // A API retorna um objeto Page, precisamos extrair o conteúdo
+      const dados = Array.isArray(response) ? response : response.content || [];
       setChamados(dados);
     } catch (err: any) {
       const mensagem = err.response?.data?.message || 'Erro ao carregar chamados';
       setError(mensagem);
-      showToast(mensagem, 'error');
+      addToast('error', 'Erro', mensagem);
     } finally {
       setLoading(false);
     }
@@ -34,12 +36,12 @@ export function useSuporte() {
     try {
       const novoChamado = await suporteApi.criarChamado(dados, user?.empresaId);
       setChamados(prev => [novoChamado, ...prev]);
-      showToast('Chamado criado com sucesso!', 'success');
+      addToast('success', 'Sucesso', 'Chamado criado com sucesso!');
       return novoChamado;
     } catch (err: any) {
       const mensagem = err.response?.data?.message || 'Erro ao criar chamado';
       setError(mensagem);
-      showToast(mensagem, 'error');
+      addToast('error', 'Erro', mensagem);
       return null;
     } finally {
       setLoading(false);
@@ -57,12 +59,12 @@ export function useSuporte() {
           chamado.id === id ? chamadoAtualizado : chamado
         )
       );
-      showToast('Chamado atualizado com sucesso!', 'success');
+      addToast('success', 'Sucesso', 'Chamado atualizado com sucesso!');
       return true;
     } catch (err: any) {
       const mensagem = err.response?.data?.message || 'Erro ao atualizar chamado';
       setError(mensagem);
-      showToast(mensagem, 'error');
+      addToast('error', 'Erro', mensagem);
       return false;
     } finally {
       setLoading(false);
@@ -80,12 +82,12 @@ export function useSuporte() {
           chamado.id === id ? { ...chamado, status: 'fechado' } : chamado
         )
       );
-      showToast('Chamado fechado com sucesso!', 'success');
+      addToast('success', 'Sucesso', 'Chamado fechado com sucesso!');
       return true;
     } catch (err: any) {
       const mensagem = err.response?.data?.message || 'Erro ao fechar chamado';
       setError(mensagem);
-      showToast(mensagem, 'error');
+      addToast('error', 'Erro', mensagem);
       return false;
     } finally {
       setLoading(false);
@@ -103,12 +105,12 @@ export function useSuporte() {
           chamado.id === id ? { ...chamado, status: 'aberto' } : chamado
         )
       );
-      showToast('Chamado reaberto com sucesso!', 'success');
+      addToast('success', 'Sucesso', 'Chamado reaberto com sucesso!');
       return true;
     } catch (err: any) {
       const mensagem = err.response?.data?.message || 'Erro ao reabrir chamado';
       setError(mensagem);
-      showToast(mensagem, 'error');
+      addToast('error', 'Erro', mensagem);
       return false;
     } finally {
       setLoading(false);
@@ -121,12 +123,12 @@ export function useSuporte() {
     
     try {
       await suporteApi.adicionarComentario(id, comentario);
-      showToast('Comentário adicionado com sucesso!', 'success');
+      addToast('success', 'Sucesso', 'Comentário adicionado com sucesso!');
       return true;
     } catch (err: any) {
       const mensagem = err.response?.data?.message || 'Erro ao adicionar comentário';
       setError(mensagem);
-      showToast(mensagem, 'error');
+      addToast('error', 'Erro', mensagem);
       return false;
     } finally {
       setLoading(false);
@@ -139,12 +141,12 @@ export function useSuporte() {
     
     try {
       await suporteApi.avaliarAtendimento(id, avaliacao);
-      showToast('Avaliação enviada com sucesso!', 'success');
+      addToast('success', 'Sucesso', 'Avaliação enviada com sucesso!');
       return true;
     } catch (err: any) {
       const mensagem = err.response?.data?.message || 'Erro ao enviar avaliação';
       setError(mensagem);
-      showToast(mensagem, 'error');
+      addToast('error', 'Erro', mensagem);
       return false;
     } finally {
       setLoading(false);
@@ -157,12 +159,12 @@ export function useSuporte() {
     
     try {
       const url = await suporteApi.uploadAnexo(id, arquivo);
-      showToast('Anexo enviado com sucesso!', 'success');
+      addToast('Anexo enviado com sucesso!', 'success');
       return url;
     } catch (err: any) {
       const mensagem = err.response?.data?.message || 'Erro ao enviar anexo';
       setError(mensagem);
-      showToast(mensagem, 'error');
+      addToast('error', 'Erro', mensagem);
       return null;
     } finally {
       setLoading(false);
@@ -182,7 +184,7 @@ export function useSuporte() {
       window.URL.revokeObjectURL(url);
     } catch (err: any) {
       const mensagem = err.response?.data?.message || 'Erro ao baixar anexo';
-      showToast(mensagem, 'error');
+      addToast('error', 'Erro', mensagem);
     }
   };
 

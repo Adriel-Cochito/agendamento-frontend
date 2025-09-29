@@ -49,10 +49,10 @@ export function MeusChamados() {
 
   const getPrioridadeColor = (prioridade: PrioridadeSuporte) => {
     switch (prioridade) {
-      case 'baixa': return 'text-green-600 bg-green-100';
-      case 'media': return 'text-yellow-600 bg-yellow-100';
-      case 'alta': return 'text-orange-600 bg-orange-100';
-      case 'critica': return 'text-red-600 bg-red-100';
+      case 'BAIXA': return 'text-green-600 bg-green-100';
+      case 'MEDIA': return 'text-yellow-600 bg-yellow-100';
+      case 'ALTA': return 'text-orange-600 bg-orange-100';
+      case 'CRITICA': return 'text-red-600 bg-red-100';
       default: return 'text-gray-600 bg-gray-100';
     }
   };
@@ -70,10 +70,10 @@ export function MeusChamados() {
 
   const getPrioridadeLabel = (prioridade: PrioridadeSuporte) => {
     switch (prioridade) {
-      case 'baixa': return 'Baixa';
-      case 'media': return 'Média';
-      case 'alta': return 'Alta';
-      case 'critica': return 'Crítica';
+      case 'BAIXA': return 'Baixa';
+      case 'MEDIA': return 'Média';
+      case 'ALTA': return 'Alta';
+      case 'CRITICA': return 'Crítica';
       default: return prioridade;
     }
   };
@@ -88,7 +88,7 @@ export function MeusChamados() {
     });
   };
 
-  const chamadosFiltrados = chamados.filter(chamado => {
+  const chamadosFiltrados = (Array.isArray(chamados) ? chamados : []).filter(chamado => {
     const matchStatus = !filtros.status || chamado.status === filtros.status;
     const matchPrioridade = !filtros.prioridade || chamado.prioridade === filtros.prioridade;
     const matchCategoria = !filtros.categoria || chamado.categoria === filtros.categoria;
@@ -324,10 +324,10 @@ export function MeusChamados() {
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                     >
                       <option value="">Todas as prioridades</option>
-                      <option value="baixa">Baixa</option>
-                      <option value="media">Média</option>
-                      <option value="alta">Alta</option>
-                      <option value="critica">Crítica</option>
+                      <option value="BAIXA">Baixa</option>
+                      <option value="MEDIA">Média</option>
+                      <option value="ALTA">Alta</option>
+                      <option value="CRITICA">Crítica</option>
                     </select>
                   </div>
                   <div>

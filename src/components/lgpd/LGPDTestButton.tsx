@@ -15,13 +15,13 @@ export function LGPDTestButton() {
 
   return (
     <>
-      <Button
+      {/* <Button
         onClick={handleTestModal}
         variant="outline"
         className="fixed bottom-4 right-4 z-50 bg-red-500 text-white hover:bg-red-600"
       >
         Testar Modal LGPD
-      </Button>
+      </Button> */}
       
       <ForcedAcceptanceModal 
         isOpen={showModal} 
