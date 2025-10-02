@@ -16,6 +16,7 @@ interface EstadoAgendamento {
   dadosCliente: {
     nomeCliente: string;
     telefoneCliente: string;
+    observacoes: string
   };
 }
 
@@ -45,7 +46,7 @@ interface UseAgendamentoPublicoLogicResult {
   voltarEtapa: () => void;
   
   // Ações de dados
-  atualizarDadosCliente: (campo: 'nomeCliente' | 'telefoneCliente', valor: string) => void;
+  atualizarDadosCliente: (campo: 'nomeCliente' | 'telefoneCliente' | 'observacoes', valor: string) => void;
   finalizarAgendamento: () => Promise<void>;
   reiniciarAgendamento: () => void;
   
@@ -81,6 +82,7 @@ export function useAgendamentoPublicoLogic(
     dadosCliente: {
       nomeCliente: '',
       telefoneCliente: '+55 ',
+      observacoes: ''
     },
   });
 
