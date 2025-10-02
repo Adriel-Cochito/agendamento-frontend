@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Política de Privacidade - AgendaSIM v1.0</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f8f9fa;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #28a745;
+        }
+        
+        .header h1 {
+            color: #28a745;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        
+        .header .version {
+            color: #6c757d;
+            font-size: 1.1em;
+            font-weight: 500;
+        }
+        
+        .header .date {
+            color: #6c757d;
+            font-size: 0.95em;
+            margin-top: 5px;
+        }
+        
+        h2 {
+            color: #28a745;
+            font-size: 1.8em;
+            margin: 30px 0 15px 0;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e9ecef;
+            font-weight: 600;
+        }
+        
+        h3 {
+            color: #495057;
+            font-size: 1.3em;
+            margin: 25px 0 12px 0;
+            font-weight: 600;
+        }
+        
+        h4 {
+            color: #6c757d;
+            font-size: 1.1em;
+            margin: 20px 0 10px 0;
+            font-weight: 600;
+        }
+        
+        p {
+            margin-bottom: 15px;
+            text-align: justify;
+        }
+        
+        ul, ol {
+            margin: 15px 0 15px 30px;
+        }
+        
+        li {
+            margin-bottom: 8px;
+        }
+        
+        .highlight {
+            background-color: #d4edda;
+            padding: 15px;
+            border-left: 4px solid #28a745;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        
+        .important {
+            background-color: #d1ecf1;
+            padding: 15px;
+            border-left: 4px solid #17a2b8;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        
+        .warning {
+            background-color: #fff3cd;
+            padding: 15px;
+            border-left: 4px solid #ffc107;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        
+        .contact-info {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border: 1px solid #dee2e6;
+        }
+        
+        .contact-info h4 {
+            color: #28a745;
+            margin-bottom: 10px;
+        }
+        
+        .contact-info p {
+            margin-bottom: 5px;
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background-color: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .data-table th {
+            background-color: #28a745;
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+        
+        .data-table td {
+            padding: 15px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .data-table tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        
+        .consent-section {
+            background-color: #e7f3ff;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border: 1px solid #b3d9ff;
+        }
+        
+        .consent-section h4 {
+            color: #0066cc;
+            margin-bottom: 15px;
+        }
+        
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 2px solid #e9ecef;
+            text-align: center;
+            color: #6c757d;
+            font-size: 0.9em;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+                margin: 10px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            h2 {
+                font-size: 1.5em;
+            }
+            
+            h3 {
+                font-size: 1.2em;
+            }
+            
+            .data-table {
+                font-size: 0.9em;
+            }
+            
+            .data-table th,
+            .data-table td {
+                padding: 10px;
+            }
+        }
+        
+        @media print {
+            body {
+                background-color: #fff;
+            }
+            
+            .container {
+                box-shadow: none;
+                border: 1px solid #ddd;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Política de Privacidade</h1>
+            <div class="version">Versão 1.0</div>
+            <div class="date">Data de Vigência: 28 de Janeiro de 2025</div>
+        </div>
+
+        <h2>1. INTRODUÇÃO</h2>
+        <p>Esta Política de Privacidade descreve como o AgendaSIM coleta, usa, armazena e protege suas informações pessoais quando você utiliza nossa plataforma de agendamento online. Estamos comprometidos em proteger sua privacidade e garantir o tratamento adequado de seus dados pessoais, em conformidade com a Lei Geral de Proteção de Dados (LGPD) e demais legislações aplicáveis.</p>
+
+        <div class="contact-info">
+            <h2>2. RESPONSÁVEL PELO TRATAMENTO</h2>
+            <h4>AgendaSIM</h4>
+            <p><strong>Email:</strong> contato@agendasim.com.br</p>
+            <p><strong>Telefone:</strong> (11) 99999-9999</p>
+            <p><strong>Endereço:</strong> São Paulo/SP, Brasil</p>
+        </div>
+
+        <h2>3. DADOS COLETADOS</h2>
+        
+        <h3>3.1 Dados Pessoais dos Usuários</h3>
+        <p>Coletamos as seguintes informações pessoais:</p>
+        
+        <h4>Dados de Identificação:</h4>
+        <ul>
+            <li>Nome completo</li>
+            <li>Endereço de email</li>
+            <li>Número de telefone</li>
+            <li>Senha (criptografada)</li>
+        </ul>
+
+        <h4>Dados de Perfil:</h4>
+        <ul>
+            <li>Cargo/função na empresa</li>
+            <li>Nível de acesso (OWNER, ADMIN, USER)</li>
+            <li>Status de ativação da conta</li>
+        </ul>
+
+        <h3>3.2 Dados da Empresa</h3>
+        <p>Para empresas que utilizam nossa plataforma:</p>
+        
+        <h4>Dados Corporativos:</h4>
+        <ul>
+            <li>Razão social/Nome da empresa</li>
+            <li>CNPJ</li>
+            <li>Endereço completo</li>
+            <li>Telefone comercial</li>
+            <li>Email corporativo</li>
+        </ul>
+
+        <h3>3.3 Dados de Agendamentos</h3>
+        <p>Para processar agendamentos:</p>
+        
+        <h4>Dados dos Clientes:</h4>
+        <ul>
+            <li>Nome do cliente</li>
+            <li>Telefone de contato</li>
+            <li>Data e horário do agendamento</li>
+            <li>Serviço solicitado</li>
+            <li>Profissional responsável</li>
+            <li>Observações (quando fornecidas)</li>
+        </ul>
+
+        <h3>3.4 Dados de Uso da Plataforma</h3>
+        <p>Para melhorar nossos serviços:</p>
+        
+        <h4>Dados Técnicos:</h4>
+        <ul>
+            <li>Endereço IP</li>
+            <li>Tipo de navegador</li>
+            <li>Sistema operacional</li>
+            <li>Páginas visitadas</li>
+            <li>Tempo de permanência</li>
+            <li>Ações realizadas na plataforma</li>
+        </ul>
+
+        <h4>Dados de Logs:</h4>
+        <ul>
+            <li>Registros de acesso</li>
+            <li>Timestamps de ações</li>
+            <li>Erros e exceções</li>
+            <li>Métricas de performance</li>
+        </ul>
+
+        <h2>4. FINALIDADES DO TRATAMENTO</h2>
+        
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Finalidade</th>
+                    <th>Base Legal</th>
+                    <th>Dados Utilizados</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Prestar o serviço de agendamento</td>
+                    <td>Execução de Contrato</td>
+                    <td>Dados pessoais, de empresa e agendamentos</td>
+                </tr>
+                <tr>
+                    <td>Gerenciar conta de usuário</td>
+                    <td>Execução de Contrato</td>
+                    <td>Dados de identificação e perfil</td>
+                </tr>
+                <tr>
+                    <td>Processar agendamentos</td>
+                    <td>Execução de Contrato</td>
+                    <td>Dados de clientes e serviços</td>
+                </tr>
+                <tr>
+                    <td>Manter registros legais</td>
+                    <td>Obrigação Legal</td>
+                    <td>Dados de agendamentos e transações</td>
+                </tr>
+                <tr>
+                    <td>Melhorar a plataforma</td>
+                    <td>Interesse Legítimo</td>
+                    <td>Dados de uso anonimizados</td>
+                </tr>
+                <tr>
+                    <td>Comunicações de marketing</td>
+                    <td>Consentimento</td>
+                    <td>Email e preferências</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2>5. BASE LEGAL PARA TRATAMENTO</h2>
+        
+        <div class="important">
+            <h3>5.1 Execução de Contrato</h3>
+            <ul>
+                <li>Prestação do serviço de agendamento</li>
+                <li>Gestão de conta e permissões</li>
+                <li>Processamento de agendamentos</li>
+            </ul>
+        </div>
+
+        <div class="warning">
+            <h3>5.2 Obrigação Legal</h3>
+            <ul>
+                <li>Manutenção de registros</li>
+                <li>Atendimento a autoridades</li>
+                <li>Cumprimento de normas fiscais</li>
+            </ul>
+        </div>
+
+        <div class="highlight">
+            <h3>5.3 Interesse Legítimo</h3>
+            <ul>
+                <li>Segurança da plataforma</li>
+                <li>Melhoria dos serviços</li>
+                <li>Prevenção de fraudes</li>
+            </ul>
+        </div>
+
+        <div class="consent-section">
+            <h3>5.4 Consentimento</h3>
+            <ul>
+                <li>Comunicações de marketing</li>
+                <li>Análise de dados de uso</li>
+                <li>Personalização de conteúdo</li>
+            </ul>
+        </div>
+
+        <h2>6. COMPARTILHAMENTO DE DADOS</h2>
+        
+        <h3>6.1 Não Compartilhamos Dados Pessoais</h3>
+        <p>Exceto nas seguintes situações:</p>
+        
+        <h4>Prestadores de Serviço:</h4>
+        <ul>
+            <li>Hospedagem e infraestrutura</li>
+            <li>Serviços de email</li>
+            <li>Ferramentas de análise</li>
+            <li>Suporte técnico</li>
+        </ul>
+
+        <h4>Autoridades Competentes:</h4>
+        <ul>
+            <li>Quando exigido por lei</li>
+            <li>Ordem judicial</li>
+            <li>Investigação de crimes</li>
+        </ul>
+
+        <h3>6.2 Transferência Internacional</h3>
+        <ul>
+            <li>Dados podem ser transferidos para prestadores de serviço no exterior</li>
+            <li>Transferências seguem padrões de proteção adequados</li>
+            <li>Contratos incluem cláusulas de proteção de dados</li>
+        </ul>
+
+        <h2>7. SEGURANÇA DOS DADOS</h2>
+        
+        <h3>7.1 Medidas Técnicas</h3>
+        <ul>
+            <li>Criptografia de dados sensíveis</li>
+            <li>Acesso restrito e autenticação</li>
+            <li>Monitoramento de segurança</li>
+            <li>Backup e recuperação</li>
+        </ul>
+
+        <h3>7.2 Medidas Organizacionais</h3>
+        <ul>
+            <li>Políticas de acesso</li>
+            <li>Treinamento de funcionários</li>
+            <li>Controles de auditoria</li>
+            <li>Procedimentos de incidentes</li>
+        </ul>
+
+        <h3>7.3 Medidas Físicas</h3>
+        <ul>
+            <li>Acesso controlado aos servidores</li>
+            <li>Proteção contra desastres</li>
+            <li>Destruição segura de dados</li>
+            <li>Controle de acesso físico</li>
+        </ul>
+
+        <h2>8. RETENÇÃO DE DADOS</h2>
+        
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Tipo de Dados</th>
+                    <th>Período de Retenção</th>
+                    <th>Justificativa</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Dados de conta</td>
+                    <td>Enquanto a conta estiver ativa</td>
+                    <td>Execução do contrato</td>
+                </tr>
+                <tr>
+                    <td>Dados de agendamento</td>
+                    <td>5 anos após o último agendamento</td>
+                    <td>Obrigação legal</td>
+                </tr>
+                <tr>
+                    <td>Dados de logs</td>
+                    <td>1 ano</td>
+                    <td>Segurança e auditoria</td>
+                </tr>
+                <tr>
+                    <td>Dados de marketing</td>
+                    <td>Até revogação do consentimento</td>
+                    <td>Consentimento</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>8.1 Exclusão de Dados</h3>
+        <ul>
+            <li>Dados são excluídos ao final do período de retenção</li>
+            <li>Usuário pode solicitar exclusão antecipada</li>
+            <li>Alguns dados podem ser mantidos por obrigação legal</li>
+        </ul>
+
+        <h2>9. DIREITOS DOS TITULARES</h2>
+        
+        <div class="important">
+            <h3>9.1 Direitos Garantidos pela LGPD</h3>
+            <p>Você tem direito a:</p>
+            
+            <h4>Acesso:</h4>
+            <ul>
+                <li>Saber quais dados temos sobre você</li>
+                <li>Obter cópia dos dados</li>
+                <li>Informações sobre o tratamento</li>
+            </ul>
+
+            <h4>Correção:</h4>
+            <ul>
+                <li>Corrigir dados incorretos</li>
+                <li>Completar dados incompletos</li>
+                <li>Atualizar informações</li>
+            </ul>
+
+            <h4>Exclusão:</h4>
+            <ul>
+                <li>Solicitar exclusão de dados</li>
+                <li>Revogar consentimento</li>
+                <li>Cancelar conta</li>
+            </ul>
+
+            <h4>Portabilidade:</h4>
+            <ul>
+                <li>Transferir dados para outro serviço</li>
+                <li>Obter dados em formato estruturado</li>
+                <li>Migração facilitada</li>
+            </ul>
+
+            <h4>Oposição:</h4>
+            <ul>
+                <li>Opor-se ao tratamento</li>
+                <li>Revogar consentimento</li>
+                <li>Limitar finalidades</li>
+            </ul>
+        </div>
+
+        <h3>9.2 Como Exercer Seus Direitos</h3>
+        <ul>
+            <li>Acesse a área LGPD na plataforma</li>
+            <li>Entre em contato via email</li>
+            <li>Utilize o formulário de solicitação</li>
+        </ul>
+
+        <h2>10. COOKIES E TECNOLOGIAS SIMILARES</h2>
+        
+        <h3>10.1 Tipos de Cookies</h3>
+        <p>Utilizamos os seguintes tipos de cookies:</p>
+        
+        <div class="highlight">
+            <h4>Cookies Essenciais:</h4>
+            <ul>
+                <li>Necessários para funcionamento da plataforma</li>
+                <li>Autenticação e segurança</li>
+                <li>Preferências básicas</li>
+            </ul>
+        </div>
+
+        <div class="consent-section">
+            <h4>Cookies de Funcionalidade:</h4>
+            <ul>
+                <li>Melhoram a experiência do usuário</li>
+                <li>Lembram configurações</li>
+                <li>Personalização</li>
+            </ul>
+        </div>
+
+        <div class="warning">
+            <h4>Cookies de Análise:</h4>
+            <ul>
+                <li>Coletam dados de uso</li>
+                <li>Métricas de performance</li>
+                <li>Melhorias do serviço</li>
+            </ul>
+        </div>
+
+        <h3>10.2 Gerenciamento de Cookies</h3>
+        <ul>
+            <li>Você pode configurar seu navegador</li>
+            <li>Desabilitar cookies não essenciais</li>
+            <li>Gerenciar preferências na plataforma</li>
+        </ul>
+
+        <h2>11. MENORES DE IDADE</h2>
+        
+        <div class="warning">
+            <h3>11.1 Proteção de Menores</h3>
+            <ul>
+                <li>Não coletamos dados de menores de 18 anos</li>
+                <li>Pais/responsáveis devem supervisionar uso</li>
+                <li>Dados de menores são tratados com cuidado especial</li>
+            </ul>
+
+            <h3>11.2 Consentimento Parental</h3>
+            <ul>
+                <li>Menores precisam de autorização dos pais</li>
+                <li>Responsáveis podem solicitar exclusão</li>
+                <li>Políticas específicas para menores</li>
+            </ul>
+        </div>
+
+        <h2>12. CONSENTIMENTOS ESPECÍFICOS</h2>
+        
+        <div class="important">
+            <h3>12.1 Dados Necessários para Funcionamento</h3>
+            <p><strong>Consentimento Obrigatório - Base Legal: Execução de Contrato</strong></p>
+            <ul>
+                <li><strong>Finalidade:</strong> Autenticação, identificação e funcionamento básico do sistema</li>
+                <li><strong>Dados Tratados:</strong> Nome, email, telefone, credenciais de acesso, dados de perfil</li>
+                <li><strong>Período de Retenção:</strong> Enquanto a conta estiver ativa</li>
+                <li><strong>Compartilhamento:</strong> Apenas interno, para funcionamento do sistema</li>
+                <li><strong>Revogação:</strong> Não é possível revogar sem encerrar a conta</li>
+            </ul>
+        </div>
+
+        <div class="consent-section">
+            <h3>12.2 Funcionalidades Essenciais do Sistema</h3>
+            <p><strong>Consentimento Opcional - Base Legal: Consentimento</strong></p>
+            <ul>
+                <li><strong>Finalidade:</strong> Melhorar a experiência do usuário e personalização do sistema</li>
+                <li><strong>Dados Tratados:</strong> Preferências de uso, configurações personalizadas, histórico de navegação, dados de sessão</li>
+                <li><strong>Período de Retenção:</strong> Até revogação do consentimento ou encerramento da conta</li>
+                <li><strong>Compartilhamento:</strong> Apenas interno, para personalização da experiência</li>
+                <li><strong>Revogação:</strong> Pode ser revogado a qualquer momento através da área LGPD</li>
+            </ul>
+        </div>
+
+        <div class="highlight">
+            <h3>12.3 Coleta de Dados para Análise e Melhorias</h3>
+            <p><strong>Consentimento Opcional - Base Legal: Consentimento</strong></p>
+            <ul>
+                <li><strong>Finalidade:</strong> Análise de uso e melhorias do sistema, estatísticas de performance</li>
+                <li><strong>Dados Tratados:</strong> Dados de uso anonimizados, estatísticas de acesso, métricas de performance, logs de sistema</li>
+                <li><strong>Período de Retenção:</strong> 12 meses ou até revogação do consentimento</li>
+                <li><strong>Compartilhamento:</strong> Dados anonimizados podem ser compartilhados com prestadores de serviço de analytics</li>
+                <li><strong>Revogação:</strong> Pode ser revogado a qualquer momento através da área LGPD</li>
+            </ul>
+        </div>
+
+        <h3>12.4 Gerenciamento de Consentimentos</h3>
+        <ul>
+            <li><strong>Acesso:</strong> Você pode gerenciar todos os seus consentimentos através da área LGPD do sistema</li>
+            <li><strong>Revogação:</strong> Consentimentos opcionais podem ser revogados a qualquer momento</li>
+            <li><strong>Impacto:</strong> A revogação pode afetar algumas funcionalidades do sistema</li>
+            <li><strong>Histórico:</strong> Mantemos registro dos consentimentos dados e revogados para fins de auditoria</li>
+        </ul>
+
+        <h2>13. ALTERAÇÕES NA POLÍTICA</h2>
+        
+        <h3>13.1 Atualizações</h3>
+        <ul>
+            <li>Esta política pode ser atualizada periodicamente</li>
+            <li>Alterações significativas serão comunicadas</li>
+            <li>Versão atual estará sempre disponível na plataforma</li>
+        </ul>
+
+        <h3>13.2 Notificação de Mudanças</h3>
+        <ul>
+            <li>Email para usuários cadastrados</li>
+            <li>Aviso na plataforma</li>
+            <li>Período de adaptação quando necessário</li>
+        </ul>
+
+        <div class="contact-info">
+            <h2>14. CONTATO E DÚVIDAS</h2>
+            
+            <h3>14.1 Encarregado de Dados (DPO)</h3>
+            <p>Para questões sobre proteção de dados:</p>
+            <p><strong>Email:</strong> dpo@agendasim.com.br</p>
+            <p><strong>Telefone:</strong> (11) 99999-9999</p>
+
+            <h3>14.2 Outras Dúvidas</h3>
+            <p><strong>Email:</strong> contato@agendasim.com.br</p>
+            <p><strong>Suporte:</strong> suporte@agendasim.com.br</p>
+            <p><strong>Chat:</strong> Disponível na plataforma</p>
+
+            <h3>14.3 Autoridade Nacional</h3>
+            <p>Você pode contatar a ANPD:</p>
+            <p><strong>Site:</strong> www.gov.br/anpd</p>
+            <p><strong>Email:</strong> atendimento@anpd.gov.br</p>
+        </div>
+
+        <h2>15. DISPOSIÇÕES FINAIS</h2>
+        
+        <h3>15.1 Vigência</h3>
+        <p>Esta política entra em vigor em 28 de Janeiro de 2025.</p>
+
+        <h3>15.2 Legislação Aplicável</h3>
+        <p>Esta política é regida pela legislação brasileira, especialmente a Lei Geral de Proteção de Dados (Lei nº 13.709/2018).</p>
+
+        <h3>15.3 Foro</h3>
+        <p>Para questões judiciais, fica eleito o foro da comarca de São Paulo/SP.</p>
+
+        <div class="footer">
+            <p><strong>Última atualização:</strong> 28 de Janeiro de 2025</p>
+            <p><strong>Versão:</strong> 1.0</p>
+            <p><strong>Próxima revisão:</strong> Janeiro de 2026</p>
+        </div>
+    </div>
+</body>
+</html>

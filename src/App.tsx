@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { router } from './routes';
 import { ToastContainer } from '@/components/ui/Toast';
 import { useToast } from '@/hooks/useToast';
+// import { LGPDProvider } from '@/contexts/LGPDContext';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -23,8 +24,10 @@ function App() {
   
   return (
     <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
-      <ToastContainer messages={messages} />
+      {/* <LGPDProvider> */}
+        <RouterProvider router={router} />
+        <ToastContainer messages={messages} />
+      {/* </LGPDProvider> */}
     </QueryClientProvider>
   );
 }

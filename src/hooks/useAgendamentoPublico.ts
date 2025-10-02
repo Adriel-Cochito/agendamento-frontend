@@ -249,12 +249,16 @@ export function useAgendamentoPublicoLogic(
       console.log('🚀 [HOOK] Iniciando carregamento de dados iniciais:', {
         empresaId,
         mounted,
-        hasEmpresaFromUrl: !!empresaFromUrl.nomeFromUrl
+        hasEmpresaFromUrl: !!empresaFromUrl.nomeFromUrl,
+        hasTelefoneFromUrl: !!empresaFromUrl.telefoneFromUrl
       });
       
-      if (mounted) {
-        console.log('🏢 [HOOK] Carregando empresa...');
+      // Só carregar dados da empresa se não tivermos informações suficientes da URL
+      if (mounted && !empresaFromUrl.nomeFromUrl) {
+        console.log('🏢 [HOOK] Carregando empresa via API (sem dados da URL)...');
         await carregarEmpresa();
+      } else if (mounted && empresaFromUrl.nomeFromUrl) {
+        console.log('💡 [HOOK] Usando dados da URL, pulando carregamento da empresa via API');
       }
       
       if (mounted) {
@@ -271,7 +275,7 @@ export function useAgendamentoPublicoLogic(
       console.log('🧹 [HOOK] Limpando efeito de carregamento inicial');
       mounted = false;
     };
-  }, [empresaId]); // Só empresaId como dependência
+  }, [empresaId, empresaFromUrl.nomeFromUrl, empresaFromUrl.telefoneFromUrl]); // Incluir dados da URL nas dependências
 
   // Efeito para carregar horários quando necessário - com condições específicas
   useEffect(() => {

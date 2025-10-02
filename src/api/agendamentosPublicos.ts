@@ -106,12 +106,12 @@ export interface AgendaPublica {
 // API pública para agendamentos - usando rotas exatas do AgendamentoController
 export const agendamentosPublicosApi = {
   // Buscar empresa pelo ID
-  getEmpresa: async (empresaId: number): Promise<EmpresaPublica> => {
-    console.log('🏢 [PUBLIC API] Buscando empresa:', empresaId);
-    const response = await publicApiClient.get(`/empresas/${empresaId}`);
-    console.log('✅ [PUBLIC API] Empresa encontrada:', response.data);
-    return response.data;
-  },
+  // getEmpresa: async (empresaId: number): Promise<EmpresaPublica> => {
+  //   console.log('🏢 [PUBLIC API] Buscando empresa:', empresaId);
+  //   const response = await publicApiClient.get(`/empresas/${empresaId}`);
+  //   console.log('✅ [PUBLIC API] Empresa encontrada:', response.data);
+  //   return response.data;
+  // },
 
   // Buscar serviços - EXATO: /agendamentos/servicos?empresaId=1
   getServicos: async (empresaId: number): Promise<ServicoPublico[]> => {
@@ -219,6 +219,28 @@ export const agendamentosPublicosApi = {
     const response = await publicApiClient.post(
       `/agendamentos/publico/cancelar/${token}`
     );
+    return response.data;
+  },
+
+  // LGPD - Buscar resumo de dados do cliente (apenas metadados)
+  buscarResumoDadosCliente: async (telefone: string, nome: string) => {
+    console.log('🔍 [LGPD] Buscando resumo de dados do cliente:', { telefone, nome });
+    const response = await publicApiClient.post('/agendamentos/lgpd/resumo', {
+      telefone,
+      nome
+    });
+    console.log('✅ [LGPD] Resumo encontrado:', response.data);
+    return response.data;
+  },
+
+  // LGPD - Anonimizar dados do cliente
+  anonimizarDadosCliente: async (telefone: string, nome: string) => {
+    console.log('🔒 [LGPD] Anonimizando dados do cliente:', { telefone, nome });
+    const response = await publicApiClient.post('/agendamentos/lgpd/anonimizar', {
+      telefone,
+      nome
+    });
+    console.log('✅ [LGPD] Dados anonimizados com sucesso');
     return response.data;
   }
 };

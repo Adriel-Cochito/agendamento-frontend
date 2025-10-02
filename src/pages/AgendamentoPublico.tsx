@@ -25,6 +25,7 @@ import { MaskedInput } from '@/components/ui/MaskedInput';
 import { Loading } from '@/components/ui/Loading';
 import { ProfissionalSelector } from '@/components/agendamento/ProfissionalSelector';
 import { HorarioSelectorCompact } from '@/components/agendamento/HorarioSelectorCompact';
+// import { LgpdModal } from '@/components/agendamento/LgpdModal';
 import { maskPhone } from '@/lib/masks';
 import { dateUtils } from '@/utils/dateUtils';
 import { useAgendamentoPublicoLogic } from '@/hooks/useAgendamentoPublico';
@@ -174,6 +175,7 @@ export default function AgendamentoPublico({
     telefoneEmpresa?: string;
   }>();
   const [searchParams] = useSearchParams();
+  // const [lgpdModalOpen, setLgpdModalOpen] = React.useState(false);
 
   // Função para decodificar parâmetros da URL (movida para dentro do componente)
   const decodeUrlParam = (param: string | undefined): string => {
@@ -296,6 +298,7 @@ export default function AgendamentoPublico({
               Link personalizado para {empresaDisplay.nome}
             </div>
           )}
+
         </motion.div>
 
         {/* Breadcrumb Progress */}
@@ -1017,7 +1020,7 @@ export default function AgendamentoPublico({
 
             {/* Indicador da fonte dos dados */}
             {empresaInfo.nomeFromUrl && (
-              <div className="mt-4 pt-3 border-t border-gray-100">
+              <div className="mt-2">
                 <p className="text-xs text-gray-400">
                   Link personalizado para {empresaDisplay.nome}
                   {empresaInfo.telefoneFromUrl && ` • ${empresaInfo.telefoneFromUrl}`}
@@ -1026,6 +1029,14 @@ export default function AgendamentoPublico({
             )}
           </div>
         </motion.div>
+
+        {/* Modal LGPD */}
+        {/* <LgpdModal
+          isOpen={lgpdModalOpen}
+          onClose={() => setLgpdModalOpen(false)}
+          telefoneCliente={modalStates.dadosCliente.telefoneCliente}
+          nomeCliente={modalStates.dadosCliente.nomeCliente}
+        /> */}
       </div>
     </div>
   );
