@@ -124,6 +124,13 @@ export function LandingPage() {
               >
                 Sobre
               </a>
+
+              <a
+                href="/ajuda-publica"
+                className="text-gray-600 hover:text-primary-600 transition-colors"
+              >
+                Ajuda
+              </a>
               {/* <a href="#api" className="text-gray-600 hover:text-primary-600 transition-colors">API</a> */}
             </nav>
             <div className="flex items-center space-x-4">
@@ -713,6 +720,14 @@ export function LandingPage() {
                      Contato (Suporte)
                    </a>
                  </li>
+                 <li>
+                   <a
+                     href="/ajuda-publica"
+                     className="text-gray-400 hover:text-white transition-colors"
+                   >
+                     Ajuda
+                   </a>
+                 </li>
               </ul>
             </div>
 
@@ -721,7 +736,7 @@ export function LandingPage() {
               <ul className="space-y-2">
                  <li>
                    <a
-                     href="/lgpd-publica"
+                     href="/ajuda-publica"
                      className="text-gray-400 hover:text-white transition-colors"
                    >
                      Política de Privacidade
@@ -729,7 +744,7 @@ export function LandingPage() {
                  </li>
                  <li>
                    <a
-                     href="/lgpd-publica"
+                     href="/ajuda-publica"
                      className="text-gray-400 hover:text-white transition-colors"
                    >
                      Termos de Uso
@@ -737,7 +752,7 @@ export function LandingPage() {
                  </li>
                  <li>
                    <a
-                     href="/lgpd-publica"
+                     href="/ajuda-publica"
                      className="text-gray-400 hover:text-white transition-colors"
                    >
                      LGPD
@@ -745,7 +760,7 @@ export function LandingPage() {
                  </li>
                  <li>
                    <a
-                     href="/lgpd-publica"
+                     href="/ajuda-publica"
                      className="text-gray-400 hover:text-white transition-colors"
                    >
                      Cookies

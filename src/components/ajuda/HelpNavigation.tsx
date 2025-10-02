@@ -18,6 +18,7 @@ import {
 interface HelpNavigationProps {
   activeSection: string;
   onSectionChange: (section: string) => void;
+  isPublic?: boolean;
 }
 
 const helpSections = [
@@ -83,12 +84,12 @@ const helpSections = [
   }
 ];
 
-export function HelpNavigation({ activeSection, onSectionChange }: HelpNavigationProps) {
+export function HelpNavigation({ activeSection, onSectionChange, isPublic = false }: HelpNavigationProps) {
   const navigate = useNavigate();
 
   const handleSectionClick = (sectionId: string) => {
-    if (sectionId === 'contato') {
-      // Navegar para a página de Meus Chamados
+    if (sectionId === 'contato' && !isPublic) {
+      // Navegar para a página de Meus Chamados apenas se não for público
       navigate('/meus-chamados');
     } else {
       // Comportamento normal para outras seções
@@ -96,11 +97,14 @@ export function HelpNavigation({ activeSection, onSectionChange }: HelpNavigatio
     }
   };
 
+  // Filtrar seções baseado se é público ou não
+  const filteredSections = isPublic 
+    ? helpSections.filter(section => section.id !== 'contato') // Remove contato na versão pública
+    : helpSections;
+
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-      <h2 className="text-lg font-semibold text-gray-900 mb-4">Central de Ajuda</h2>
-      <nav className="space-y-2">
-        {helpSections.map((section) => {
+    <nav className="space-y-2">
+      {filteredSections.map((section) => {
           const Icon = section.icon;
           const isActive = activeSection === section.id;
           
@@ -128,6 +132,5 @@ export function HelpNavigation({ activeSection, onSectionChange }: HelpNavigatio
           );
         })}
       </nav>
-    </div>
   );
 }

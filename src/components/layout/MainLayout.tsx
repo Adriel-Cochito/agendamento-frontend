@@ -10,8 +10,8 @@ import { useEmpresaAtual, useUpdateEmpresa } from '@/hooks/useEmpresa';
 import { useToast } from '@/hooks/useToast';
 import { getErrorMessage } from '@/lib/error-handler';
 import { EmpresaForm } from '@/components/forms/EmpresaForm';
-// import { LGPDGuard } from '@/components/lgpd/LGPDGuard';
-// import { LGPDConsentBanner } from '@/components/lgpd/LGPDConsentBanner';
+import { LGPDGuard } from '@/components/lgpd/LGPDGuard';
+import { LGPDConsentBanner } from '@/components/lgpd/LGPDConsentBanner';
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -75,7 +75,7 @@ export function MainLayout({ children }: MainLayoutProps) {
   };
 
   return (
-    // <LGPDGuard>
+    <LGPDGuard>
       <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="bg-white shadow-sm border-b border-gray-200 fixed top-0 left-0 right-0 z-40">
@@ -262,8 +262,8 @@ export function MainLayout({ children }: MainLayoutProps) {
           />
         </Modal>
       )}
-      {/* <LGPDConsentBanner /> */}
+      <LGPDConsentBanner />
       </div>
-    // </LGPDGuard>
+    </LGPDGuard>
   );
 }

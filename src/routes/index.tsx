@@ -10,6 +10,7 @@ import { Disponibilidades } from '@/pages/Disponibilidades';
 import { Agendamentos } from '@/pages/Agendamentos';
 import { LGPD } from '@/pages/LGPD';
 import { Ajuda } from '@/pages/Ajuda';
+import { AjudaPublica } from '@/pages/AjudaPublica';
 import { MeusChamados } from '@/pages/MeusChamados';
 import { ProtectedRoute } from './ProtectedRoute';
 import { MainLayout } from '@/components/layout/MainLayout';
@@ -48,7 +49,7 @@ export const router = createBrowserRouter([
   // Páginas públicas (para usuários não logados)
   {
     path: '/ajuda-publica',
-    element: <Ajuda />,
+    element: <AjudaPublica />,
   },
   {
     path: '/lgpd-publica',
