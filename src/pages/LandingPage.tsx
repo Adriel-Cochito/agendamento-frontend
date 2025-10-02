@@ -1,5 +1,17 @@
 import { motion } from 'framer-motion';
-import { Calendar, Clock, Users, Shield, Check, Star, ArrowRight, Cloud, Smartphone, Monitor, Tablet } from 'lucide-react';
+import {
+  Calendar,
+  Clock,
+  Users,
+  Shield,
+  Check,
+  Star,
+  ArrowRight,
+  Cloud,
+  Smartphone,
+  Monitor,
+  Tablet,
+} from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
 
@@ -9,24 +21,28 @@ export function LandingPage() {
   const features = [
     {
       icon: Calendar,
-      title: 'Agendamento Online',
-      description: 'Sistema completo de agendamento online 24/7. Seus clientes podem agendar a qualquer hora, de qualquer lugar.'
+      title: 'Agendamento de Serviços',
+      description:
+        'Um sistema completo para agendamento de serviços, permitindo que seus clientes marquem horários de forma online 24/7.',
     },
     {
       icon: Clock,
-      title: 'Gestão de Horários',
-      description: 'Configure facilmente seus horários de atendimento e disponibilidade. Evite conflitos e otimize sua agenda.'
+      title: 'Gestão de Disponibilidade',
+      description:
+        'Configure seus horários de atendimento, bloqueie datas e gerencie sua disponibilidade com flexibilidade para evitar conflitos.',
     },
     {
       icon: Users,
-      title: 'Gestão de Equipe',
-      description: 'Gerencie profissionais, serviços e permissões em um só lugar. Tenha controle total da sua equipe.'
+      title: 'Gestão de Profissionais',
+      description:
+        'Gerencie múltiplos profissionais, atribua serviços e controle as agendas de toda a sua equipe em um único lugar.',
     },
     {
       icon: Shield,
-      title: 'Segurança e LGPD',
-      description: 'Plataforma 100% segura, em conformidade com a LGPD. Seus dados e de seus clientes protegidos.'
-    }
+      title: 'Segurança e Conformidade',
+      description:
+        'Plataforma 100% segura e em conformidade com a LGPD, garantindo a proteção dos dados dos seus clientes.',
+    },
   ];
 
   const benefits = [
@@ -35,7 +51,7 @@ export function LandingPage() {
     'Aumente a satisfação dos seus clientes',
     'Tenha controle total da agenda em tempo real',
     'Acesse relatórios detalhados de performance',
-    'Envie lembretes automáticos por WhatsApp'
+    'Envie lembretes automáticos por WhatsApp',
   ];
 
   const testimonials = [
@@ -43,27 +59,27 @@ export function LandingPage() {
       name: 'Clínicas e Consultórios',
       business: 'Área da Saúde',
       text: 'Com o AgendaSIM, você pode organizar suas consultas, enviar lembretes automáticos e reduzir faltas de pacientes.',
-      rating: 5
+      rating: 5,
     },
     {
       name: 'Salões e Barbearias',
       business: 'Beleza e Estética',
       text: 'Permita que seus clientes agendem online a qualquer hora. Gerencie múltiplos profissionais e serviços com facilidade.',
-      rating: 5
+      rating: 5,
     },
     {
       name: 'Academias e Estúdios',
       business: 'Fitness e Bem-estar',
       text: 'Organize aulas, treinos personalizados e atendimentos. Seus alunos podem reservar horários pelo celular.',
-      rating: 5
-    }
+      rating: 5,
+    },
   ];
 
   const integrations = [
     { name: 'E-mail', description: 'Gmail, Outlook e mais', icon: '📧' },
     { name: 'WhatsApp', description: 'Notificações diretas', icon: 'whatsapp' },
     { name: 'Google Calendar', description: 'Sincronização automática', icon: '📅' },
-    { name: 'Pagamentos', description: 'Mercado Pago, PagSeguro', icon: '💳' }
+    { name: 'Pagamentos', description: 'Mercado Pago, PagSeguro', icon: '💳' },
   ];
 
   // const apiFeatures = [
@@ -84,10 +100,30 @@ export function LandingPage() {
               <span className="text-2xl font-bold text-gray-900">AgendaSIM</span>
             </div>
             <nav className="hidden md:flex items-center space-x-8">
-              <a href="#funcionalidades" className="text-gray-600 hover:text-primary-600 transition-colors">Funcionalidades</a>
-              <a href="#precos" className="text-gray-600 hover:text-primary-600 transition-colors">Preços</a>
-              <a href="#integracoes" className="text-gray-600 hover:text-primary-600 transition-colors">Futuras Integrações</a>
-              <a href="#sobre" className="text-gray-600 hover:text-primary-600 transition-colors">Sobre</a>
+              <a
+                href="#funcionalidades"
+                className="text-gray-600 hover:text-primary-600 transition-colors"
+              >
+                Funcionalidades
+              </a>
+              <a
+                href="#precos"
+                className="text-gray-600 hover:text-primary-600 transition-colors"
+              >
+                Preços
+              </a>
+              <a
+                href="#integracoes"
+                className="text-gray-600 hover:text-primary-600 transition-colors"
+              >
+                Futuras Integrações
+              </a>
+              <a
+                href="#sobre"
+                className="text-gray-600 hover:text-primary-600 transition-colors"
+              >
+                Sobre
+              </a>
               {/* <a href="#api" className="text-gray-600 hover:text-primary-600 transition-colors">API</a> */}
             </nav>
             <div className="flex items-center space-x-4">
@@ -119,13 +155,21 @@ export function LandingPage() {
               transition={{ duration: 0.8 }}
             >
               <h1 className="text-5xl font-bold text-gray-900 mb-6">
-                Transforme sua empresa com
-                <span className="text-primary-600 block">agendamentos inteligentes</span>
+                A plataforma de agendamento de
+                <span className="text-primary-600 block">SERVIÇOS</span>
               </h1>
               <p className="text-xl text-gray-600 mb-8">
-                Automatize seus agendamentos, reduza cancelamentos e ofereça uma experiência incrível aos seus clientes. 
-                Tudo isso em uma plataforma simples e segura.
+                Concentre-se no que você faz de melhor e deixe que o AgendaSIM cuide dos
+                seus agendamentos. Plataforma completa para agendamento de serviços, ideal
+                para profissionais autônomos e empresas.
               </p>
+              <div className="inline-flex items-center gap-3 bg-primary-100/60 border border-primary-200 text-primary-800 px-4 py-2 rounded-lg mb-6">
+                <strong className="uppercase tracking-wider">Foco: SERVIÇOS</strong>
+                <span className="text-sm">
+                  Projetado para quem presta serviços — salões, clínicas, consultórios,
+                  estúdios, prestadores autônomos e empresas de serviços.
+                </span>
+              </div>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Button
                   size="lg"
@@ -155,20 +199,29 @@ export function LandingPage() {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <h3 className="text-lg font-semibold">Agenda de Hoje</h3>
-                    <span className="text-sm text-green-600 font-medium">12 agendamentos</span>
+                    <span className="text-sm text-green-600 font-medium">
+                      12 agendamentos
+                    </span>
                   </div>
                   <div className="space-y-3">
                     {[
                       { time: '09:00', client: 'Maria Silva', service: 'Corte + Escova' },
                       { time: '10:30', client: 'João Santos', service: 'Barba + Cabelo' },
-                      { time: '14:00', client: 'Ana Costa', service: 'Manicure' }
+                      { time: '14:00', client: 'Ana Costa', service: 'Manicure' },
                     ].map((appointment, index) => (
-                      <div key={index} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                      <div
+                        key={index}
+                        className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg"
+                      >
                         <div className="w-2 h-2 bg-primary-500 rounded-full"></div>
                         <div className="flex-1">
                           <div className="flex justify-between">
-                            <span className="font-medium text-gray-900">{appointment.time}</span>
-                            <span className="text-sm text-gray-500">{appointment.service}</span>
+                            <span className="font-medium text-gray-900">
+                              {appointment.time}
+                            </span>
+                            <span className="text-sm text-gray-500">
+                              {appointment.service}
+                            </span>
                           </div>
                           <p className="text-sm text-gray-500">{appointment.client}</p>
                         </div>
@@ -194,7 +247,9 @@ export function LandingPage() {
             <Cloud className="w-16 h-16 mx-auto mb-4" />
             <h2 className="text-3xl font-bold mb-4">100% na Nuvem</h2>
             <p className="text-xl mb-6 max-w-3xl mx-auto">
-              Acesse seus agendamentos de qualquer lugar, em qualquer dispositivo. Computador, tablet ou celular - seus dados sempre sincronizados e disponíveis!
+              Acesse seus agendamentos de qualquer lugar, em qualquer dispositivo.
+              Computador, tablet ou celular - seus dados sempre sincronizados e
+              disponíveis!
             </p>
             <div className="flex justify-center gap-8 mt-8">
               <div className="flex flex-col items-center">
@@ -224,7 +279,9 @@ export function LandingPage() {
             className="text-center mb-16"
           >
             <h2 className="text-4xl font-bold text-gray-900 mb-4">Funcionalidades</h2>
-            <p className="text-xl text-gray-600">Tudo que você precisa para gerenciar seus agendamentos</p>
+            <p className="text-xl text-gray-600">
+              Tudo que você precisa para gerenciar seus agendamentos
+            </p>
           </motion.div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {features.map((feature, index) => (
@@ -239,7 +296,9 @@ export function LandingPage() {
                 <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center mb-4">
                   <feature.icon className="w-6 h-6 text-primary-600" />
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">{feature.title}</h3>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                  {feature.title}
+                </h3>
                 <p className="text-gray-600">{feature.description}</p>
               </motion.div>
             ))}
@@ -327,7 +386,9 @@ export function LandingPage() {
             className="text-center mb-16"
           >
             <h2 className="text-4xl font-bold text-gray-900 mb-4">Futuras Integrações</h2>
-            <p className="text-xl text-gray-600">Conecte com as ferramentas que você já usa</p>
+            <p className="text-xl text-gray-600">
+              Conecte com as ferramentas que você já usa
+            </p>
           </motion.div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {integrations.map((integration, index) => (
@@ -340,13 +401,19 @@ export function LandingPage() {
                 className="bg-gray-50 hover:bg-gray-100 p-6 rounded-xl text-center transition-colors"
               >
                 {integration.icon === 'whatsapp' ? (
-                  <svg className="w-16 h-16 mx-auto mb-4 text-green-500" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+                  <svg
+                    className="w-16 h-16 mx-auto mb-4 text-green-500"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                  >
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
                   </svg>
                 ) : (
                   <div className="text-5xl mb-4">{integration.icon}</div>
                 )}
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">{integration.name}</h3>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                  {integration.name}
+                </h3>
                 <p className="text-gray-600">{integration.description}</p>
               </motion.div>
             ))}
@@ -363,7 +430,9 @@ export function LandingPage() {
             viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">Por que escolher o AgendaSIM?</h2>
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">
+              Por que escolher o AgendaSIM?
+            </h2>
             <p className="text-xl text-gray-600">Benefícios que você pode alcançar</p>
           </motion.div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -394,7 +463,9 @@ export function LandingPage() {
             className="text-center mb-16"
           >
             <h2 className="text-4xl font-bold text-gray-900 mb-4">Sobre Nós</h2>
-            <p className="text-xl text-gray-600">Transformando a gestão de agendamentos no Brasil</p>
+            <p className="text-xl text-gray-600">
+              Transformando a gestão de agendamentos no Brasil
+            </p>
           </motion.div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <motion.div
@@ -404,13 +475,20 @@ export function LandingPage() {
             >
               <h3 className="text-2xl font-bold text-primary-600 mb-4">Nossa Missão</h3>
               <p className="text-gray-600 mb-4">
-                O AgendaSIM nasceu da necessidade de simplificar a rotina de profissionais e empresas que dependem de agendamentos. Desenvolvida com tecnologia brasileira, nossa plataforma combina simplicidade, segurança e eficiência.
+                O AgendaSIM nasceu para simplificar a rotina de prestadores de serviços e
+                empresas que vivem de agendamentos. Nossa plataforma, desenvolvida no
+                Brasil, foca em simplicidade, segurança e eficiência para o gerenciamento
+                de serviços.
               </p>
               <p className="text-gray-600 mb-4">
-                Acreditamos que a tecnologia deve facilitar a vida das pessoas, e não complicar. Por isso, criamos uma solução intuitiva que qualquer pessoa pode usar, independente do conhecimento técnico.
+                Acreditamos que a tecnologia deve ser uma aliada, não um obstáculo. Por
+                isso, criamos uma solução intuitiva que qualquer profissional ou empresa
+                pode usar para otimizar seu tempo e melhorar a experiência do cliente.
               </p>
               <p className="text-gray-600">
-                Nossa missão é ajudar milhares de profissionais e empresas brasileiras a economizar tempo, reduzir custos e oferecer uma experiência excepcional aos seus clientes.
+                Nossa missão é transformar a rotina dos prestadores de serviços em todo o
+                Brasil, oferecendo uma plataforma de agendamentos que economiza tempo,
+                reduz custos e fortalece o relacionamento com seus clientes.{' '}
               </p>
             </motion.div>
             <motion.div
@@ -493,8 +571,12 @@ export function LandingPage() {
             viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">Ideal para diversos segmentos</h2>
-            <p className="text-xl text-gray-600">Veja como o AgendaSIM pode transformar seu negócio</p>
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">
+              Ideal para diversos segmentos
+            </h2>
+            <p className="text-xl text-gray-600">
+              Veja como o AgendaSIM pode transformar seu negócio
+            </p>
           </motion.div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {testimonials.map((testimonial, index) => (
@@ -533,8 +615,8 @@ export function LandingPage() {
           >
             <h2 className="text-4xl font-bold mb-4">Pronto para começar?</h2>
             <p className="text-xl text-primary-100 mb-8">
-              Seja uma das primeiras empresas a automatizar seus agendamentos. 
-              Comece grátis hoje mesmo!
+              Seja uma das primeiras empresas a automatizar seus agendamentos. Comece
+              grátis hoje mesmo!
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button
@@ -576,22 +658,31 @@ export function LandingPage() {
                 <p>🇧🇷 Feito no Brasil</p>
               </div>
             </div>
-            
+
             <div>
               <h4 className="text-lg font-semibold mb-4 text-primary-400">Produto</h4>
               <ul className="space-y-2">
                 <li>
-                  <a href="#funcionalidades" className="text-gray-400 hover:text-white transition-colors">
+                  <a
+                    href="#funcionalidades"
+                    className="text-gray-400 hover:text-white transition-colors"
+                  >
                     Funcionalidades
                   </a>
                 </li>
                 <li>
-                  <a href="#precos" className="text-gray-400 hover:text-white transition-colors">
+                  <a
+                    href="#precos"
+                    className="text-gray-400 hover:text-white transition-colors"
+                  >
                     Preços
                   </a>
                 </li>
                 <li>
-                  <a href="#integracoes" className="text-gray-400 hover:text-white transition-colors">
+                  <a
+                    href="#integracoes"
+                    className="text-gray-400 hover:text-white transition-colors"
+                  >
                     Integrações
                   </a>
                 </li>
@@ -607,12 +698,18 @@ export function LandingPage() {
               <h4 className="text-lg font-semibold mb-4 text-primary-400">Empresa</h4>
               <ul className="space-y-2">
                 <li>
-                  <a href="#sobre" className="text-gray-400 hover:text-white transition-colors">
+                  <a
+                    href="#sobre"
+                    className="text-gray-400 hover:text-white transition-colors"
+                  >
                     Sobre Nós
                   </a>
                 </li>
                 <li>
-                  <a href="/ajuda" className="text-gray-400 hover:text-white transition-colors">
+                  <a
+                    href="/login"
+                    className="text-gray-400 hover:text-white transition-colors"
+                  >
                     Contato (Suporte)
                   </a>
                 </li>
@@ -623,22 +720,34 @@ export function LandingPage() {
               <h4 className="text-lg font-semibold mb-4 text-primary-400">Legal</h4>
               <ul className="space-y-2">
                 <li>
-                  <a href="/ajuda" className="text-gray-400 hover:text-white transition-colors">
+                  <a
+                    href="/login"
+                    className="text-gray-400 hover:text-white transition-colors"
+                  >
                     Política de Privacidade
                   </a>
                 </li>
                 <li>
-                  <a href="/ajuda" className="text-gray-400 hover:text-white transition-colors">
+                  <a
+                    href="/login"
+                    className="text-gray-400 hover:text-white transition-colors"
+                  >
                     Termos de Uso
                   </a>
                 </li>
                 <li>
-                  <a href="/ajuda" className="text-gray-400 hover:text-white transition-colors">
+                  <a
+                    href="/login"
+                    className="text-gray-400 hover:text-white transition-colors"
+                  >
                     LGPD
                   </a>
                 </li>
                 <li>
-                  <a href="/ajuda" className="text-gray-400 hover:text-white transition-colors">
+                  <a
+                    href="/login"
+                    className="text-gray-400 hover:text-white transition-colors"
+                  >
                     Cookies
                   </a>
                 </li>
