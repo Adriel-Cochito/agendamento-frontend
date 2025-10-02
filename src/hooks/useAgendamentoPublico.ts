@@ -416,7 +416,7 @@ export function useAgendamentoPublicoLogic(
   }, []);
 
   // Atualizar dados do cliente - memoizado
-  const atualizarDadosCliente = useCallback((campo: 'nomeCliente' | 'telefoneCliente', valor: string) => {
+  const atualizarDadosCliente = useCallback((campo: 'nomeCliente' | 'telefoneCliente' | 'observacoes', valor: string) => {
     setModalStates(prev => ({
       ...prev,
       dadosCliente: {
@@ -534,6 +534,7 @@ export function useAgendamentoPublicoLogic(
       dadosCliente: {
         nomeCliente: '',
         telefoneCliente: '+55 ',
+        observacoes: ''
       },
     });
     setSucesso(false);
