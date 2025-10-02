@@ -478,6 +478,7 @@ export function useAgendamentoPublicoLogic(
       const agendamentoData = {
         nomeCliente: dadosCliente.nomeCliente.trim(),
         telefoneCliente: dadosCliente.telefoneCliente,
+        observacoes: dadosCliente.observacoes?.trim() || null,
         dataHora: selectedDataHora,
         status: 'AGENDADO' as const,
         empresa: { id: empresaId },
