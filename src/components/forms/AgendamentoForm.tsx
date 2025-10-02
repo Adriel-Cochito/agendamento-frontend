@@ -5,7 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { MaskedInput } from '@/components/ui/MaskedInput';
 import { maskPhone } from '@/lib/masks';
-import { User, Phone, MessageSquare, Copy, ExternalLink } from 'lucide-react';
+import { User, Phone, MessageSquare, Copy, ExternalLink, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Agendamento, StatusAgendamento } from '@/types/agendamento';
@@ -25,6 +25,7 @@ const schema = z.object({
   telefoneCliente: z
     .string()
     .regex(/^\+55\s\d{2}\s\d{5}-\d{4}$/, 'Telefone inválido. Formato: +55 31 99999-8888'),
+  observacoes: z.string().max(500, 'Observações devem ter no máximo 500 caracteres').optional(),
   status: z.enum([
     'AGENDADO',
     'CONFIRMADO', 
@@ -67,6 +68,7 @@ export function AgendamentoForm({
     defaultValues: {
       nomeCliente: agendamento?.nomeCliente || '',
       telefoneCliente: agendamento?.telefoneCliente || '+55 ',
+      observacoes: agendamento?.observacoes || '',
       status: agendamento?.status || 'AGENDADO',
     },
   });
@@ -79,6 +81,7 @@ export function AgendamentoForm({
     const submitData = {
       nomeCliente: data.nomeCliente,
       telefoneCliente: data.telefoneCliente,
+      observacoes: data.observacoes || null,
       dataHora: dataHora,
       status: data.status,
       empresa: { id: empresaId },
@@ -219,6 +222,27 @@ export function AgendamentoForm({
               />
             )}
           />
+        </div>
+
+        {/* Campo de Observações */}
+        <div>
+          <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+            Observações
+          </label>
+          <div className="relative">
+            <FileText className="absolute left-3 top-3 w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
+            <textarea
+              {...register('observacoes')}
+              className="flex min-h-[80px] sm:min-h-[100px] w-full rounded-lg border border-gray-300 bg-white px-3 py-2 pl-9 sm:pl-10 text-xs sm:text-sm transition-all hover:border-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              placeholder="Informações adicionais, preferências ou observações especiais..."
+            />
+          </div>
+          {errors.observacoes && (
+            <p className="mt-1 text-xs text-red-500">{errors.observacoes.message}</p>
+          )}
+          <p className="mt-1 text-xs text-gray-500">
+            Máximo de 500 caracteres
+          </p>
         </div>
 
         <div>
