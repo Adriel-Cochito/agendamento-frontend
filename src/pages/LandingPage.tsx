@@ -705,52 +705,52 @@ export function LandingPage() {
                     Sobre Nós
                   </a>
                 </li>
-                <li>
-                  <a
-                    href="/login"
-                    className="text-gray-400 hover:text-white transition-colors"
-                  >
-                    Contato (Suporte)
-                  </a>
-                </li>
+                 <li>
+                   <a
+                     href="/ajuda-publica"
+                     className="text-gray-400 hover:text-white transition-colors"
+                   >
+                     Contato (Suporte)
+                   </a>
+                 </li>
               </ul>
             </div>
 
             <div>
               <h4 className="text-lg font-semibold mb-4 text-primary-400">Legal</h4>
               <ul className="space-y-2">
-                <li>
-                  <a
-                    href="/login"
-                    className="text-gray-400 hover:text-white transition-colors"
-                  >
-                    Política de Privacidade
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="/login"
-                    className="text-gray-400 hover:text-white transition-colors"
-                  >
-                    Termos de Uso
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="/login"
-                    className="text-gray-400 hover:text-white transition-colors"
-                  >
-                    LGPD
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="/login"
-                    className="text-gray-400 hover:text-white transition-colors"
-                  >
-                    Cookies
-                  </a>
-                </li>
+                 <li>
+                   <a
+                     href="/lgpd-publica"
+                     className="text-gray-400 hover:text-white transition-colors"
+                   >
+                     Política de Privacidade
+                   </a>
+                 </li>
+                 <li>
+                   <a
+                     href="/lgpd-publica"
+                     className="text-gray-400 hover:text-white transition-colors"
+                   >
+                     Termos de Uso
+                   </a>
+                 </li>
+                 <li>
+                   <a
+                     href="/lgpd-publica"
+                     className="text-gray-400 hover:text-white transition-colors"
+                   >
+                     LGPD
+                   </a>
+                 </li>
+                 <li>
+                   <a
+                     href="/lgpd-publica"
+                     className="text-gray-400 hover:text-white transition-colors"
+                   >
+                     Cookies
+                   </a>
+                 </li>
               </ul>
             </div>
           </div>

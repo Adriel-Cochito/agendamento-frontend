@@ -14,6 +14,7 @@ import { MeusChamados } from '@/pages/MeusChamados';
 import { ProtectedRoute } from './ProtectedRoute';
 import { MainLayout } from '@/components/layout/MainLayout';
 import AgendamentoPublico from '@/pages/AgendamentoPublico';
+// imports above already include Ajuda and LGPD
 
 export const router = createBrowserRouter([
   // Página pública inicial (Landing Page)
@@ -43,6 +44,15 @@ export const router = createBrowserRouter([
   {
     path: '/agendamento',
     element: <AgendamentoPublico />,
+  },
+  // Páginas públicas (para usuários não logados)
+  {
+    path: '/ajuda-publica',
+    element: <Ajuda />,
+  },
+  {
+    path: '/lgpd-publica',
+    element: <LGPD />,
   },
   // Rotas protegidas (dashboard)
   {
@@ -93,17 +103,35 @@ export const router = createBrowserRouter([
         element: <MainLayout><Disponibilidades /></MainLayout>,
         index: true,
       },
+    ],
+  },
+  {
+    path: '/lgpd',
+    element: <ProtectedRoute />,
+    children: [
       {
-        path: 'lgpd',
         element: <MainLayout><LGPD /></MainLayout>,
+        index: true,
       },
+    ],
+  },
+  {
+    path: '/ajuda',
+    element: <ProtectedRoute />,
+    children: [
       {
-        path: 'ajuda',
         element: <MainLayout><Ajuda /></MainLayout>,
+        index: true,
       },
+    ],
+  },
+  {
+    path: '/meus-chamados',
+    element: <ProtectedRoute />,
+    children: [
       {
-        path: 'meus-chamados',
         element: <MainLayout><MeusChamados /></MainLayout>,
+        index: true,
       },
     ],
   },
