@@ -17,7 +17,7 @@ import {
   ChevronLeft,
   MapPin,
   Mail,
-  Shield
+  Shield,
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -998,7 +998,7 @@ export default function AgendamentoPublico({
                 <span>Confirmação imediata</span>
               </div>
             </div>
-            
+
             {/* Informações LGPD */}
             <div className="mt-4 pt-3 border-t border-gray-100">
               <div className="flex items-center justify-between">
