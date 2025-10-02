@@ -40,7 +40,7 @@ export function LoginForm() {
         email: data.email,
         password: data.password,
       });
-      navigate('/');
+      navigate('/inicio');
     } catch (err: any) {
       setError(
         err.response?.data?.message ||

@@ -29,7 +29,7 @@ export function MainLayout({ children }: MainLayoutProps) {
 
   const handleLogout = () => {
     logout();
-    navigate('/login');
+    navigate('/');
   };
 
   const handleEmpresaSubmit = async (data: any) => {

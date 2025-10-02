@@ -198,7 +198,7 @@ export function SignupForm() {
             email: data.emailProfissional,
             password: data.senhaProfissional,
           });
-          navigate('/');
+          navigate('/inicio');
         } catch (loginError) {
           // Se falhar o login automático, redireciona para a tela de login
           navigate('/login');

@@ -3,6 +3,7 @@ import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { Login } from '@/pages/Login';
 import { Signup } from '@/pages/Signup';
 import { Home } from '@/pages/Home';
+import { LandingPage } from '@/pages/LandingPage';
 import { Profissionais } from '@/pages/Profissionais';
 import { Servicos } from '@/pages/Servicos';
 import { Disponibilidades } from '@/pages/Disponibilidades';
@@ -12,6 +13,11 @@ import { MainLayout } from '@/components/layout/MainLayout';
 import AgendamentoPublico from '@/pages/AgendamentoPublico';
 
 export const router = createBrowserRouter([
+  // Página pública inicial (Landing Page)
+  {
+    path: '/',
+    element: <LandingPage />,
+  },
   {
     path: '/login',
     element: <Login />,
@@ -35,29 +41,54 @@ export const router = createBrowserRouter([
     path: '/agendamento',
     element: <AgendamentoPublico />,
   },
+  // Rotas protegidas (dashboard)
   {
-    path: '/',
+    path: '/inicio',
     element: <ProtectedRoute />,
     children: [
       {
         element: <MainLayout><Home /></MainLayout>,
         index: true,
       },
+    ],
+  },
+  {
+    path: '/agendamentos',
+    element: <ProtectedRoute />,
+    children: [
       {
-        path: 'agendamentos',
         element: <MainLayout><Agendamentos /></MainLayout>,
+        index: true,
       },
+    ],
+  },
+  {
+    path: '/profissionais',
+    element: <ProtectedRoute />,
+    children: [
       {
-        path: 'profissionais',
         element: <MainLayout><Profissionais /></MainLayout>,
+        index: true,
       },
+    ],
+  },
+  {
+    path: '/servicos',
+    element: <ProtectedRoute />,
+    children: [
       {
-        path: 'servicos',
         element: <MainLayout><Servicos /></MainLayout>,
+        index: true,
       },
+    ],
+  },
+  {
+    path: '/disponibilidades',
+    element: <ProtectedRoute />,
+    children: [
       {
-        path: 'disponibilidades',
         element: <MainLayout><Disponibilidades /></MainLayout>,
+        index: true,
       },
     ],
   },
