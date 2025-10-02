@@ -67,7 +67,7 @@ export function LandingPage() {
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-2">
               <Calendar className="w-8 h-8 text-primary-600" />
-              <span className="text-2xl font-bold text-gray-900">AgendaSim</span>
+              <span className="text-2xl font-bold text-gray-900">AgendaSIM</span>
             </div>
             <div className="flex items-center space-x-4">
               <Button
@@ -103,7 +103,7 @@ export function LandingPage() {
               </h1>
               <p className="text-xl text-gray-600 mb-8">
                 Automatize seus agendamentos, reduza cancelamentos e ofereça uma experiência incrível aos seus clientes. 
-                Tudo isso em uma plataforma simples e segura.
+                Tudo isso em uma plataforma Simples e segura.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Button
@@ -214,7 +214,7 @@ export function LandingPage() {
                 Resultados que você pode esperar
               </h2>
               <p className="text-xl text-gray-600 mb-8">
-                Empresas que usam o AgendaSim veem melhorias significativas em produtividade e satisfação do cliente.
+                Empresas que usam o AgendaSIM veem melhorias significativas em produtividade e satisfação do cliente.
               </p>
               <div className="space-y-4">
                 {benefits.map((benefit, index) => (
@@ -279,10 +279,10 @@ export function LandingPage() {
             className="text-center mb-16"
           >
             <h2 className="text-4xl font-bold text-gray-900 mb-4">
-              O que nossos clientes dizem
+              O que os clientes poderiam dizer
             </h2>
             <p className="text-xl text-gray-600">
-              Milhares de empresas já transformaram seus negócios com o AgendaSim
+              Milhares de empresas já podem transformar seus negócios com o AgendaSIM
             </p>
           </motion.div>
 
@@ -424,17 +424,17 @@ export function LandingPage() {
             <div>
               <div className="flex items-center space-x-2 mb-4">
                 <Calendar className="w-8 h-8 text-primary-400" />
-                <span className="text-2xl font-bold">AgendaSim</span>
+                <span className="text-2xl font-bold">AgendaSIM</span>
               </div>
               <p className="text-gray-400 mb-4">
                 A plataforma de agendamento online mais completa e segura do Brasil.
               </p>
-              <div className="flex space-x-4">
+              {/* <div className="flex space-x-4">
                 <div className="flex items-center space-x-2 text-sm text-gray-400">
                   <Phone className="w-4 h-4" />
                   <span>(11) 9999-9999</span>
                 </div>
-              </div>
+              </div> */}
             </div>
             <div>
               <h3 className="text-lg font-semibold mb-4">Produto</h3>
@@ -449,8 +449,8 @@ export function LandingPage() {
               <h3 className="text-lg font-semibold mb-4">Empresa</h3>
               <ul className="space-y-2 text-gray-400">
                 <li><a href="#" className="hover:text-white transition-colors">Sobre nós</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Blog</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Carreiras</a></li>
+                {/* <li><a href="#" className="hover:text-white transition-colors">Blog</a></li> */}
+                {/* <li><a href="#" className="hover:text-white transition-colors">Carreiras</a></li> */}
                 <li><a href="#" className="hover:text-white transition-colors">Contato</a></li>
               </ul>
             </div>
@@ -465,7 +465,7 @@ export function LandingPage() {
             </div>
           </div>
           <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-            <p>&copy; 2024 AgendaSim. Todos os direitos reservados.</p>
+            <p>&copy; 2025 AgendaSIM. Todos os direitos reservados.</p>
           </div>
         </div>
       </footer>
