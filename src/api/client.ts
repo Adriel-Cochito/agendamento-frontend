@@ -2,7 +2,7 @@ import axios from 'axios';
 import { authStore } from '@/store/authStore';
 import { handleApiError } from '@/lib/error-handler';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://agendesim.onrender.com';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://agendesim.cloud';
 
 console.log('API Base URL:', API_BASE_URL); // Ajuda a verificar no console se a variável está carregando
 
