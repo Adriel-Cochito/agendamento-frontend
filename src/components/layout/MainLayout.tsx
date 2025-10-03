@@ -110,7 +110,7 @@ export function MainLayout({ children }: MainLayoutProps) {
                   </h1>
                   {empresa?.nome && !loadingEmpresa && (
                     <span className="text-xs text-gray-500 font-medium truncate">
-                      Sistema de Agendamentos
+                      Plataforma de Agendamentos
                     </span>
                   )}
                 </div>
