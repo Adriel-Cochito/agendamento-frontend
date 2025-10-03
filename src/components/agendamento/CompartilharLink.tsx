@@ -270,7 +270,7 @@ export function CompartilharLink({ onClose }: CompartilharLinkProps) {
                 </div>
                 
                 {/* Preview da estrutura da URL */}
-                {empresa?.nome && !loadingEmpresa && (
+                {/* {empresa?.nome && !loadingEmpresa && (
                   <button
                     onClick={() => setMostrarDetalhes(!mostrarDetalhes)}
                     className="w-full text-left p-2 bg-white border border-gray-200 rounded text-xs text-gray-600 hover:bg-gray-50 transition-colors"
@@ -290,7 +290,8 @@ export function CompartilharLink({ onClose }: CompartilharLinkProps) {
                       </div>
                     )}
                   </button>
-                )}
+                )} */}
+                
               </div>
             </div>
 
