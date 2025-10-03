@@ -46,7 +46,7 @@ export function InicioRapido() {
       {/* Header */}
       <div className="text-center">
         <h1 className="text-3xl font-bold text-gray-900 mb-4">
-          Bem-vindo ao AgendaSIM! 🎉
+          Bem-vindo ao AgendeSIM! 🎉
         </h1>
         <p className="text-lg text-gray-600 max-w-2xl mx-auto">
           Siga estes passos simples para configurar sua plataforma de agendamentos e começar a atender seus clientes.

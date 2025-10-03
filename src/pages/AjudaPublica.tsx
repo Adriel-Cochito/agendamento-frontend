@@ -87,7 +87,7 @@ export function AjudaPublica() {
               </Button>
               <div className="flex items-center space-x-2">
                 <Calendar className="w-6 h-6 text-primary-600" />
-                <span className="text-xl font-bold text-gray-900">AgendaSIM</span>
+                <span className="text-xl font-bold text-gray-900">AgendeSIM</span>
               </div>
             </div>
             <div className="flex items-center space-x-4">
@@ -141,7 +141,7 @@ export function AjudaPublica() {
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="flex items-center space-x-2 mb-4 md:mb-0">
               <Calendar className="w-6 h-6 text-primary-400" />
-              <span className="text-xl font-bold">AgendaSIM</span>
+              <span className="text-xl font-bold">AgendeSIM</span>
             </div>
             <div className="flex space-x-6 text-sm text-gray-400">
               <button onClick={() => navigate('/')} className="hover:text-white transition-colors">
@@ -156,7 +156,7 @@ export function AjudaPublica() {
             </div>
           </div>
           <div className="border-t border-gray-800 mt-6 pt-6 text-center text-gray-400">
-            <p>&copy; 2025 AgendaSIM. Todos os direitos reservados.</p>
+            <p>&copy; 2025 AgendeSIM. Todos os direitos reservados.</p>
           </div>
         </div>
       </footer>

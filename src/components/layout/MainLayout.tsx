@@ -66,12 +66,12 @@ export function MainLayout({ children }: MainLayoutProps) {
 
   const getTituloSistema = () => {
     if (loadingEmpresa) {
-      return 'AgendaSIM';
+      return 'AgendeSIM';
     }
     if (empresa?.nome) {
-      return `AgendaSIM - ${empresa.nome}`;
+      return `AgendeSIM - ${empresa.nome}`;
     }
-    return 'AgendaSIM';
+    return 'AgendeSIM';
   };
 
   return (
@@ -101,7 +101,7 @@ export function MainLayout({ children }: MainLayoutProps) {
                   <h1 className="text-sm sm:text-lg lg:text-xl font-bold text-gray-900 truncate">
                     {loadingEmpresa ? (
                       <div className="flex items-center space-x-2">
-                        <span>AgendaSIM</span>
+                        <span>AgendeSIM</span>
                         <div className="w-3 h-3 sm:w-4 sm:h-4 border-2 border-primary-600 border-t-transparent rounded-full animate-spin"></div>
                       </div>
                     ) : (
@@ -232,7 +232,7 @@ export function MainLayout({ children }: MainLayoutProps) {
         <div className="absolute bottom-4 left-4 right-4">
           <div className="text-center p-3 bg-gray-50 rounded-lg">
             <p className="text-xs text-gray-500 font-medium">
-              AgendaSIM v1.0
+              AgendeSIM v1.0
             </p>
             {empresa?.nome && !loadingEmpresa && (
               <p className="text-xs text-gray-400 mt-1">

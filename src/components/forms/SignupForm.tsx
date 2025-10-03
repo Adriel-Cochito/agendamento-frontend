@@ -407,7 +407,7 @@ export function SignupForm() {
             <label htmlFor="nomeUnicoEmpresa" className="block text-sm font-medium text-gray-700 mb-1">
               Nome único para agendamentos
               <span className="text-xs text-gray-500 block mt-1">
-                Será usado no link: agendasim/seunomedaempresa
+                Será usado no link: agendesim.com/seunomedaempresa
               </span>
             </label>
             <Input

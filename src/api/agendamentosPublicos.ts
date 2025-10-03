@@ -1,7 +1,7 @@
 // src/api/agendamentosPublicos.ts - Corrigido para usar rotas exatas do backend
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://agendasim.onrender.com';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://agendesim.onrender.com';
 const isDev = import.meta.env.DEV;
 
 // Cliente público sem autenticação

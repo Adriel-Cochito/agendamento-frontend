@@ -10,7 +10,7 @@ export function ContatoHelp() {
       icon: Mail,
       title: 'Email',
       description: 'Envie sua dúvida por email',
-      contact: 'suporte@agendasim.com.br',
+      contact: 'suporte@agendesim.com.br',
       responseTime: 'Resposta em até 24 horas',
       color: 'bg-blue-50 border-blue-200 text-blue-700'
     },
@@ -50,19 +50,19 @@ export function ContatoHelp() {
   const emergencyContacts = [
     {
       situation: 'Problema crítico no sistema',
-      contact: 'suporte@agendasim.com.br',
+      contact: 'suporte@agendesim.com.br',
       priority: 'Alta',
       responseTime: '2 horas'
     },
     {
       situation: 'Dúvida sobre funcionalidade',
-      contact: 'ajuda@agendasim.com.br',
+      contact: 'ajuda@agendesim.com.br',
       priority: 'Média',
       responseTime: '24 horas'
     },
     {
       situation: 'Sugestão de melhoria',
-      contact: 'feedback@agendasim.com.br',
+      contact: 'feedback@agendesim.com.br',
       priority: 'Baixa',
       responseTime: '48 horas'
     }

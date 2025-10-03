@@ -58,7 +58,7 @@ export function LandingPage() {
     {
       name: 'Clínicas e Consultórios',
       business: 'Área da Saúde',
-      text: 'Com o AgendaSIM, você pode organizar suas consultas, enviar lembretes automáticos e reduzir faltas de pacientes.',
+      text: 'Com o AgendeSIM, você pode organizar suas consultas, enviar lembretes automáticos e reduzir faltas de pacientes.',
       rating: 5,
     },
     {
@@ -97,7 +97,7 @@ export function LandingPage() {
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-2">
               <Calendar className="w-8 h-8 text-primary-600" />
-              <span className="text-2xl font-bold text-gray-900">AgendaSIM</span>
+              <span className="text-2xl font-bold text-gray-900">AgendeSIM</span>
             </div>
             <nav className="hidden md:flex items-center space-x-8">
               <a
@@ -166,7 +166,7 @@ export function LandingPage() {
                 <span className="text-primary-600 block">SERVIÇOS</span>
               </h1>
               <p className="text-xl text-gray-600 mb-8">
-                Concentre-se no que você faz de melhor e deixe que o AgendaSIM cuide dos
+                Concentre-se no que você faz de melhor e deixe que o AgendeSIM cuide dos
                 seus agendamentos. Plataforma completa para agendamento de serviços, ideal
                 para profissionais autônomos e empresas.
               </p>
@@ -438,7 +438,7 @@ export function LandingPage() {
             className="text-center mb-16"
           >
             <h2 className="text-4xl font-bold text-gray-900 mb-4">
-              Por que escolher o AgendaSIM?
+              Por que escolher o AgendeSIM?
             </h2>
             <p className="text-xl text-gray-600">Benefícios que você pode alcançar</p>
           </motion.div>
@@ -482,7 +482,7 @@ export function LandingPage() {
             >
               <h3 className="text-2xl font-bold text-primary-600 mb-4">Nossa Missão</h3>
               <p className="text-gray-600 mb-4">
-                O AgendaSIM nasceu para simplificar a rotina de prestadores de serviços e
+                O AgendeSIM nasceu para simplificar a rotina de prestadores de serviços e
                 empresas que vivem de agendamentos. Nossa plataforma, desenvolvida no
                 Brasil, foca em simplicidade, segurança e eficiência para o gerenciamento
                 de serviços.
@@ -535,11 +535,11 @@ export function LandingPage() {
             className="text-center mb-16"
           >
             <h2 className="text-4xl font-bold mb-4">API</h2>
-            <p className="text-xl text-gray-300">Integre o AgendaSIM ao seu sistema</p>
+            <p className="text-xl text-gray-300">Integre o AgendeSIM ao seu sistema</p>
           </motion.div>
           <div className="mb-12">
             <p className="text-lg text-gray-300 text-center max-w-3xl mx-auto">
-              Nossa API RESTful completa permite que você integre todas as funcionalidades do AgendaSIM em seus próprios sistemas e aplicações.
+              Nossa API RESTful completa permite que você integre todas as funcionalidades do AgendeSIM em seus próprios sistemas e aplicações.
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
@@ -582,7 +582,7 @@ export function LandingPage() {
               Ideal para diversos segmentos
             </h2>
             <p className="text-xl text-gray-600">
-              Veja como o AgendaSIM pode transformar seu negócio
+              Veja como o AgendeSIM pode transformar seu negócio
             </p>
           </motion.div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -654,7 +654,7 @@ export function LandingPage() {
             <div>
               <div className="flex items-center space-x-2 mb-4">
                 <Calendar className="w-8 h-8 text-primary-400" />
-                <span className="text-2xl font-bold">AgendaSIM</span>
+                <span className="text-2xl font-bold">AgendeSIM</span>
               </div>
               <p className="text-gray-400 mb-4">
                 A plataforma de agendamento online mais completa e segura do Brasil.
@@ -772,7 +772,7 @@ export function LandingPage() {
 
           <div className="border-t border-gray-800 pt-8 text-center">
             <p className="text-gray-400">
-              &copy; 2025 AgendaSIM. Todos os direitos reservados.
+              &copy; 2025 AgendeSIM. Todos os direitos reservados.
             </p>
           </div>
         </div>

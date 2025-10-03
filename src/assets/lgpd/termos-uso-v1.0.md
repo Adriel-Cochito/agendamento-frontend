@@ -4,11 +4,11 @@
 
 ## 1. ACEITAÇÃO DOS TERMOS
 
-Ao utilizar a plataforma AgendaSIM, você concorda em cumprir e estar vinculado a estes Termos de Uso. Se você não concordar com qualquer parte destes termos, não deve utilizar nossa plataforma.
+Ao utilizar a plataforma AgendeSIM, você concorda em cumprir e estar vinculado a estes Termos de Uso. Se você não concordar com qualquer parte destes termos, não deve utilizar nossa plataforma.
 
 ## 2. DESCRIÇÃO DO SERVIÇO
 
-O AgendaSIM é uma plataforma de agendamento online que permite:
+O AgendeSIM é uma plataforma de agendamento online que permite:
 
 - **Gestão de Empresas**: Cadastro e configuração de empresas prestadoras de serviços
 - **Gestão de Profissionais**: Cadastro e administração de profissionais e suas disponibilidades

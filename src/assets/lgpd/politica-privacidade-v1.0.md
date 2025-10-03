@@ -4,11 +4,11 @@
 
 ## 1. INTRODUÇÃO
 
-Esta Política de Privacidade descreve como o AgendaSIM coleta, usa, armazena e protege suas informações pessoais quando você utiliza nossa plataforma de agendamento online. Estamos comprometidos em proteger sua privacidade e garantir o tratamento adequado de seus dados pessoais, em conformidade com a Lei Geral de Proteção de Dados (LGPD) e demais legislações aplicáveis.
+Esta Política de Privacidade descreve como o AgendeSIM coleta, usa, armazena e protege suas informações pessoais quando você utiliza nossa plataforma de agendamento online. Estamos comprometidos em proteger sua privacidade e garantir o tratamento adequado de seus dados pessoais, em conformidade com a Lei Geral de Proteção de Dados (LGPD) e demais legislações aplicáveis.
 
 ## 2. RESPONSÁVEL PELO TRATAMENTO
 
-**AgendaSIM**
+**AgendeSIM**
 - **Email:** contato@agendasim.com.br
 - **Telefone:** (11) 99999-9999
 - **Endereço:** São Paulo/SP, Brasil
