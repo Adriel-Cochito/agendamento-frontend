@@ -24,17 +24,22 @@ export function CompartilharLink({ onClose }: CompartilharLinkProps) {
   const { data: empresa, isLoading: loadingEmpresa } = useEmpresaAtual();
   const urlManager = new PublicSchedulingUrlManager();
 
-  const { url: linkAgendamento, warnings } = urlManager.generateValidatedUrl(
-    empresaId,
-    empresa?.nome,
-    empresa?.telefone
-  );
+  // Gerar link usando nome único se disponível, senão usar formato antigo
+  const linkAgendamento = empresa?.nomeUnico 
+    ? `${window.location.origin}/${empresa.nomeUnico}`
+    : urlManager.generateValidatedUrl(empresaId, empresa?.nome, empresa?.telefone).url;
 
-  const validation = validateSchedulingUrlParams({
-    empresaId: empresaId.toString(),
-    nomeEmpresa: empresa?.nome,
-    telefoneEmpresa: empresa?.telefone
-  });
+  // Validação apenas para formato antigo
+  const validation = empresa?.nomeUnico 
+    ? { isValid: true, errors: [], warnings: [] }
+    : validateSchedulingUrlParams({
+        empresaId: empresaId.toString(),
+        nomeEmpresa: empresa?.nome,
+        telefoneEmpresa: empresa?.telefone
+      });
+
+  // Extrair warnings para compatibilidade
+  const warnings = validation.warnings || [];
 
   const copiarLink = async () => {
     try {

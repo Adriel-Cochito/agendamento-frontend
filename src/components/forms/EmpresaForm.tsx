@@ -14,6 +14,10 @@ const schema = z.object({
   email: z.string().email('Email inválido'),
   telefone: z.string().min(16, 'Telefone deve estar no formato +55 31 99999-8888'),
   cnpj: z.string().min(18, 'CNPJ deve estar no formato 00.000.000/0001-00'),
+  nomeUnico: z.string()
+    .min(3, 'Nome único deve ter no mínimo 3 caracteres')
+    .max(50, 'Nome único deve ter no máximo 50 caracteres')
+    .regex(/^[a-z0-9]+$/, 'Nome único deve conter apenas letras minúsculas e números, sem espaços ou caracteres especiais'),
   ativo: z.boolean(),
 });
 
@@ -80,6 +84,7 @@ export function EmpresaForm({ empresa, onSubmit, isLoading }: EmpresaFormProps) 
       email: empresa.email || '',
       telefone: empresa.telefone ? maskPhone(empresa.telefone) : '',
       cnpj: empresa.cnpj ? maskCNPJ(empresa.cnpj) : '',
+      nomeUnico: empresa.nomeUnico || '',
       ativo: empresa.ativo ?? true,
     },
   });
@@ -91,6 +96,7 @@ export function EmpresaForm({ empresa, onSubmit, isLoading }: EmpresaFormProps) 
       // Aplicar máscaras aos valores vindos da API
       setValue('telefone', maskPhone(empresa.telefone));
       setValue('cnpj', maskCNPJ(empresa.cnpj));
+      setValue('nomeUnico', empresa.nomeUnico);
       setValue('ativo', empresa.ativo);
     }
   }, [empresa, setValue]);
@@ -104,6 +110,7 @@ export function EmpresaForm({ empresa, onSubmit, isLoading }: EmpresaFormProps) 
       email: data.email.trim(),
       telefone: data.telefone, // Manter com máscara: (11) 99999-9999
       cnpj: data.cnpj, // Manter com máscara: 00.000.000/0001-00
+      nomeUnico: data.nomeUnico.trim().toLowerCase(),
       ativo: data.ativo,
     };
     
@@ -184,6 +191,27 @@ export function EmpresaForm({ empresa, onSubmit, isLoading }: EmpresaFormProps) 
             }}
             defaultValue={empresa.cnpj ? maskCNPJ(empresa.cnpj) : ''}
           />
+        </div>
+
+        <div>
+          <label htmlFor="nomeUnico" className="block text-sm font-medium text-gray-700 mb-1">
+            Nome único para agendamentos
+            <span className="text-xs text-gray-500 block mt-1">
+              Será usado no link: localhost:5173/{empresa.nomeUnico || 'seunomedaempresa'}
+            </span>
+          </label>
+          <Input
+            id="nomeUnico"
+            type="text"
+            placeholder="salaodebeleza"
+            icon={Building2}
+            error={errors.nomeUnico?.message}
+            {...register('nomeUnico')}
+            style={{ textTransform: 'lowercase' }}
+          />
+          <p className="text-xs text-gray-500 mt-1">
+            Apenas letras minúsculas e números, sem espaços ou caracteres especiais
+          </p>
         </div>
       </div>
 

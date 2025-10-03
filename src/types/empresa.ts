@@ -3,6 +3,7 @@ export interface CreateEmpresaWithOwnerRequest {
   emailEmpresa: string;
   telefoneEmpresa: string;
   cnpjEmpresa: string;
+  nomeUnicoEmpresa: string;
   ativoEmpresa: boolean;
   nomeProfissional: string;
   emailProfissional: string;
@@ -19,5 +20,6 @@ export interface Empresa {
   email: string;
   telefone: string;
   cnpj: string;
+  nomeUnico: string;
   ativo: boolean;
 }

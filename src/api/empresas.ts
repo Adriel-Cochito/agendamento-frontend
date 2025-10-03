@@ -8,6 +8,7 @@ export interface EmpresaResponse {
   email: string;
   telefone: string;
   cnpj: string;
+  nomeUnico: string;
   ativo: boolean;
   createdAt: string;
   updatedAt: string | null;
@@ -19,6 +20,7 @@ export interface UpdateEmpresaRequest {
   email: string;
   telefone: string;
   cnpj: string;
+  nomeUnico: string;
   ativo: boolean;
 }
 
@@ -47,12 +49,25 @@ export const empresasApi = {
       email: data.email,
       telefone: data.telefone, // enviado como string limpa (sem máscara)
       cnpj: data.cnpj, // enviado como string limpa (sem máscara)
+      nomeUnico: data.nomeUnico,
       ativo: data.ativo
     };
     
     console.log('Enviando payload para API:', payload);
     
     const response = await apiClient.put(`/empresas/${id}`, payload);
+    return response.data;
+  },
+
+  // Verificar se nome único está disponível
+  verificarNomeUnicoDisponivel: async (nomeUnico: string): Promise<{ disponivel: boolean }> => {
+    const response = await apiClient.get(`/empresas/verificar-nome-unico/${nomeUnico}`);
+    return response.data;
+  },
+
+  // Buscar empresa por nome único
+  getByNomeUnico: async (nomeUnico: string): Promise<EmpresaResponse> => {
+    const response = await apiClient.get(`/empresas/nome-unico/${nomeUnico}`);
     return response.data;
   },
 };

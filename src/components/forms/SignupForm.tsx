@@ -25,6 +25,10 @@ const signupSchema = z.object({
     const cleaned = val.replace(/\D/g, '');
     return cleaned.length === 14;
   }, 'CNPJ inválido. Deve ter 14 dígitos'),
+  nomeUnicoEmpresa: z.string()
+    .min(3, 'Nome único deve ter no mínimo 3 caracteres')
+    .max(50, 'Nome único deve ter no máximo 50 caracteres')
+    .regex(/^[a-z0-9]+$/, 'Nome único deve conter apenas letras minúsculas e números, sem espaços ou caracteres especiais'),
   
   // Dados do Profissional
   nomeProfissional: z.string().min(3, 'Nome deve ter no mínimo 3 caracteres'),
@@ -179,6 +183,7 @@ export function SignupForm() {
         emailEmpresa: data.emailEmpresa,
         telefoneEmpresa: data.telefoneEmpresa,
         cnpjEmpresa: formattedCNPJ || '',
+        nomeUnicoEmpresa: data.nomeUnicoEmpresa,
         ativoEmpresa: true,
         nomeProfissional: data.nomeProfissional,
         emailProfissional: data.emailProfissional,
@@ -396,6 +401,27 @@ export function SignupForm() {
                 />
               )}
             />
+          </div>
+
+          <div>
+            <label htmlFor="nomeUnicoEmpresa" className="block text-sm font-medium text-gray-700 mb-1">
+              Nome único para agendamentos
+              <span className="text-xs text-gray-500 block mt-1">
+                Será usado no link: agendasim/seunomedaempresa
+              </span>
+            </label>
+            <Input
+              id="nomeUnicoEmpresa"
+              type="text"
+              placeholder="salaodebeleza"
+              icon={Building2}
+              error={errors.nomeUnicoEmpresa?.message}
+              {...register('nomeUnicoEmpresa')}
+              style={{ textTransform: 'lowercase' }}
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              Apenas letras minúsculas e números, sem espaços ou caracteres especiais
+            </p>
           </div>
 
           <Button

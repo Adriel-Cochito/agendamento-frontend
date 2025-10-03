@@ -169,13 +169,38 @@ export default function AgendamentoPublico({
     empresaId: paramEmpresaId,
     nomeEmpresa: nomeEmpresaParam,
     telefoneEmpresa: telefoneEmpresaParam,
+    nomeUnico,
   } = useParams<{
     empresaId: string;
     nomeEmpresa?: string;
     telefoneEmpresa?: string;
+    nomeUnico?: string;
   }>();
   const [searchParams] = useSearchParams();
+  const [empresaFromNomeUnico, setEmpresaFromNomeUnico] = React.useState<any>(null);
+  const [loadingEmpresa, setLoadingEmpresa] = React.useState(false);
   // const [lgpdModalOpen, setLgpdModalOpen] = React.useState(false);
+
+  // Buscar empresa pelo nome único quando necessário
+  React.useEffect(() => {
+    const buscarEmpresaPorNomeUnico = async () => {
+      if (!nomeUnico) return;
+      
+      setLoadingEmpresa(true);
+      try {
+        const { empresasApi } = await import('@/api/empresas');
+        const empresa = await empresasApi.getByNomeUnico(nomeUnico);
+        setEmpresaFromNomeUnico(empresa);
+      } catch (error) {
+        console.error('Erro ao buscar empresa por nome único:', error);
+        setEmpresaFromNomeUnico(null);
+      } finally {
+        setLoadingEmpresa(false);
+      }
+    };
+
+    buscarEmpresaPorNomeUnico();
+  }, [nomeUnico]);
 
   // Função para decodificar parâmetros da URL (movida para dentro do componente)
   const decodeUrlParam = (param: string | undefined): string => {
@@ -190,15 +215,27 @@ export default function AgendamentoPublico({
 
   // Extrair informações da empresa da URL (memoizado)
   const empresaInfo = useMemo(
-    () => ({
-      id: propEmpresaId || paramEmpresaId || searchParams.get('empresaId') || '1',
-      nomeFromUrl: nomeEmpresaParam ? decodeUrlParam(nomeEmpresaParam) : null,
-      telefoneFromUrl:
-        telefoneEmpresaParam && telefoneEmpresaParam !== 'sem-telefone'
-          ? decodeUrlParam(telefoneEmpresaParam)
-          : null,
-    }),
-    [propEmpresaId, paramEmpresaId, nomeEmpresaParam, telefoneEmpresaParam, searchParams]
+    () => {
+      // Se temos nome único e encontramos a empresa, usar o ID da empresa encontrada
+      if (nomeUnico && empresaFromNomeUnico) {
+        return {
+          id: empresaFromNomeUnico.id.toString(),
+          nomeFromUrl: empresaFromNomeUnico.nome,
+          telefoneFromUrl: empresaFromNomeUnico.telefone,
+        };
+      }
+      
+      // Caso contrário, usar a lógica original
+      return {
+        id: propEmpresaId || paramEmpresaId || searchParams.get('empresaId') || '1',
+        nomeFromUrl: nomeEmpresaParam ? decodeUrlParam(nomeEmpresaParam) : null,
+        telefoneFromUrl:
+          telefoneEmpresaParam && telefoneEmpresaParam !== 'sem-telefone'
+            ? decodeUrlParam(telefoneEmpresaParam)
+            : null,
+      };
+    },
+    [propEmpresaId, paramEmpresaId, nomeEmpresaParam, telefoneEmpresaParam, searchParams, nomeUnico, empresaFromNomeUnico]
   );
 
   const empresaIdNum = Number(empresaInfo.id);
@@ -245,6 +282,19 @@ export default function AgendamentoPublico({
           <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
           <h2 className="text-xl font-semibold text-gray-900 mb-2">Link Inválido</h2>
           <p className="text-gray-600">ID da empresa não fornecido no link.</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Mostrar erro se nome único foi fornecido mas não encontrou a empresa
+  if (nomeUnico && !loadingEmpresa && !empresaFromNomeUnico) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">Empresa não encontrada</h2>
+          <p className="text-gray-600">A empresa "{nomeUnico}" não foi encontrada.</p>
         </div>
       </div>
     );
@@ -388,7 +438,7 @@ export default function AgendamentoPublico({
           </AnimatePresence>
 
           {/* Loading Overlay */}
-          {loading && (
+          {(loading || loadingEmpresa) && (
             <div className="absolute inset-0 bg-white/80 flex items-center justify-center z-10">
               <Loading size="lg" />
             </div>

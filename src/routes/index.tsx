@@ -31,6 +31,11 @@ export const router = createBrowserRouter([
     path: '/cadastro',
     element: <Signup />,
   },
+  // Rota pública para agendamentos com nome único da empresa
+  {
+    path: '/:nomeUnico',
+    element: <AgendamentoPublico />,
+  },
   // Rota pública para agendamentos com parâmetros da empresa
   {
     path: '/agendamento/:empresaId/:nomeEmpresa/:telefoneEmpresa',
